@@ -2,8 +2,6 @@
 //
 #include "stdafx.h"
 #include "xrCore.h"
-
-#include <string>
  
 #pragma comment(lib,"winmm.lib")
 
@@ -29,11 +27,11 @@ void xrCore::_initialize	(LPCSTR _ApplicationName, LogCallback cb)
 {
 	static BOOL				bInitialized	= FALSE;
 
-	strcpy					(ApplicationName,_ApplicationName);
+	strcpy_s				(ApplicationName,_ApplicationName);
 	R_ASSERT2				(!bInitialized, "xrCore already initialized.");
 
 	// Parameters
-	strcpy					(Params,GetCommandLine());
+	strcpy_s				(Params,GetCommandLine());
 	strlwr					(Params);
 
 	// User/Comp Name

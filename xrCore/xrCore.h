@@ -70,7 +70,7 @@
 #include <string.h>
 #include <process.h>
 #include <assert.h>
-#include <typeinfo.h>
+#include <typeinfo>
 
 #ifndef DEBUG
 	#ifdef _DEBUG

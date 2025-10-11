@@ -129,7 +129,7 @@ void CreateLog(LogCallback cb)
 	fclose	(f);
 
 	// Calculating build
-	long Time;
+	long long Time;
 	time(&Time);
 	int build=0, mnum=0, dnum, ynum, mcnt;
 	char mon[4];

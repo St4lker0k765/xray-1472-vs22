@@ -2,6 +2,7 @@
 #include "xrdebug.h"
 #include "resource.h"
 #include "dbghelp.h"
+#include <new>
 
 #include "dxerr9.h"
 
@@ -15,6 +16,13 @@
 	#pragma comment(lib,"dxerr9.lib")
 	static BOOL			bException	= FALSE;
 #endif
+	
+extern "C" int __vsnwprintf(wchar_t* buffer, size_t count, const wchar_t* format, va_list argptr) {
+    return _vsnwprintf(buffer, count, format, argptr);
+}
+extern "C" int __vsnprintf(char* buffer, size_t count, const char* format, va_list argptr) {
+	return _vsnprintf(buffer, count, format, argptr);
+}
 
 XRCORE_API	xrDebug		Debug;
 
@@ -150,7 +158,10 @@ int __cdecl _out_of_memory(unsigned size)
 	Debug.fatal	("Out of memory. Memory request: %d K",size/1024);
 	return 1;
 }
-
+void __cdecl _terminate()
+{
+	Debug.fatal("Unexpected application termination");
+}
 // based on dbghelp.h
 typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE DumpType,
 										 CONST PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
@@ -159,7 +170,7 @@ typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hF
 										 );
 
 
-LONG UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
+LONG WINAPI UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
 {
 	LONG retval		= EXCEPTION_CONTINUE_SEARCH;
 	bException		= TRUE;
@@ -280,15 +291,17 @@ LONG UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
         ::SetUnhandledExceptionFilter	( UnhandledFilter );	// exception handler to all "unhandled" exceptions
     }
 #else
-    typedef int		(__cdecl * _PNH)( size_t );
-    _CRTIMP int		__cdecl _set_new_mode( int );
-    _CRTIMP _PNH	__cdecl _set_new_handler( _PNH );
+static void __cdecl def_new_handler()
+{
+	_out_of_memory(static_cast<size_t>(~0u));
+}
 
     void	xrDebug::_initialize		()
     {
-        _set_new_mode					(1);					// gen exception if can't allocate memory
-        _set_new_handler				(_out_of_memory	);		// exception-handler for 'out of memory' condition
-        ::SetUnhandledExceptionFilter	( UnhandledFilter );	// exception handler to all "unhandled" exceptions
+		std::set_new_handler(def_new_handler);
+		std::set_terminate(_terminate);
+		std::set_unexpected(_terminate);
+		::SetUnhandledExceptionFilter(UnhandledFilter);
     }
 #endif
 
