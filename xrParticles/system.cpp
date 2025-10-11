@@ -152,7 +152,7 @@ int _ParticleState::GenerateGroups(int p_group_count)
 	int new_count = 16 + group_count + p_group_count;
 	ParticleGroup **glist = xr_alloc<ParticleGroup*>(new_count);
 	Memory.mem_copy(glist, group_list, group_count * sizeof(void*));
-	for(i=group_count; i<new_count; i++)
+	for(int i=group_count; i<new_count; i++)
 		glist[i] = NULL;
 	xr_free(group_list);
 	group_list = glist;
@@ -189,7 +189,7 @@ int _ParticleState::GenerateLists(int list_count)
 	int new_count = 16 + alist_count + list_count;
 	PAHeader **new_list = xr_alloc<PAHeader*>(new_count);
 	Memory.mem_copy(new_list, alist_list, alist_count * sizeof(void*));
-	for(i=list_count; i<new_count; i++)
+	for(int i=list_count; i<new_count; i++)
 		new_list[i] = NULL;
 	xr_free(alist_list);
 	alist_list = new_list;

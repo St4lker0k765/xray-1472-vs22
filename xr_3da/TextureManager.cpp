@@ -83,7 +83,7 @@ IDirect3DVertexDeclaration9*	CShaderManager::_CreateDecl	(D3DVERTEXELEMENT9* dcl
 	for (u32 it=0; it<v_declarations.size(); it++)
 	{
 		SDeclaration&		D		= *v_declarations[it];;
-		if (dcl_equal(dcl,D.dcl_code.begin()))
+		if (!D.dcl_code.empty() && dcl_equal(dcl, &D.dcl_code[0]))
 		{
 			D.dwReference	++;
 			return D.dcl;

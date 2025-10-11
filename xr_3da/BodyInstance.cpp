@@ -448,7 +448,7 @@ void CKinematics::Release()
 		xr_free((*partition)[i].Name);
 	
 	// xr_free bones
-	for (i=0; i<bones->size(); i++)
+	for (u32 i=0; i<bones->size(); i++)
 	{
 		CBoneData* &B = (*bones)[i];
 		xr_delete(B);
@@ -599,7 +599,7 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
 		motion_map->insert(make_pair(xr_strdup(strlwr(mname)),M));
 
 		u32 dwLen = MS->r_u32();
-		for (i=0; i<bones->size(); i++)
+		for (u32 i=0; i<bones->size(); i++)
 		{
 			CMotion TMP;
 			TMP.Keys.reserve(dwLen);

@@ -81,16 +81,13 @@ void CPSLibrary::RenamePG(PS::CPGDef* src, LPCSTR new_name)
 void CPSLibrary::Remove(const char* nm)
 {
     PS::SDef* sh = FindPS(nm);
-    if (sh){ 
-    	Device.Shader.Delete(sh->m_CachedShader);
-    	m_PSs.erase(sh);
-    }else{
-    	PS::PGIt it = FindPGIt(nm);
-        if (it!=m_PGs.end()){
-	    	Device.Shader.Delete((*it)->m_CachedShader);
-	       	m_PGs.erase	(it);
-        	xr_delete	(*it);
-        }
+    if (sh)
+    {
+        Device.Shader.Delete(sh->m_CachedShader);
+        auto it = std::find_if(m_PSs.begin(), m_PSs.end(),
+            [sh](const PS::SDef& v) { return &v == sh; });
+        if (it != m_PSs.end())
+            m_PSs.erase(it);
     }
 }
 

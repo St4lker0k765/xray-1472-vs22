@@ -47,7 +47,7 @@ void CPSVisual::Update(u32 dt)
 	float p_size		= 0;
 	Fvector Pos; float size;
 	vis.box.invalidate	();
-	for (i=0; i<int(m_Particles.size()); i++)
+	for (int i=0; i<int(m_Particles.size()); i++)
 	{
 		if (fTime>m_Particles[i].m_Time.end) {
 			// Need to delete particle

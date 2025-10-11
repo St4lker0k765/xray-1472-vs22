@@ -201,7 +201,9 @@ void CDetailManager::Render		(Fvector& vecEYE)
 						if (sp.id==0xff)	continue;
 						float				R   = objects	[sp.id]->bv_sphere.R;
 
-						SlotItem			**siIT=sp.items.begin(), **siEND=sp.items.end();
+						auto siIT = sp.items.begin();
+						auto siEND = sp.items.end();
+
 						for (; siIT!=siEND; siIT++)
 						{
 							SlotItem& Item	= *(*siIT);
@@ -236,7 +238,9 @@ void CDetailManager::Render		(Fvector& vecEYE)
 						if (sp.id==0xff)	continue;
 						float				R   = objects	[sp.id]->bv_sphere.R;
 
-						SlotItem			**siIT=sp.items.begin(), **siEND=sp.items.end();
+						auto siIT = sp.items.begin();
+						auto siEND = sp.items.end();
+
 						for (; siIT!=siEND; siIT++)
 						{
 							SlotItem& Item	= *(*siIT);

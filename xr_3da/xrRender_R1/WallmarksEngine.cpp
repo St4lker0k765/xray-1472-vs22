@@ -132,7 +132,7 @@ void CWallmarksEngine::RecurseTri(CDB::TRI* T, Fmatrix &mView, CWallmarksEngine:
 		}
 		
 		// recurse
-		for (i=0; i<3; i++)
+		for (u32 i=0; i<3; i++)
 		{
 			CDB::TRI* SML = T->adj[i];
 			if (SML)	{

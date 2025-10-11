@@ -9,7 +9,7 @@
 using namespace PAPI;
 using namespace PS;
 
-#pragma comment(lib,"x:\\ParticleDLL.lib")
+#pragma comment(lib,"ParticleDLL.lib")
 
 void CParticleGroup::Copy(IVisual* pFrom)
 {
