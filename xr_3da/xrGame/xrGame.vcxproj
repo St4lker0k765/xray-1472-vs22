@@ -1,0 +1,735 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Mixed (for debug only)|Win32">
+      <Configuration>Mixed (for debug only)</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Mixed|Win32">
+      <Configuration>Mixed</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{A15B9EF4-D198-45DE-8836-C736D09FF389}</ProjectGuid>
+    <SccProjectName>"$/xr_3da/xrGame", LSDAAAAA</SccProjectName>
+    <SccAuxPath />
+    <SccLocalPath>.</SccLocalPath>
+    <SccProvider>MSSCCI:Microsoft Visual SourceSafe</SccProvider>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>17.0.36327.8</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>x:\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <IgnoreImportLibrary>true</IgnoreImportLibrary>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">
+    <OutDir>x:\</OutDir>
+    <IntDir>.\Mixed\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>x:\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">
+    <OutDir>Mixed (for debug only)\</OutDir>
+    <IntDir>Mixed (for debug only)\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <PreprocessorDefinitions>WIN32;_DEBUG;DEBUG;_WINDOWS;_USRDLL;XRGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <MinimalRebuild>true</MinimalRebuild>
+      <ExceptionHandling />
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <SmallerTypeCheck>true</SmallerTypeCheck>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Debug/xrGame.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>Debug\</AssemblerListingLocation>
+      <ObjectFileName>Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CallingConvention>StdCall</CallingConvention>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;x:\xr_3da.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ShowProgress>NotSet</ShowProgress>
+      <OutputFile>x:\xrGame.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>x:\xrGame.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>x:\xrGame.map</MapFileName>
+      <MapExports>false</MapExports>
+      <ImportLibrary>x:\xrGame.lib</ImportLibrary>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>x:\xrGame.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <PreprocessorDefinitions>MIXED;WIN32;NDEBUG;_WINDOWS;_USRDLL;XRGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling />
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>Mixed\</AssemblerListingLocation>
+      <ObjectFileName>Mixed\</ObjectFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>StdCall</CallingConvention>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;x:\xr_3da.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>x:\xrGame.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\Mixed/xrGame.map</MapFileName>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>x:\xrGame.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>x:\xrGame.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>true</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XRGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling />
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Release/xrGame.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat />
+      <CallingConvention>StdCall</CallingConvention>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;x:\xr_3da.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>x:\xrGame.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>x:\xrGame.map</MapFileName>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>x:\xrGame.lib</ImportLibrary>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>x:\xrGame.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XRGAME_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling />
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Release/xrGame.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <BrowseInformation />
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CallingConvention>StdCall</CallingConvention>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;x:\xr_3da.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>x:\xrGame.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>x:\xrGame.map</MapFileName>
+      <MapExports>true</MapExports>
+      <ImportLibrary>x:\xrGame.lib</ImportLibrary>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>x:\xrGame.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Actor.cpp" />
+    <ClCompile Include="ActorAnimation.cpp" />
+    <ClCompile Include="ActorCameras.cpp" />
+    <ClCompile Include="ActorInput.cpp" />
+    <ClCompile Include="ActorPhySkeleton.cpp" />
+    <ClCompile Include="ActorVehicle.cpp" />
+    <ClCompile Include="Actor_Events.cpp" />
+    <ClCompile Include="Actor_Feel.cpp" />
+    <ClCompile Include="AI\ai_monsters_misc.cpp" />
+    <ClCompile Include="AI\Crow\ai_crow.cpp" />
+    <ClCompile Include="AI\Dog\ai_dog.cpp" />
+    <ClCompile Include="AI\Dog\ai_dog_animation.cpp" />
+    <ClCompile Include="AI\Dog\ai_dog_feel.cpp" />
+    <ClCompile Include="AI\Dog\ai_dog_fire.cpp" />
+    <ClCompile Include="AI\Dog\ai_dog_fsm.cpp" />
+    <ClCompile Include="AI\Dog\ai_dog_templates.cpp" />
+    <ClCompile Include="AI\Rat\ai_rat.cpp" />
+    <ClCompile Include="AI\Rat\ai_rat_animations.cpp" />
+    <ClCompile Include="AI\Rat\ai_rat_feel.cpp" />
+    <ClCompile Include="AI\Rat\ai_rat_fire.cpp" />
+    <ClCompile Include="AI\Rat\ai_rat_fsm.cpp" />
+    <ClCompile Include="AI\Rat\ai_rat_templates.cpp" />
+    <ClCompile Include="AI\Soldier\ai_soldier.cpp" />
+    <ClCompile Include="AI\Soldier\ai_soldier_animations.cpp" />
+    <ClCompile Include="AI\Soldier\ai_soldier_fire.cpp" />
+    <ClCompile Include="AI\Soldier\ai_soldier_fsm.cpp" />
+    <ClCompile Include="AI\Soldier\ai_soldier_look.cpp" />
+    <ClCompile Include="AI\Soldier\ai_soldier_templates.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker_animations.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker_events.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker_feel.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker_fire.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker_fsm.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker_misc.cpp" />
+    <ClCompile Include="AI\Stalker\ai_stalker_path.cpp" />
+    <ClCompile Include="AI\Zombie\ai_zombie.cpp" />
+    <ClCompile Include="AI\Zombie\ai_zombie_animations.cpp" />
+    <ClCompile Include="AI\Zombie\ai_zombie_feel.cpp" />
+    <ClCompile Include="AI\Zombie\ai_zombie_fire.cpp" />
+    <ClCompile Include="AI\Zombie\ai_zombie_fsm.cpp" />
+    <ClCompile Include="AI\Zombie\ai_zombie_templates.cpp" />
+    <ClCompile Include="ai_alife.cpp" />
+    <ClCompile Include="ai_alife_console.cpp" />
+    <ClCompile Include="ai_alife_misc.cpp" />
+    <ClCompile Include="ai_alife_process.cpp" />
+    <ClCompile Include="ai_alife_server_objects.cpp" />
+    <ClCompile Include="ai_alife_switch.cpp" />
+    <ClCompile Include="ai_funcs.cpp" />
+    <ClCompile Include="ai_misc.cpp" />
+    <ClCompile Include="AI_PathNodes.cpp" />
+    <ClCompile Include="AI_qNode.cpp" />
+    <ClCompile Include="ai_sounds.cpp" />
+    <ClCompile Include="AI_Space.cpp">
+      <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AssemblyAndSourceCode</AssemblerOutput>
+    </ClCompile>
+    <ClCompile Include="AI_Utilities.cpp" />
+    <ClCompile Include="a_star.cpp" />
+    <ClCompile Include="a_star_interfaces.cpp" />
+    <ClCompile Include="Bolt.cpp" />
+    <ClCompile Include="Car.cpp" />
+    <ClCompile Include="ContextMenu.cpp" />
+    <ClCompile Include="CustomDetector.cpp" />
+    <ClCompile Include="CustomDoor.cpp" />
+    <ClCompile Include="CustomEvent.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="CustomItem.cpp" />
+    <ClCompile Include="CustomLift.cpp" />
+    <ClCompile Include="CustomMonster.cpp" />
+    <ClCompile Include="CustomMonster_VCPU.cpp" />
+    <ClCompile Include="CustomTarget.cpp" />
+    <ClCompile Include="CustomZone.cpp" />
+    <ClCompile Include="dbg_draw_frustum.cpp" />
+    <ClCompile Include="dCylinder\dCylinder.cpp" />
+    <ClCompile Include="DemoActor.cpp" />
+    <ClCompile Include="DemoActorCameras.cpp" />
+    <ClCompile Include="DummyObject.cpp" />
+    <ClCompile Include="DynamicHeightMap.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="EffectorBobbing.cpp" />
+    <ClCompile Include="EffectorNoise.cpp" />
+    <ClCompile Include="EffectorRecoil.cpp" />
+    <ClCompile Include="EffectorShot.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="F1.cpp" />
+    <ClCompile Include="Flyer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="FlyerCameras.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="FlyerInput.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="GameMtlLib.cpp" />
+    <ClCompile Include="GameMtlLib_Engine.cpp" />
+    <ClCompile Include="GameObject.cpp" />
+    <ClCompile Include="GamePersistent.cpp" />
+    <ClCompile Include="game_base.cpp" />
+    <ClCompile Include="game_cl_base.cpp" />
+    <ClCompile Include="game_sv_base.cpp" />
+    <ClCompile Include="game_sv_cs.cpp" />
+    <ClCompile Include="game_sv_deathmatch.cpp" />
+    <ClCompile Include="game_sv_single.cpp" />
+    <ClCompile Include="Grenade.cpp" />
+    <ClCompile Include="Group.cpp" />
+    <ClCompile Include="HitMarker.cpp" />
+    <ClCompile Include="HUDCursor.cpp" />
+    <ClCompile Include="HUDManager.cpp" />
+    <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="ItemHealth.cpp" />
+    <ClCompile Include="Level.cpp" />
+    <ClCompile Include="LevelGameDef.cpp" />
+    <ClCompile Include="Level_input.cpp" />
+    <ClCompile Include="Level_load.cpp" />
+    <ClCompile Include="Level_network.cpp" />
+    <ClCompile Include="Level_network_messages.cpp" />
+    <ClCompile Include="Level_network_spawn.cpp" />
+    <ClCompile Include="Level_network_start_client.cpp" />
+    <ClCompile Include="Level_SLS_Default.cpp" />
+    <ClCompile Include="Level_SLS_Load.cpp" />
+    <ClCompile Include="Level_SLS_Save.cpp" />
+    <ClCompile Include="Level_start.cpp" />
+    <ClCompile Include="MercuryBall.cpp" />
+    <ClCompile Include="Mincer.cpp" />
+    <ClCompile Include="Missile.cpp" />
+    <ClCompile Include="MosquitoBald.cpp" />
+    <ClCompile Include="MovementControl.cpp" />
+    <ClCompile Include="PHCharacter.cpp" />
+    <ClCompile Include="PHDynamicData.cpp" />
+    <ClCompile Include="PHInterpolation.cpp" />
+    <ClCompile Include="PHMovementControl.cpp" />
+    <ClCompile Include="Physics.cpp" />
+    <ClCompile Include="PhysicsShell.cpp" />
+    <ClCompile Include="PlayerList.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Rain.cpp" />
+    <ClCompile Include="SimpleDetector.cpp" />
+    <ClCompile Include="Spectator.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="TargetAssault.cpp" />
+    <ClCompile Include="TargetCS.cpp" />
+    <ClCompile Include="TargetCSBase.cpp" />
+    <ClCompile Include="TargetCSCask.cpp" />
+    <ClCompile Include="Tracer.cpp" />
+    <ClCompile Include="tri-colliderknoopc\dcTriListCollider.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="tri-colliderKNoOPC\dTriCallideK.cpp" />
+    <ClCompile Include="tri-colliderKNoOPC\dTriList.cpp" />
+    <ClCompile Include="UI.cpp" />
+    <ClCompile Include="UIBuyMenu.cpp" />
+    <ClCompile Include="UICHTMenu.cpp" />
+    <ClCompile Include="UICSFragList.cpp" />
+    <ClCompile Include="UICSPlayerList.cpp" />
+    <ClCompile Include="UICursor.cpp" />
+    <ClCompile Include="UICustomItem.cpp" />
+    <ClCompile Include="UICustomMenu.cpp" />
+    <ClCompile Include="UIDMFragList.cpp" />
+    <ClCompile Include="UIDMPlayerList.cpp" />
+    <ClCompile Include="UIDynamicItem.cpp" />
+    <ClCompile Include="UIFrameRect.cpp" />
+    <ClCompile Include="UIGameCS.cpp" />
+    <ClCompile Include="UIGameCustom.cpp" />
+    <ClCompile Include="UIGameDM.cpp" />
+    <ClCompile Include="UIGameSP.cpp" />
+    <ClCompile Include="UIGroup.cpp" />
+    <ClCompile Include="UIHealth.cpp" />
+    <ClCompile Include="UIIcon.cpp" />
+    <ClCompile Include="UIInventory.cpp" />
+    <ClCompile Include="UIListBox.cpp" />
+    <ClCompile Include="UIStaticItem.cpp" />
+    <ClCompile Include="UIWeapon.cpp" />
+    <ClCompile Include="UIZoneMap.cpp" />
+    <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="WeaponAK74.cpp" />
+    <ClCompile Include="WeaponAmmo.cpp" />
+    <ClCompile Include="WeaponAutoRifle.cpp" />
+    <ClCompile Include="WeaponBinoculars.cpp" />
+    <ClCompile Include="WeaponCustomPistol.cpp" />
+    <ClCompile Include="WeaponFN2000.cpp" />
+    <ClCompile Include="WeaponFORT.cpp" />
+    <ClCompile Include="WeaponHPSA.cpp" />
+    <ClCompile Include="WeaponHUD.cpp" />
+    <ClCompile Include="WeaponLR300.cpp" />
+    <ClCompile Include="WeaponM134.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="WeaponMagazined.cpp" />
+    <ClCompile Include="WeaponPistol.cpp" />
+    <ClCompile Include="WeaponPM.cpp" />
+    <ClCompile Include="WeaponProtecta.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="WeaponRail.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Mixed|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="WeaponRPG7.cpp" />
+    <ClCompile Include="WeaponShotgun.cpp" />
+    <ClCompile Include="WeaponSVD.cpp" />
+    <ClCompile Include="WeaponSVU.cpp" />
+    <ClCompile Include="xrGame.cpp" />
+    <ClCompile Include="xrServer.cpp" />
+    <ClCompile Include="xrServer_balance.cpp" />
+    <ClCompile Include="xrServer_CL_connect.cpp" />
+    <ClCompile Include="xrServer_CL_disconnect.cpp" />
+    <ClCompile Include="xrServer_Connect.cpp" />
+    <ClCompile Include="xrServer_Disconnect.cpp" />
+    <ClCompile Include="xrServer_Entities.cpp" />
+    <ClCompile Include="xrServer_Entity_Custom.cpp" />
+    <ClCompile Include="xrServer_perform_GameExport.cpp" />
+    <ClCompile Include="xrServer_perform_IDgen.cpp" />
+    <ClCompile Include="xrServer_perform_migration.cpp" />
+    <ClCompile Include="xrServer_perform_RPgen.cpp" />
+    <ClCompile Include="xrServer_perform_sls_default.cpp" />
+    <ClCompile Include="xrServer_perform_sls_load.cpp" />
+    <ClCompile Include="xrServer_perform_sls_save.cpp" />
+    <ClCompile Include="xrServer_perform_transfer.cpp" />
+    <ClCompile Include="xrServer_process_event.cpp" />
+    <ClCompile Include="xrServer_process_event_ownership.cpp" />
+    <ClCompile Include="xrServer_process_event_reject.cpp" />
+    <ClCompile Include="xrServer_process_spawn.cpp" />
+    <ClCompile Include="xrServer_process_update.cpp" />
+    <ClCompile Include="xrServer_sls_clear.cpp" />
+    <ClCompile Include="xr_weapon_list.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Actor.h" />
+    <ClInclude Include="ActorAnimation.h" />
+    <ClInclude Include="Actor_Flags.h" />
+    <ClInclude Include="AI\ai_monsters_misc.h" />
+    <ClInclude Include="AI\ai_selector_template.h" />
+    <ClInclude Include="AI\Crow\ai_crow.h" />
+    <ClInclude Include="AI\Dog\ai_dog.h" />
+    <ClInclude Include="AI\Rat\ai_rat.h" />
+    <ClInclude Include="AI\Soldier\ai_soldier.h" />
+    <ClInclude Include="AI\Stalker\ai_stalker.h" />
+    <ClInclude Include="AI\Stalker\ai_stalker_animations.h" />
+    <ClInclude Include="AI\Stalker\ai_stalker_space.h" />
+    <ClInclude Include="AI\Zombie\ai_zombie.h" />
+    <ClInclude Include="ai_alife.h" />
+    <ClInclude Include="ai_alife_a_star.h" />
+    <ClInclude Include="ai_alife_cross_table.h" />
+    <ClInclude Include="ai_alife_graph.h" />
+    <ClInclude Include="ai_alife_interfaces.h" />
+    <ClInclude Include="ai_alife_objects.h" />
+    <ClInclude Include="ai_alife_predicates.h" />
+    <ClInclude Include="ai_alife_registries.h" />
+    <ClInclude Include="ai_alife_server_objects.h" />
+    <ClInclude Include="ai_alife_space.h" />
+    <ClInclude Include="ai_alife_templates.h" />
+    <ClInclude Include="ai_commands.h" />
+    <ClInclude Include="AI_Console.h" />
+    <ClInclude Include="ai_funcs.h" />
+    <ClInclude Include="AI_PathNodes.h" />
+    <ClInclude Include="ai_sounds.h" />
+    <ClInclude Include="AI_Space.h" />
+    <ClInclude Include="a_star.h" />
+    <ClInclude Include="a_star_interfaces.h" />
+    <ClInclude Include="a_star_template.h" />
+    <ClInclude Include="Bolt.h" />
+    <ClInclude Include="Car.h" />
+    <ClInclude Include="clsid_game.h" />
+    <ClInclude Include="ContextMenu.h" />
+    <ClInclude Include="CustomDetector.h" />
+    <ClInclude Include="CustomDoor.h" />
+    <ClInclude Include="CustomEvent.h" />
+    <ClInclude Include="CustomItem.h" />
+    <ClInclude Include="CustomLift.h" />
+    <ClInclude Include="CustomMonster.h" />
+    <ClInclude Include="CustomTarget.h" />
+    <ClInclude Include="CustomZone.h" />
+    <ClInclude Include="dCylinder\dCylinder.h" />
+    <ClInclude Include="DemoActor.h" />
+    <CustomBuild Include="DummyObject.h" />
+    <ClInclude Include="DynamicHeightMap.h" />
+    <ClInclude Include="EffectorBobbing.h" />
+    <ClInclude Include="EffectorNoise.h" />
+    <ClInclude Include="EffectorRecoil.h" />
+    <ClInclude Include="EffectorShot.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="ExtendedGeom.h" />
+    <ClInclude Include="F1.h" />
+    <ClInclude Include="Flyer.h" />
+    <ClInclude Include="GameMtlLib.h" />
+    <ClInclude Include="GameObject.h" />
+    <ClInclude Include="GamePersistent.h" />
+    <ClInclude Include="game_base.h" />
+    <ClInclude Include="game_cl_base.h" />
+    <ClInclude Include="game_sv_base.h" />
+    <ClInclude Include="game_sv_cs.h" />
+    <ClInclude Include="game_sv_deathmatch.h" />
+    <ClInclude Include="game_sv_single.h" />
+    <ClInclude Include="Grenade.h" />
+    <ClInclude Include="Group.h" />
+    <ClInclude Include="HitMarker.h" />
+    <ClInclude Include="HUDCursor.h" />
+    <ClInclude Include="HUDManager.h" />
+    <ClInclude Include="Inventory.h" />
+    <ClInclude Include="ItemHealth.h" />
+    <ClInclude Include="Level.h" />
+    <ClInclude Include="LevelGameDef.h" />
+    <ClInclude Include="MercuryBall.h" />
+    <ClInclude Include="Mincer.h" />
+    <ClInclude Include="Missile.h" />
+    <ClInclude Include="MosquitoBald.h" />
+    <ClInclude Include="MovementControl.h" />
+    <ClInclude Include="NET_Queue.h" />
+    <ClInclude Include="NET_utils.h" />
+    <ClInclude Include="PHCharacter.h" />
+    <ClInclude Include="PHDynamicData.h" />
+    <ClInclude Include="PHInterpolation.h" />
+    <ClInclude Include="PHMovementControl.h" />
+    <ClInclude Include="PHObject.h" />
+    <ClInclude Include="Physics.h" />
+    <ClInclude Include="PhysicsShell.h" />
+    <ClInclude Include="PlayerList.h" />
+    <ClInclude Include="PropertiesListTypes.h" />
+    <ClInclude Include="Rain.h" />
+    <ClInclude Include="SimpleDetector.h" />
+    <ClInclude Include="Spectator.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="TargetAssault.h" />
+    <ClInclude Include="TargetCS.h" />
+    <ClInclude Include="TargetCSBase.h" />
+    <ClInclude Include="TargetCSCask.h" />
+    <ClInclude Include="Tracer.h" />
+    <ClInclude Include="tri-colliderKNoOPC\dcTriListCollider.h" />
+    <ClInclude Include="tri-colliderKNoOPC\dTriCollideK.h" />
+    <ClInclude Include="tri-colliderKNoOPC\dTriList.h" />
+    <ClInclude Include="tri-colliderKNoOPC\dxTriList.h" />
+    <ClInclude Include="tri-colliderKNoOPC\__aabb_tri.h" />
+    <ClInclude Include="UI.h" />
+    <ClInclude Include="UIBuyMenu.h" />
+    <ClInclude Include="UICHTMenu.h" />
+    <ClInclude Include="UICSFragList.h" />
+    <ClInclude Include="UICSPlayerList.h" />
+    <ClInclude Include="UICursor.h" />
+    <ClInclude Include="UICustomItem.h" />
+    <ClInclude Include="UICustomMenu.h" />
+    <ClInclude Include="UIDMFragList.h" />
+    <ClInclude Include="UIDMPlayerList.h" />
+    <ClInclude Include="UIDynamicItem.h" />
+    <ClInclude Include="UIFrameRect.h" />
+    <ClInclude Include="UIGameCS.h" />
+    <ClInclude Include="UIGameCustom.h" />
+    <ClInclude Include="UIGameDM.h" />
+    <ClInclude Include="UIGameSP.h" />
+    <ClInclude Include="UIGroup.h" />
+    <ClInclude Include="UIHealth.h" />
+    <ClInclude Include="UIIcon.h" />
+    <ClInclude Include="UIInventory.h" />
+    <ClInclude Include="UIListBox.h" />
+    <ClInclude Include="UIStaticItem.h" />
+    <ClInclude Include="UIWeapon.h" />
+    <ClInclude Include="UIZoneMap.h" />
+    <ClInclude Include="Weapon.h" />
+    <ClInclude Include="WeaponAK74.h" />
+    <ClInclude Include="WeaponAmmo.h" />
+    <ClInclude Include="WeaponAutoRifle.h" />
+    <ClInclude Include="WeaponBinoculars.h" />
+    <ClInclude Include="WeaponCustomPistol.h" />
+    <ClInclude Include="WeaponFN2000.h" />
+    <ClInclude Include="WeaponFORT.h" />
+    <ClInclude Include="WeaponHPSA.h" />
+    <ClInclude Include="WeaponHUD.h" />
+    <ClInclude Include="WeaponLR300.h" />
+    <ClInclude Include="WeaponM134.h" />
+    <ClInclude Include="WeaponMagazined.h" />
+    <ClInclude Include="WeaponPistol.h" />
+    <ClInclude Include="WeaponPM.h" />
+    <ClInclude Include="WeaponProtecta.h" />
+    <ClInclude Include="WeaponRail.h" />
+    <ClInclude Include="WeaponRPG7.h" />
+    <ClInclude Include="WeaponShotgun.h" />
+    <ClInclude Include="WeaponSVD.h" />
+    <ClInclude Include="WeaponSVU.h" />
+    <ClInclude Include="xrMessages.h" />
+    <ClInclude Include="xrServer.h" />
+    <ClInclude Include="xrServer_Entities.h" />
+    <ClInclude Include="xrServer_Entity_Custom.h" />
+    <ClInclude Include="xr_weapon_list.h" />
+    <ClInclude Include="_cylinder.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="notes.txt" />
+    <None Include="Shedule.txt" />
+    <None Include="System.ltx" />
+    <None Include="todo.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

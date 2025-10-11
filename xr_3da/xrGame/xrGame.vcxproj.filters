@@ -1,0 +1,1334 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Kernel">
+      <UniqueIdentifier>{13cfe890-25f4-4676-947d-ca0de32303aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game">
+      <UniqueIdentifier>{4bde2bf1-77bb-424c-993a-5205ae645b8a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Level">
+      <UniqueIdentifier>{3881d144-39e0-492f-b428-ba79f1bd48e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Games">
+      <UniqueIdentifier>{8e89b98e-d59d-424b-bfe9-936e6ab618c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects">
+      <UniqueIdentifier>{f1809043-8332-49af-9531-c93550060fcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters">
+      <UniqueIdentifier>{d3f16367-9dfc-45d6-87eb-1ad617dadc95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_misc">
+      <UniqueIdentifier>{6778b4fd-562d-401e-9889-14d6f0f09f40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_custom">
+      <UniqueIdentifier>{271b42aa-638f-4844-a3d6-2dae224f752c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_crow">
+      <UniqueIdentifier>{534022fb-fb18-4d08-b651-c408947347fb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_dog">
+      <UniqueIdentifier>{fd7063a3-0950-4ef6-896a-31b419fb05ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_rat">
+      <UniqueIdentifier>{8557e907-352b-45db-9e98-e17281d635b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_soldier">
+      <UniqueIdentifier>{c24c24d0-307b-4363-a52c-58085253fe65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_stalker">
+      <UniqueIdentifier>{8fe38204-f1ab-4d51-adb6-336e8f34d9b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_zombie">
+      <UniqueIdentifier>{a97f846e-99b9-4701-9f7d-59c9b069aa17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\_actor">
+      <UniqueIdentifier>{06190965-cbf3-4092-9383-5b4ea5243d28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\_actor_demo">
+      <UniqueIdentifier>{8f40cb36-62db-4ea6-8607-990a6a619fab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Basic">
+      <UniqueIdentifier>{dc47a451-8824-46f9-b9d4-bafa207fcda7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\_door">
+      <UniqueIdentifier>{5500d94b-bb4b-4bb2-ad4a-46e1ac1974b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\_dummy">
+      <UniqueIdentifier>{039db7c9-f12a-4a0d-a3b4-c3fb1c3f4bed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Events">
+      <UniqueIdentifier>{98c1faab-2d64-4006-a4a4-53da07042868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Inventory">
+      <UniqueIdentifier>{41c131b5-f1a2-4bd9-8ee3-5b3c99c64558}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\_item">
+      <UniqueIdentifier>{833b6fdd-4941-4445-9fde-a66e7781532d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons">
+      <UniqueIdentifier>{dbea076d-9d06-4f0e-80fe-1e52a242ce21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons">
+      <UniqueIdentifier>{8b3bffed-1c89-4379-831e-13b0467bdeb6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon">
+      <UniqueIdentifier>{0407d60b-85c4-4ec3-a67b-9108486969a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon M134">
+      <UniqueIdentifier>{2178ce07-8883-4ae3-afb0-ac0fb6a67465}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon Rail">
+      <UniqueIdentifier>{529b571a-79d7-4b56-adc5-d0a055fa2f68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon Protecta">
+      <UniqueIdentifier>{7c4b2f5f-c98a-45b5-b736-851d301a5f2b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Effectors">
+      <UniqueIdentifier>{a080e705-72de-4a60-a3ef-843634c5f485}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon AK74">
+      <UniqueIdentifier>{7990f659-6ada-4ce9-9270-894ec034e2f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\LR300">
+      <UniqueIdentifier>{013e5d5f-28e1-493c-b033-6a84389fcd59}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\FN2000">
+      <UniqueIdentifier>{d7afc63d-cfa8-47e3-9429-87ed03eedb6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\HPSA">
+      <UniqueIdentifier>{59409f7b-27b8-44fb-87c5-f6e20f6d748c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\PM">
+      <UniqueIdentifier>{4424e578-ad63-43f7-8714-3700d85fe33c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\FORT">
+      <UniqueIdentifier>{4df55de4-fb79-4bc5-84a1-5e2e0caf198d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Binocular">
+      <UniqueIdentifier>{39ab4ce6-c9b9-4352-9931-689afa8737f0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon Shotgun">
+      <UniqueIdentifier>{9ec1f3a0-aae2-43da-b435-cbb8094c51d1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\SVD">
+      <UniqueIdentifier>{189401b4-634c-417a-8f1f-5b7167e4d2af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\SVU">
+      <UniqueIdentifier>{1e7ff1d9-6bc5-4d7c-b3bc-bce42e6fbd17}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Bolt">
+      <UniqueIdentifier>{765ee72e-dece-49d0-9350-84985b8ffba8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\RPG7">
+      <UniqueIdentifier>{6ccaa4ad-6703-4586-aca9-495a324622f2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Grenade F1">
+      <UniqueIdentifier>{944e36d3-ac3e-4744-aa37-e2375ea680b2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Target">
+      <UniqueIdentifier>{e860793b-5d12-40af-8184-fe5415a71911}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Artifacts">
+      <UniqueIdentifier>{b81f4b26-ae99-467c-a9b6-901b57452916}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Artifacts\Mercury Ball">
+      <UniqueIdentifier>{7aa2e603-5c1f-4a01-a3ff-da31946d61ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Detectors">
+      <UniqueIdentifier>{cf1d2efc-239b-40d4-b9d7-9c44c1dd3fbe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Detectors\Simple Detector">
+      <UniqueIdentifier>{bc501672-8dea-4af9-af3c-7b089a1a82dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\_lift">
+      <UniqueIdentifier>{64ed573f-4d8d-471f-a3d3-fcd27d4a6621}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Spectator">
+      <UniqueIdentifier>{85823e45-80ee-4a65-8b6f-aa93867341cb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Vehicles">
+      <UniqueIdentifier>{dfd72785-f18f-4ea2-b350-7aa146702ffc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Vehicles\Car">
+      <UniqueIdentifier>{04c846ea-8296-42e3-8bb9-fc4c65f08e28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Vehicles\Car\Niva">
+      <UniqueIdentifier>{3262e0b0-9b00-43b9-8225-5079925b7c93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Vehicles\_helicopter">
+      <UniqueIdentifier>{0bce5bd1-dd3e-49d6-b39a-028181a9ad9b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Zones">
+      <UniqueIdentifier>{6c56e537-3db9-461c-a3c0-f58980974391}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Zones\MosquitoBald">
+      <UniqueIdentifier>{802384a0-9312-4c43-a8c9-d96981bb7a20}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Zones\Mincer">
+      <UniqueIdentifier>{0274ee06-d89e-4a8e-9b18-e92c11eab060}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Zones\AcidFog">
+      <UniqueIdentifier>{9345f442-9b8c-4e1e-8f28-3b7ab90b8ea0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Game Materials">
+      <UniqueIdentifier>{b11b82bf-8b50-4eec-9000-53807d77bb94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUD">
+      <UniqueIdentifier>{295f3984-60b6-4617-aaa4-643107ff87c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUD\UI">
+      <UniqueIdentifier>{6c1c1005-2ef2-443f-8f02-bfa471383516}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUD\UI\Custom">
+      <UniqueIdentifier>{d4a4424d-0ee3-4825-a3ff-337b8933eed7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUD\UI\Deathmatch">
+      <UniqueIdentifier>{44a906ec-1cfb-4fd2-b93e-15fa56f9e148}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUD\UI\CS">
+      <UniqueIdentifier>{2b1759da-b928-42c2-b984-2272ad60d3d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUD\UI\Common">
+      <UniqueIdentifier>{45552b39-7721-45e4-87a3-e2b23f64a24c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HUD\UI\Single">
+      <UniqueIdentifier>{28211606-2705-4114-94ad-a60bf7c945c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{41bd6aeb-1b4c-49c8-83bf-5c103e22726d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effects">
+      <UniqueIdentifier>{d3505055-b7b9-4903-bb42-a6a641381b08}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Effects\Core">
+      <UniqueIdentifier>{25bf988a-5c41-4621-b7d3-0f391e7486b9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI">
+      <UniqueIdentifier>{ba2c2c3b-c0b0-4c00-9342-4ce3eee226cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\AEval">
+      <UniqueIdentifier>{959e91ac-266a-4b20-b50e-80e91db4cee9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ALife">
+      <UniqueIdentifier>{c4068ee4-335e-40c4-9db2-e1ac1e09885b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ARoute">
+      <UniqueIdentifier>{e04db6c0-3d66-45d3-8374-13b2be07c3e0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ARoute\ASpace">
+      <UniqueIdentifier>{ff4e74ab-ca6a-42fb-8509-d2230d4aba48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ARoute\AStar">
+      <UniqueIdentifier>{8582a302-aae7-4fb5-880c-84c4cddef118}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="AI\ASound">
+      <UniqueIdentifier>{23836368-4e99-45e9-a27b-2ea1d16c7aac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics">
+      <UniqueIdentifier>{3ed1fc99-470e-4a18-ac36-b108e273743b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Physics\Tri-Collider">
+      <UniqueIdentifier>{c062f757-4c05-481f-b548-7af3bea5f045}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="StdAfx.cpp">
+      <Filter>Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="xrGame.cpp">
+      <Filter>Kernel</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePersistent.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Group.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="LevelGameDef.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_SLS_Default.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_SLS_Load.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_SLS_Save.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_input.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_load.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_network.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_network_messages.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_network_spawn.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_network_start_client.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="Level_start.cpp">
+      <Filter>Game\Level</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerList.cpp">
+      <Filter>Game\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="game_base.cpp">
+      <Filter>Game\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="game_cl_base.cpp">
+      <Filter>Game\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="game_sv_base.cpp">
+      <Filter>Game\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="game_sv_cs.cpp">
+      <Filter>Game\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="game_sv_deathmatch.cpp">
+      <Filter>Game\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="game_sv_single.cpp">
+      <Filter>Game\Games</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\ai_monsters_misc.cpp">
+      <Filter>Game\Objects\AMonsters\ai_misc</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomMonster.cpp">
+      <Filter>Game\Objects\AMonsters\ai_custom</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomMonster_VCPU.cpp">
+      <Filter>Game\Objects\AMonsters\ai_custom</Filter>
+    </ClCompile>
+    <ClCompile Include="dbg_draw_frustum.cpp">
+      <Filter>Game\Objects\AMonsters\ai_custom</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Crow\ai_crow.cpp">
+      <Filter>Game\Objects\AMonsters\ai_crow</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Dog\ai_dog.cpp">
+      <Filter>Game\Objects\AMonsters\ai_dog</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Dog\ai_dog_animation.cpp">
+      <Filter>Game\Objects\AMonsters\ai_dog</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Dog\ai_dog_feel.cpp">
+      <Filter>Game\Objects\AMonsters\ai_dog</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Dog\ai_dog_fire.cpp">
+      <Filter>Game\Objects\AMonsters\ai_dog</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Dog\ai_dog_fsm.cpp">
+      <Filter>Game\Objects\AMonsters\ai_dog</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Dog\ai_dog_templates.cpp">
+      <Filter>Game\Objects\AMonsters\ai_dog</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Rat\ai_rat.cpp">
+      <Filter>Game\Objects\AMonsters\ai_rat</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Rat\ai_rat_animations.cpp">
+      <Filter>Game\Objects\AMonsters\ai_rat</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Rat\ai_rat_feel.cpp">
+      <Filter>Game\Objects\AMonsters\ai_rat</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Rat\ai_rat_fire.cpp">
+      <Filter>Game\Objects\AMonsters\ai_rat</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Rat\ai_rat_fsm.cpp">
+      <Filter>Game\Objects\AMonsters\ai_rat</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Rat\ai_rat_templates.cpp">
+      <Filter>Game\Objects\AMonsters\ai_rat</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Soldier\ai_soldier.cpp">
+      <Filter>Game\Objects\AMonsters\ai_soldier</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Soldier\ai_soldier_animations.cpp">
+      <Filter>Game\Objects\AMonsters\ai_soldier</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Soldier\ai_soldier_fire.cpp">
+      <Filter>Game\Objects\AMonsters\ai_soldier</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Soldier\ai_soldier_fsm.cpp">
+      <Filter>Game\Objects\AMonsters\ai_soldier</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Soldier\ai_soldier_look.cpp">
+      <Filter>Game\Objects\AMonsters\ai_soldier</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Soldier\ai_soldier_templates.cpp">
+      <Filter>Game\Objects\AMonsters\ai_soldier</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker_animations.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker_events.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker_feel.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker_fire.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker_fsm.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker_misc.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Stalker\ai_stalker_path.cpp">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Zombie\ai_zombie.cpp">
+      <Filter>Game\Objects\AMonsters\ai_zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Zombie\ai_zombie_animations.cpp">
+      <Filter>Game\Objects\AMonsters\ai_zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Zombie\ai_zombie_feel.cpp">
+      <Filter>Game\Objects\AMonsters\ai_zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Zombie\ai_zombie_fire.cpp">
+      <Filter>Game\Objects\AMonsters\ai_zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Zombie\ai_zombie_fsm.cpp">
+      <Filter>Game\Objects\AMonsters\ai_zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Zombie\ai_zombie_templates.cpp">
+      <Filter>Game\Objects\AMonsters\ai_zombie</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorAnimation.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorCameras.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorInput.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorPhySkeleton.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="ActorVehicle.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor_Events.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="Actor_Feel.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectorBobbing.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoActor.cpp">
+      <Filter>Game\Objects\_actor_demo</Filter>
+    </ClCompile>
+    <ClCompile Include="DemoActorCameras.cpp">
+      <Filter>Game\Objects\_actor_demo</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="GameObject.cpp">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="MovementControl.cpp">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomDoor.cpp">
+      <Filter>Game\Objects\_door</Filter>
+    </ClCompile>
+    <ClCompile Include="DummyObject.cpp">
+      <Filter>Game\Objects\_dummy</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomEvent.cpp">
+      <Filter>Game\Objects\Events</Filter>
+    </ClCompile>
+    <ClCompile Include="Inventory.cpp">
+      <Filter>Game\Objects\Inventory</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomItem.cpp">
+      <Filter>Game\Objects\_item</Filter>
+    </ClCompile>
+    <ClCompile Include="ItemHealth.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="xr_weapon_list.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons</Filter>
+    </ClCompile>
+    <ClCompile Include="Grenade.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="Missile.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponAmmo.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponAutoRifle.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponCustomPistol.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponHUD.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponMagazined.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponPistol.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponM134.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon M134</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponRail.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Rail</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponProtecta.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Protecta</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectorNoise.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Effectors</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectorRecoil.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Effectors</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectorShot.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Effectors</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponAK74.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon AK74</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponLR300.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\LR300</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponFN2000.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\FN2000</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponHPSA.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\HPSA</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponPM.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\PM</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponFORT.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\FORT</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponBinoculars.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Binocular</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponShotgun.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Shotgun</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponSVD.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\SVD</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponSVU.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\SVU</Filter>
+    </ClCompile>
+    <ClCompile Include="Bolt.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Bolt</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponRPG7.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\RPG7</Filter>
+    </ClCompile>
+    <ClCompile Include="F1.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Grenade F1</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomTarget.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="TargetAssault.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="TargetCS.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="TargetCSBase.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="TargetCSCask.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClCompile>
+    <ClCompile Include="MercuryBall.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Artifacts\Mercury Ball</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomDetector.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Detectors</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleDetector.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Detectors\Simple Detector</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomLift.cpp">
+      <Filter>Game\Objects\_lift</Filter>
+    </ClCompile>
+    <ClCompile Include="Spectator.cpp">
+      <Filter>Game\Objects\Spectator</Filter>
+    </ClCompile>
+    <ClCompile Include="Car.cpp">
+      <Filter>Game\Objects\Vehicles\Car</Filter>
+    </ClCompile>
+    <ClCompile Include="Flyer.cpp">
+      <Filter>Game\Objects\Vehicles\_helicopter</Filter>
+    </ClCompile>
+    <ClCompile Include="FlyerCameras.cpp">
+      <Filter>Game\Objects\Vehicles\_helicopter</Filter>
+    </ClCompile>
+    <ClCompile Include="FlyerInput.cpp">
+      <Filter>Game\Objects\Vehicles\_helicopter</Filter>
+    </ClCompile>
+    <ClCompile Include="CustomZone.cpp">
+      <Filter>Game\Objects\Zones</Filter>
+    </ClCompile>
+    <ClCompile Include="MosquitoBald.cpp">
+      <Filter>Game\Objects\Zones\MosquitoBald</Filter>
+    </ClCompile>
+    <ClCompile Include="Mincer.cpp">
+      <Filter>Game\Objects\Zones\Mincer</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMtlLib.cpp">
+      <Filter>Game\Game Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMtlLib_Engine.cpp">
+      <Filter>Game\Game Materials</Filter>
+    </ClCompile>
+    <ClCompile Include="ContextMenu.cpp">
+      <Filter>HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="HUDCursor.cpp">
+      <Filter>HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="HUDManager.cpp">
+      <Filter>HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="HitMarker.cpp">
+      <Filter>HUD</Filter>
+    </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>HUD\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UICursor.cpp">
+      <Filter>HUD\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIGroup.cpp">
+      <Filter>HUD\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIHealth.cpp">
+      <Filter>HUD\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIWeapon.cpp">
+      <Filter>HUD\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIZoneMap.cpp">
+      <Filter>HUD\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UICustomItem.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UICustomMenu.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UIDynamicItem.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UIFrameRect.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UIGameCustom.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UIIcon.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UIListBox.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UIStaticItem.cpp">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClCompile>
+    <ClCompile Include="UIDMFragList.cpp">
+      <Filter>HUD\UI\Deathmatch</Filter>
+    </ClCompile>
+    <ClCompile Include="UIDMPlayerList.cpp">
+      <Filter>HUD\UI\Deathmatch</Filter>
+    </ClCompile>
+    <ClCompile Include="UIGameDM.cpp">
+      <Filter>HUD\UI\Deathmatch</Filter>
+    </ClCompile>
+    <ClCompile Include="UICSFragList.cpp">
+      <Filter>HUD\UI\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="UICSPlayerList.cpp">
+      <Filter>HUD\UI\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="UIGameCS.cpp">
+      <Filter>HUD\UI\CS</Filter>
+    </ClCompile>
+    <ClCompile Include="UIBuyMenu.cpp">
+      <Filter>HUD\UI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="UICHTMenu.cpp">
+      <Filter>HUD\UI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="UIInventory.cpp">
+      <Filter>HUD\UI\Common</Filter>
+    </ClCompile>
+    <ClCompile Include="UIGameSP.cpp">
+      <Filter>HUD\UI\Single</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_CL_connect.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_CL_disconnect.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_Connect.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_Disconnect.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_Entities.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_Entity_Custom.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_balance.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_GameExport.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_IDgen.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_RPgen.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_migration.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_sls_default.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_sls_load.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_sls_save.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_perform_transfer.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_process_event.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_process_event_ownership.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_process_event_reject.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_process_spawn.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_process_update.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="xrServer_sls_clear.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Rain.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="Tracer.cpp">
+      <Filter>Effects</Filter>
+    </ClCompile>
+    <ClCompile Include="DynamicHeightMap.cpp">
+      <Filter>Effects\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_funcs.cpp">
+      <Filter>AI\AEval</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_alife.cpp">
+      <Filter>AI\ALife</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_alife_console.cpp">
+      <Filter>AI\ALife</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_alife_misc.cpp">
+      <Filter>AI\ALife</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_alife_process.cpp">
+      <Filter>AI\ALife</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_alife_server_objects.cpp">
+      <Filter>AI\ALife</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_alife_switch.cpp">
+      <Filter>AI\ALife</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_PathNodes.cpp">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Space.cpp">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_Utilities.cpp">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClCompile>
+    <ClCompile Include="AI_qNode.cpp">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_misc.cpp">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClCompile>
+    <ClCompile Include="a_star.cpp">
+      <Filter>AI\ARoute\AStar</Filter>
+    </ClCompile>
+    <ClCompile Include="a_star_interfaces.cpp">
+      <Filter>AI\ARoute\AStar</Filter>
+    </ClCompile>
+    <ClCompile Include="ai_sounds.cpp">
+      <Filter>AI\ASound</Filter>
+    </ClCompile>
+    <ClCompile Include="PHCharacter.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PHDynamicData.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PHInterpolation.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PHMovementControl.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicsShell.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="dCylinder\dCylinder.cpp">
+      <Filter>Physics</Filter>
+    </ClCompile>
+    <ClCompile Include="tri-colliderKNoOPC\dTriCallideK.cpp">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="tri-colliderKNoOPC\dTriList.cpp">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="tri-colliderknoopc\dcTriListCollider.cpp">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="StdAfx.h">
+      <Filter>Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="clsid_game.h">
+      <Filter>Kernel</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePersistent.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Group.h">
+      <Filter>Game\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="Level.h">
+      <Filter>Game\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="LevelGameDef.h">
+      <Filter>Game\Level</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerList.h">
+      <Filter>Game\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="game_base.h">
+      <Filter>Game\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="game_cl_base.h">
+      <Filter>Game\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="game_sv_base.h">
+      <Filter>Game\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="game_sv_cs.h">
+      <Filter>Game\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="game_sv_deathmatch.h">
+      <Filter>Game\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="game_sv_single.h">
+      <Filter>Game\Games</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\ai_monsters_misc.h">
+      <Filter>Game\Objects\AMonsters\ai_misc</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\ai_selector_template.h">
+      <Filter>Game\Objects\AMonsters\ai_misc</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomMonster.h">
+      <Filter>Game\Objects\AMonsters\ai_custom</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Crow\ai_crow.h">
+      <Filter>Game\Objects\AMonsters\ai_crow</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Dog\ai_dog.h">
+      <Filter>Game\Objects\AMonsters\ai_dog</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Rat\ai_rat.h">
+      <Filter>Game\Objects\AMonsters\ai_rat</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Soldier\ai_soldier.h">
+      <Filter>Game\Objects\AMonsters\ai_soldier</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Stalker\ai_stalker.h">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Stalker\ai_stalker_animations.h">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Stalker\ai_stalker_space.h">
+      <Filter>Game\Objects\AMonsters\ai_stalker</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Zombie\ai_zombie.h">
+      <Filter>Game\Objects\AMonsters\ai_zombie</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor.h">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClInclude>
+    <ClInclude Include="ActorAnimation.h">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClInclude>
+    <ClInclude Include="Actor_Flags.h">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectorBobbing.h">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClInclude>
+    <ClInclude Include="DemoActor.h">
+      <Filter>Game\Objects\_actor_demo</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="GameObject.h">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="MovementControl.h">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomDoor.h">
+      <Filter>Game\Objects\_door</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomEvent.h">
+      <Filter>Game\Objects\Events</Filter>
+    </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>Game\Objects\Inventory</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomItem.h">
+      <Filter>Game\Objects\_item</Filter>
+    </ClInclude>
+    <ClInclude Include="ItemHealth.h">
+      <Filter>Game\Objects\Items &amp; Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="xr_weapon_list.h">
+      <Filter>Game\Objects\Items &amp; Weapons</Filter>
+    </ClInclude>
+    <ClInclude Include="Grenade.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="Missile.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapon.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponAmmo.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponAutoRifle.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponCustomPistol.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponHUD.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponMagazined.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponPistol.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Custom Weapon</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponM134.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon M134</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponRail.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Rail</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponProtecta.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Protecta</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectorNoise.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Effectors</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectorRecoil.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Effectors</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectorShot.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Effectors</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponAK74.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon AK74</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponLR300.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\LR300</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponFN2000.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\FN2000</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponHPSA.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\HPSA</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponPM.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\PM</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponFORT.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\FORT</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponBinoculars.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Binocular</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponShotgun.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Shotgun</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponSVD.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\SVD</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponSVU.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\SVU</Filter>
+    </ClInclude>
+    <ClInclude Include="Bolt.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Bolt</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponRPG7.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\RPG7</Filter>
+    </ClInclude>
+    <ClInclude Include="F1.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Grenade F1</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomTarget.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetAssault.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetCS.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetCSBase.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="TargetCSCask.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Target</Filter>
+    </ClInclude>
+    <ClInclude Include="MercuryBall.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Artifacts\Mercury Ball</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomDetector.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Detectors</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleDetector.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Detectors\Simple Detector</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomLift.h">
+      <Filter>Game\Objects\_lift</Filter>
+    </ClInclude>
+    <ClInclude Include="Spectator.h">
+      <Filter>Game\Objects\Spectator</Filter>
+    </ClInclude>
+    <ClInclude Include="Car.h">
+      <Filter>Game\Objects\Vehicles\Car</Filter>
+    </ClInclude>
+    <ClInclude Include="Flyer.h">
+      <Filter>Game\Objects\Vehicles\_helicopter</Filter>
+    </ClInclude>
+    <ClInclude Include="CustomZone.h">
+      <Filter>Game\Objects\Zones</Filter>
+    </ClInclude>
+    <ClInclude Include="MosquitoBald.h">
+      <Filter>Game\Objects\Zones\MosquitoBald</Filter>
+    </ClInclude>
+    <ClInclude Include="Mincer.h">
+      <Filter>Game\Objects\Zones\Mincer</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMtlLib.h">
+      <Filter>Game\Game Materials</Filter>
+    </ClInclude>
+    <ClInclude Include="ContextMenu.h">
+      <Filter>HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="HUDCursor.h">
+      <Filter>HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="HUDManager.h">
+      <Filter>HUD</Filter>
+    </ClInclude>
+    <ClInclude Include="HitMarker.h">
+      <Filter>HUD\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UI.h">
+      <Filter>HUD\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UICursor.h">
+      <Filter>HUD\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIGroup.h">
+      <Filter>HUD\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIHealth.h">
+      <Filter>HUD\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIWeapon.h">
+      <Filter>HUD\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIZoneMap.h">
+      <Filter>HUD\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UICustomItem.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UICustomMenu.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UIDynamicItem.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UIFrameRect.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UIGameCustom.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UIIcon.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UIListBox.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UIStaticItem.h">
+      <Filter>HUD\UI\Custom</Filter>
+    </ClInclude>
+    <ClInclude Include="UIDMFragList.h">
+      <Filter>HUD\UI\Deathmatch</Filter>
+    </ClInclude>
+    <ClInclude Include="UIDMPlayerList.h">
+      <Filter>HUD\UI\Deathmatch</Filter>
+    </ClInclude>
+    <ClInclude Include="UIGameDM.h">
+      <Filter>HUD\UI\Deathmatch</Filter>
+    </ClInclude>
+    <ClInclude Include="UICSFragList.h">
+      <Filter>HUD\UI\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="UICSPlayerList.h">
+      <Filter>HUD\UI\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="UIGameCS.h">
+      <Filter>HUD\UI\CS</Filter>
+    </ClInclude>
+    <ClInclude Include="UIBuyMenu.h">
+      <Filter>HUD\UI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="UICHTMenu.h">
+      <Filter>HUD\UI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="UIInventory.h">
+      <Filter>HUD\UI\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="UIGameSP.h">
+      <Filter>HUD\UI\Single</Filter>
+    </ClInclude>
+    <ClInclude Include="NET_Queue.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="NET_utils.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="PropertiesListTypes.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="xrMessages.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="xrServer.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="xrServer_Entities.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="xrServer_Entity_Custom.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Rain.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="Tracer.h">
+      <Filter>Effects</Filter>
+    </ClInclude>
+    <ClInclude Include="DynamicHeightMap.h">
+      <Filter>Effects\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_commands.h">
+      <Filter>AI</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_funcs.h">
+      <Filter>AI\AEval</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_a_star.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_cross_table.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_graph.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_interfaces.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_objects.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_predicates.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_registries.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_server_objects.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_space.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_alife_templates.h">
+      <Filter>AI\ALife</Filter>
+    </ClInclude>
+    <ClInclude Include="AI_Console.h">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClInclude>
+    <ClInclude Include="AI_PathNodes.h">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClInclude>
+    <ClInclude Include="AI_Space.h">
+      <Filter>AI\ARoute\ASpace</Filter>
+    </ClInclude>
+    <ClInclude Include="a_star.h">
+      <Filter>AI\ARoute\AStar</Filter>
+    </ClInclude>
+    <ClInclude Include="a_star_interfaces.h">
+      <Filter>AI\ARoute\AStar</Filter>
+    </ClInclude>
+    <ClInclude Include="a_star_template.h">
+      <Filter>AI\ARoute\AStar</Filter>
+    </ClInclude>
+    <ClInclude Include="ai_sounds.h">
+      <Filter>AI\ASound</Filter>
+    </ClInclude>
+    <ClInclude Include="ExtendedGeom.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PHCharacter.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PHDynamicData.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PHInterpolation.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PHMovementControl.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PHObject.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicsShell.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="_cylinder.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="dCylinder\dCylinder.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="tri-colliderKNoOPC\__aabb_tri.h">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="tri-colliderKNoOPC\dTriCollideK.h">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="tri-colliderKNoOPC\dTriList.h">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="tri-colliderKNoOPC\dcTriListCollider.h">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="tri-colliderKNoOPC\dxTriList.h">
+      <Filter>Physics\Tri-Collider</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shedule.txt" />
+    <None Include="System.ltx" />
+    <None Include="notes.txt" />
+    <None Include="todo.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="DummyObject.h">
+      <Filter>Game\Objects\_dummy</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
