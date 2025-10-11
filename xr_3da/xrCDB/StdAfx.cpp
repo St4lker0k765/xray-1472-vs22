@@ -9,7 +9,7 @@
 	#pragma comment(lib,"winmm.lib")
     #pragma warning(W8022,false)
 #else
-	#pragma comment(lib,"x:\\xrCore")
+	#pragma comment(lib,"xrCore")
 	#pragma comment(lib,"winmm")
 #endif
 // TODO: reference any additional headers you need in STDAFX.H

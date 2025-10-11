@@ -456,7 +456,7 @@ bool AABBQuantizedTree::Build(AABBTree* tree)
 
 		// Quantize
 		udword Data;
-		for(i=0;i<mNbNodes;i++)
+		for(udword i=0;i<mNbNodes;i++)
 		{
 			PERFORM_QUANTIZATION
 			REMAP_DATA(mData)
@@ -532,7 +532,7 @@ bool AABBQuantizedNoLeafTree::Build(AABBTree* tree)
 
 		// Quantize
 		udword Data;
-		for(i=0;i<mNbNodes;i++)
+		for(udword i=0;i<mNbNodes;i++)
 		{
 			PERFORM_QUANTIZATION
 			REMAP_DATA(mData)

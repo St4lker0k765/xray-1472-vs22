@@ -50,9 +50,9 @@
 
 // TODO: reference additional headers your program requires here
 
-#pragma comment( lib, "x:\\xrCore.lib"	)
-#pragma comment( lib, "x:\\xrCDB.lib"	)
-#pragma comment( lib, "x:\\xrSound.lib"	)
+#pragma comment( lib, "xrCore.lib"	)
+#pragma comment( lib, "xrCDB.lib"	)
+#pragma comment( lib, "xrSound.lib"	)
 
 #pragma comment( lib, "winmm.lib"		)
 

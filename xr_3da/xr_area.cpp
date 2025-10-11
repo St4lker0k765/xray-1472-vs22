@@ -230,13 +230,13 @@ void CObjectSpace::dbgRender()
 	}
 	q_debug.boxes.clear();
 
-	for (i=0; i<dbg_E.size(); i++)
+	for (u32 i=0; i<dbg_E.size(); i++)
 	{
 		RCache.dbg_DrawEllipse(dbg_E[i],D3DCOLOR_XRGB(0,255,0));
 	}
 	dbg_E.clear();
 
-	for (i=0; i<dbg_S.size(); i++)
+	for (u32 i=0; i<dbg_S.size(); i++)
 	{
 		pair<Fsphere,u32>& P = dbg_S[i];
 		Fsphere&	S = P.first;
@@ -260,7 +260,7 @@ void CObjectSpace::dbgRender()
 		for (int z=0; z<Dynamic.z_count; z++){
 			c.set(-Static_Shift.x+cl*x+cl_2,0.1f,-Static_Shift.z+cl*z+cl_2);
 			BOOL B=FALSE;
-			for (i=0; i<dbg_Slot.size(); i++){
+			for (u32 i=0; i<dbg_Slot.size(); i++){
 				B=fsimilar(dbg_Slot[i].x,float(x))&&(fsimilar(dbg_Slot[i].y,float(z)));
 				if (B) break;
 			}

@@ -13,8 +13,8 @@
     #pragma comment(lib,	"dsound.lib" 		)
     #pragma comment(lib,	"msacm32.lib"		)
 #else
-    #pragma comment(lib,	"x:\\xrCore"		)
-    #pragma comment(lib,	"x:\\xrCDB"			)
+    #pragma comment(lib,	"xrCore"		)
+    #pragma comment(lib,	"xrCDB"			)
     #pragma comment(lib,	"dsound"			)
     #pragma comment(lib,	"msacm32"			)
 #endif

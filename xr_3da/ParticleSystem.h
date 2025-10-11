@@ -210,7 +210,7 @@ struct ENGINE_API SDef: public SParams
 			strlwr(m_Computer);
 
 			// Time
-			_tzset(); time( (long*)&m_dwCreationTime );
+			_tzset(); time( (long long*)&m_dwCreationTime );
 			return true;
 		}
 		return false;
