@@ -1,0 +1,40 @@
+#include "stdafx.h"
+
+#include "blender_deffer_flat.h"
+#include "blender_screen_set.h"
+#include "blender_tree.h"
+#include "blender_detail_still.h"
+
+CBlender*	CRender::blender_create	(CLASS_ID cls)
+{	
+	switch (cls)
+	{
+	case B_DEFAULT:			return xr_new<CBlender_deffer_flat>		();		
+	case B_DEFAULT_AREF:	return xr_new<CBlender_deffer_flat>		();
+	case B_VERT:			return xr_new<CBlender_deffer_flat>		();
+	case B_VERT_AREF:		return xr_new<CBlender_deffer_flat>		();
+	case B_SCREEN_SET:		return xr_new<CBlender_Screen_SET>		();	
+	case B_SCREEN_GRAY:		return 0;
+	case B_EDITOR_WIRE:		return 0;
+	case B_EDITOR_SEL:		return 0;
+	case B_LIGHT:			return 0;
+	case B_LmBmmD:			return 0;
+	case B_LaEmB:			return 0;
+	case B_LmEbB:			return 0;
+	case B_B:				return 0;
+	case B_BmmD:			return 0;
+	case B_SHADOW_TEX:		return 0;
+	case B_SHADOW_WORLD:	return 0;
+	case B_BLUR:			return 0;
+	case B_MODEL:			return xr_new<CBlender_deffer_flat>		();		
+	case B_MODEL_EbB:		return xr_new<CBlender_deffer_flat>		();	
+	case B_DETAIL:			return xr_new<CBlender_Detail_Still>	();	
+	case B_TREE:			return xr_new<CBlender_Tree>			();	
+	}
+	return 0;
+}
+
+void		CRender::blender_destroy(CBlender* &B)
+{
+	xr_delete(B);
+}

@@ -1,0 +1,615 @@
+#include "stdafx.h"
+#pragma hdrstop
+
+#include "LeftBar.h"
+#include "BottomBar.h"
+#include "UI_Main.h"
+#include "main.h"
+#include "UI_Tools.h"
+#include "FolderLib.h"
+#include "EditObject.h"
+#include "Motion.h"
+#include "PropertiesList.h"
+#include "BonePart.h"
+#include "FolderLib.h"
+#include "NumericVector.h"
+//---------------------------------------------------------------------------
+#pragma package(smart_init)
+#pragma link "ExtBtn"
+#pragma link "MxMenus"
+#pragma link "mxPlacemnt"
+#pragma link "ElTree"
+#pragma link "ElXPThemedControl"
+#pragma link "ElTreeAdvEdit"
+#pragma link "ElPgCtl"
+#pragma link "MXCtrls"
+#pragma resource "*.dfm"
+TfraLeftBar *fraLeftBar;
+
+#define MIN_PANEL_HEIGHT 15
+//---------------------------------------------------------------------------
+void __fastcall PanelMinimizeClick(TObject *Sender)
+{
+    TPanel* pa = ((TPanel*)((TControl*)Sender)->Parent);
+    if (pa->Tag > 0){
+        pa->Height = pa->Tag;
+        pa->Tag    = 0;
+    }else{
+        pa->Tag    = pa->Height;
+        pa->Height = MIN_PANEL_HEIGHT;
+    }
+    UI.Command(COMMAND_UPDATE_TOOLBAR);
+}
+void __fastcall PanelMaximizeOnlyClick(TObject *Sender)
+{
+    TPanel* pa = ((TPanel*)((TControl*)Sender)->Parent);
+    if (pa->Tag > 0){
+        pa->Height = pa->Tag;
+        pa->Tag    = 0;
+    }
+    UI.Command(COMMAND_UPDATE_TOOLBAR);
+}
+
+LPCSTR TfraLeftBar::FirstRecentFile()
+{
+	if (miRecentFiles->Count>0)
+    	return miRecentFiles->Items[0]->Caption.c_str();
+    return 0;
+}
+
+//---------------------------------------------------------------------------
+__fastcall TfraLeftBar::TfraLeftBar(TComponent* Owner)
+        : TFrame(Owner)
+{
+	DEFINE_INI(fsStorage);
+
+    InplaceParticleEdit->Editor->Color		= TColor(0x00A0A0A0);
+    InplaceParticleEdit->Editor->BorderStyle= bsNone;
+    frmMain->paLeftBar->Width = paLeftBar->Width+2;
+    frmMain->sbToolsMin->Left = paLeftBar->Width-frmMain->sbToolsMin->Width-3;
+
+    for (int i=5; i>=0; i--)
+    {
+		AnsiString recent_fn= fsStorage->ReadString	(AnsiString("RecentFiles")+AnsiString(i),"");
+        if (!recent_fn.IsEmpty()) AppendRecentFile(recent_fn.c_str());
+    }
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::AppendRecentFile(LPCSTR name)
+{
+	R_ASSERT(miRecentFiles->Count<=5);
+
+	for (int i = 0; i < miRecentFiles->Count; i++)
+    	if (miRecentFiles->Items[i]->Caption==name){
+        	miRecentFiles->Items[i]->MenuIndex = 0;
+            return;
+		}
+
+	if (miRecentFiles->Count==5) miRecentFiles->Remove(miRecentFiles->Items[4]);
+
+    TMenuItem *MI = xr_new<TMenuItem>((TComponent*)0);
+    MI->Caption = name;
+    MI->OnClick = miRecentFilesClick;
+    MI->Tag		= 0x1001;
+    miRecentFiles->Insert(0,MI);
+
+    miRecentFiles->Enabled = true;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::miRecentFilesClick(TObject *Sender)
+{
+	TMenuItem* MI = dynamic_cast<TMenuItem*>(Sender); R_ASSERT(MI&&(MI->Tag==0x1001));
+    AnsiString fn = MI->Caption;
+    if (FS.exist(fn.c_str()))	UI.Command(COMMAND_LOAD,(u32)fn.c_str());
+    else						ELog.DlgMsg(mtError, "Error reading file '%s'",fn.c_str());
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TfraLeftBar::fsStorageSavePlacement(TObject *Sender)
+{
+    Tools.m_ObjectProps->SaveParams(fsStorage);
+    Tools.m_MotionProps->SaveParams(fsStorage);
+    Tools.m_PreviewObject.SaveParams(fsStorage);
+	for (int i = 0; i < miRecentFiles->Count; i++)
+	{
+		TMenuItem* MI = miRecentFiles->Items[i];
+		fsStorage->WriteString(AnsiString("RecentFiles")+AnsiString(i),MI->Caption);
+    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::fsStorageRestorePlacement(TObject *Sender)
+{
+    Tools.m_ObjectProps->RestoreParams(fsStorage);
+    Tools.m_MotionProps->RestoreParams(fsStorage);
+    Tools.m_PreviewObject.RestoreParams(fsStorage);
+}
+//---------------------------------------------------------------------------
+
+void UpdatePanel(TPanel* p){
+    if (p){
+        for (int j=0; j<p->ControlCount; j++){
+            TExtBtn* btn = dynamic_cast<TExtBtn *>(p->Controls[j]);
+            if (btn) btn->UpdateMouseInControl();
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::UpdateBar(){
+    int i, j;
+    for (i=0; i<fraLeftBar->ComponentCount; i++){
+        TComponent* temp = fraLeftBar->Components[i];
+        if (dynamic_cast<TExtBtn *>(temp) != NULL)
+            ((TExtBtn*)temp)->UpdateMouseInControl();
+    }
+    if (ebRenderEngineStyle->Down){
+    	ebMakePreview->Enabled = Tools.IsModified();
+	    if (!Tools.IsVisualPresent()) SetRenderStyle(false);
+    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebSaveClick(TObject *Sender)
+{
+	UI.Command( COMMAND_SAVE );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Refresh1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_REFRESH_TEXTURES );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Checknewtextures1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_CHECK_TEXTURES );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ImageEditor1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_IMAGE_EDITOR );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::PanelMimimizeClick(TObject *Sender)
+{
+    PanelMinimizeClick(Sender);
+    UpdateBar();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::PanelMaximizeClick(TObject *Sender)
+{
+    PanelMaximizeOnlyClick(Sender);
+    UpdateBar();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebEditorPreferencesClick(TObject *Sender)
+{
+	UI.Command(COMMAND_EDITOR_PREF);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebMakePreviewClick(TObject *Sender)
+{
+	UI.Command( COMMAND_MAKE_PREVIEW );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebResetAnimationClick(TObject *Sender)
+{
+	UI.Command( COMMAND_RESET_ANIMATION );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebActorMotionsFileMouseDown(TObject *Sender,
+      TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+	FHelper.ShowPPMenu(pmMotionsFile,dynamic_cast<TExtBtn*>(Sender));
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebSceneFileMouseDown(TObject *Sender,
+      TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+	FHelper.ShowPPMenu(pmSceneFile,dynamic_cast<TExtBtn*>(Sender));
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebSceneCommands1MouseDown(TObject *Sender,
+      TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+	FHelper.ShowPPMenu(pmImages,dynamic_cast<TExtBtn*>(Sender));
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebPreviewObjectClickMouseDown(TObject *Sender,
+      TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+	FHelper.ShowPPMenu(pmPreviewObject,dynamic_cast<TExtBtn*>(Sender));
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::tvMotionsMouseDown(TObject *Sender,
+      TMouseButton Button, TShiftState Shift, int X, int Y)
+{
+	if (Button==mbRight)	FHelper.ShowPPMenu(pmShaderList,dynamic_cast<TExtBtn*>(Sender));
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::ClearMotionList(){
+	tvMotions->Items->Clear();
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::AddMotion(LPCSTR full_name, bool bLoadMode){
+	TElTreeItem* node = FHelper.AppendObject(tvMotions,full_name);
+    if (!bLoadMode){
+	    if (node&&node->Parent) node->Parent->Expand(false);
+    	node->Selected = true;
+		tvMotions->Selected = node;
+    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::CreateFolder1Click(TObject *Sender)
+{
+	AnsiString folder;
+    AnsiString start_folder;
+    FHelper.MakeName(tvMotions->Selected,0,start_folder,true);
+    FHelper.GenerateFolderName(tvMotions,tvMotions->Selected,folder);
+    folder = start_folder+folder;
+	TElTreeItem* node = FHelper.AppendFolder(tvMotions,folder.c_str());
+    if (tvMotions->Selected) tvMotions->Selected->Expand(false);
+    tvMotions->EditItem(node,-1);
+	Tools.MotionModified();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ExpandAll1Click(TObject *Sender)
+{
+	tvMotions->FullExpand();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::CollapseAll1Click(TObject *Sender)
+{
+	tvMotions->FullCollapse();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebMotionsRemoveClick(TObject *Sender)
+{
+    TElTreeItem* pNode = tvMotions->Selected;
+    if (pNode){
+		AnsiString full_name;
+    	if (FHelper.IsFolder(pNode)){
+	        if (ELog.DlgMsg(mtConfirmation, "Delete selected folder?") == mrYes){
+		        for (TElTreeItem* item=pNode->GetFirstChild(); item&&(item->Level>pNode->Level); item=item->GetNext()){
+                    FHelper.MakeName(item,0,full_name,false);
+                	if (FHelper.IsObject(item)) Tools.RemoveMotion(full_name.c_str());
+                }
+//				Tools.ResetCurrentPS();
+	            pNode->Delete();
+                Tools.MotionModified();
+        	}
+        }
+    	if (FHelper.IsObject(pNode)){
+	        if (ELog.DlgMsg(mtConfirmation, "Delete selected item?") == mrYes){
+				FHelper.MakeName(pNode,0,full_name,false);
+	            Tools.RemoveMotion(full_name.c_str());
+//				Tools.ResetCurrentPS();
+	            pNode->Delete();
+                Tools.MotionModified();
+        	}
+        }
+    }else{
+		ELog.DlgMsg(mtInformation, "At first select item.");
+    }
+	lbMotionCount->Caption = tvMotions->Items->Count;	
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebMotionsClearClick(TObject *Sender)
+{
+	if (Tools.CurrentObject()){
+    	CEditableObject* object=Tools.CurrentObject();
+    	object->ClearSMotions();
+        UpdateMotionList();
+		Tools.MotionModified();
+		lbMotionCount->Caption = tvMotions->Items->Count;	
+    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::tvMotionsItemFocused(TObject *Sender)
+{
+	AnsiString name;
+    FHelper.MakeName(tvMotions->Selected, 0, name, false);
+	Tools.SetCurrentMotion(name.c_str());
+	UpdateMotionProperties();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::tvMotionsKeyDown(TObject *Sender, WORD &Key,
+      TShiftState Shift)
+{
+	if (Key==VK_DELETE) ebMotionsRemoveClick(Sender);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Rename1Click(TObject *Sender)
+{
+	TElTreeItem* node = tvMotions->Selected;
+    if (node) tvMotions->EditItem(node,-1);
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TfraLeftBar::InplaceParticleEditValidateResult(
+      TObject *Sender, bool &InputValid)
+{
+	TElTreeInplaceAdvancedEdit* IE=InplaceParticleEdit;
+
+    AnsiString new_text = AnsiString(IE->Editor->Text).LowerCase();
+    IE->Editor->Text = new_text;
+
+    TElTreeItem* node = IE->Item;
+    for (TElTreeItem* item=node->GetFirstSibling(); item; item=item->GetNextSibling()){
+        if ((item->Text==new_text)&&(item!=IE->Item)){
+            InputValid = false;
+            return;
+        }
+    }
+    AnsiString full_name;
+    if (FHelper.IsFolder(node)){
+        for (item=node->GetFirstChild(); item&&(item->Level>node->Level); item=item->GetNext()){
+            if (FHelper.IsObject(item)){
+                FHelper.MakeName(item,0,full_name,false);
+                Tools.RenameMotion(full_name.c_str(),new_text.c_str());//,node->Level);
+            }
+        }
+    }else if (FHelper.IsObject(node)){
+        FHelper.MakeName(node,0,full_name,false);
+        Tools.RenameMotion(full_name.c_str(),new_text.c_str());//,node->Level);
+    }
+	Tools.MotionModified();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebMotionsAppendClick(TObject *Sender)
+{
+    AnsiString folder,nm,fnames,full_name;
+    if (EFS.GetOpenName("$smotion$",fnames,true)){
+	    AStringVec lst;
+    	_SequenceToList(lst,fnames.c_str());
+        tvMotions->IsUpdating = true;
+        for (AStringIt it=lst.begin(); it!=lst.end(); it++){
+            TElTreeItem* node=0;
+            if (tvMotions->Selected&&FHelper.IsFolder(tvMotions->Selected))
+                node = tvMotions->Selected;
+            FHelper.MakeName(node,0,folder,true);
+            FHelper.GenerateObjectName(tvMotions,node,nm,ChangeFileExt(ExtractFileName(*it),"").c_str());
+            full_name = AnsiString(folder+nm).LowerCase();
+            if (Tools.AppendMotion(full_name.c_str(),it->c_str())){
+                tvMotions->Selected = FHelper.AppendObject(tvMotions,full_name.c_str());
+                Tools.MotionModified();
+            }
+        }
+        tvMotions->IsUpdating = false;
+        tvMotions->EnsureVisibleBottom(tvMotions->Selected);
+    }
+	lbMotionCount->Caption = tvMotions->Items->Count;	
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::tvMotionsStartDrag(TObject *Sender,
+      TDragObject *&DragObject)
+{
+	FHelper.StartDrag(Sender,DragObject);
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::tvMotionsDragOver(TObject *Sender,
+      TObject *Source, int X, int Y, TDragState State, bool &Accept)
+{
+	FHelper.DragOver(Sender,Source,X,Y,State,Accept);
+}
+//---------------------------------------------------------------------------
+void __fastcall TfraLeftBar::RenameItem(LPCSTR p0, LPCSTR p1)
+{
+    Tools.RenameMotion((LPCSTR)p0,(LPCSTR)p1);
+    Tools.MotionModified();
+}
+//---------------------------------------------------------------------------
+void __fastcall TfraLeftBar::tvMotionsDragDrop(TObject *Sender,
+      TObject *Source, int X, int Y)
+{
+	FHelper.DragDrop(Sender,Source,X,Y,RenameItem);
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::UpdateMotionList()
+{
+	tvMotions->Items->Clear();
+    if (Tools.CurrentObject()){
+		SMotionVec&	lst=Tools.CurrentObject()->SMotions();
+    	for (SMotionIt it=lst.begin(); it!=lst.end(); it++)
+        	FHelper.AppendObject(tvMotions,(*it)->Name());
+    }
+    UpdateProperties();
+	lbMotionCount->Caption = tvMotions->Items->Count;	
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::UpdateProperties()
+{
+	if (Tools.CurrentObject()){
+    	paObjectProperties->Enabled = true;
+        Tools.FillObjectProperties();
+        Tools.FillMotionProperties();
+    }else{
+    	paObjectProperties->Enabled = false;
+    }
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::UpdateMotionProperties()
+{
+	if (Tools.CurrentObject()){
+        Tools.FillMotionProperties();
+        CSMotion* M=Tools.CurrentObject()->GetActiveSMotion();
+        if (M){
+			lbCurFrames->Caption 	= M->Length();
+            lbCurFPS->Caption 		= AnsiString().sprintf("%3.1f",M->FPS());
+        }else{
+			lbCurFrames->Caption 	= "...";
+            lbCurFPS->Caption 		= "...";
+        }
+    }
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebCurrentPlayClick(TObject *Sender)
+{
+	Tools.PlayMotion();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebCurrentStopClick(TObject *Sender)
+{
+	Tools.StopMotion();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebCurrentPauseClick(TObject *Sender)
+{
+	Tools.PauseMotion();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Import1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_IMPORT );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Load1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_LOAD );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Clear1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_CLEAR );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Save2Click(TObject *Sender)
+{
+	UI.Command( COMMAND_SAVE );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::SaevAs1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_SAVEAS );
+}
+//---------------------------------------------------------------------------
+
+
+void __fastcall TfraLeftBar::ebBonePartClick(TObject *Sender)
+{
+	if (frmBonePart->Run(Tools.CurrentObject()))
+		UpdateMotionProperties();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::LoadClick(TObject *Sender)
+{
+	UI.Command( COMMAND_LOAD_MOTIONS );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::miSaveMotionsClick(TObject *Sender)
+{
+	UI.Command( COMMAND_SAVE_MOTIONS );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::miExportSkeletonClick(TObject *Sender)
+{
+	UI.Command( COMMAND_EXPORT_SKELETON );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::miExportObjectClick(TObject *Sender)
+{
+	UI.Command( COMMAND_EXPORT_OBJECT );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebRenderStyleClick(TObject *Sender)
+{
+	if (Sender==ebRenderEngineStyle){
+		if (!Tools.IsVisualPresent()) UI.Command( COMMAND_MAKE_PREVIEW );
+        if (!Tools.IsVisualPresent()) SetRenderStyle(false);
+        else						  SetRenderStyle(true);
+    }
+}
+//---------------------------------------------------------------------------
+
+void TfraLeftBar::SetRenderStyle(bool bEngineStyle)
+{
+    if (Tools.IsVisualPresent()&&bEngineStyle) 	ebRenderEngineStyle->Down = true;
+    else 										ebRenderEditorStyle->Down = true;
+	Tools.PlayMotion();
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Custom1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_SELECT_PREVIEW_OBJ, false );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::none1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_SELECT_PREVIEW_OBJ, true );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::Preferences1Click(TObject *Sender)
+{
+	UI.Command( COMMAND_PREVIEW_OBJ_PREF );
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::SkeletonPartEnabled(bool bFlag)
+{
+	paSkeletonPart->Visible = bFlag;
+    spProps->Visible = bFlag;
+}
+//---------------------------------------------------------------------------
+
+void __fastcall TfraLeftBar::ebRotateMotionClick(TObject *Sender)
+{
+	Fvector R;
+    CSMotion* M = Tools.GetCurrentMotion();
+	if (M&&NumericVectorRun("Rotate motion",&R,1,0,0,0,0,0)){
+    	R.x = deg2rad(R.x);
+    	R.y = deg2rad(R.y);
+    	R.z = deg2rad(R.z);
+    	Tools.WorldMotionRotate(R);
+    }
+}
+//---------------------------------------------------------------------------
+
