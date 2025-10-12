@@ -14,8 +14,8 @@ class CGameObject : public CObject
 #endif
 	*/
 {
-	typedef CObject inherited;
 public:
+	typedef CObject inherited;
 	// AI connection
 	u32											AI_NodeID;
 	NodeCompressed*								AI_Node;

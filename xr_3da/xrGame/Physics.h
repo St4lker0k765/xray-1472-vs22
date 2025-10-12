@@ -26,7 +26,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////
 
 class CPHJeep {
-	dGeomID GeomsGroup;
+	dSpaceID GeomsGroup;
 	static const	u32 NofGeoms=8;
 	static const	u32 NofBodies=5;
 	static const	u32 NofJoints=4;
@@ -209,7 +209,7 @@ class CPHElement:  public CPhysicsElement {
 	dMass					m_mass;
 	dSpaceID				m_space;
 	dBodyID					m_body;
-	dGeomID					m_group;
+	dSpaceID					m_group;
 ///////////////////////////////
 	vector<CPHElement*>		m_attached_elements;
 	CPHElement				*m_parent_element;
@@ -244,9 +244,9 @@ static Shader*			hWallmark;
 ContactCallbackFun*			contact_callback;
 ////////////////////////////
 private:
-	void			create_Sphere				(const Fsphere&		V);
-	void			create_Box					(const Fobb&		V);
-	void			create_Cylinder				(const Fcylinder&	V);
+	dGeomID 			create_Sphere				(const Fsphere&		V);
+	dGeomID 			create_Box					(const Fobb&		V);
+	dGeomID  			create_Cylinder				(const Fcylinder&	V);
 
 	void			calculate_it_data			(const Fvector& mc,float mass);
 	void			calculate_it_data_use_density(const Fvector& mc,float density);

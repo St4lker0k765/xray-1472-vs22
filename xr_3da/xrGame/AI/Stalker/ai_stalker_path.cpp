@@ -165,7 +165,7 @@ void CAI_Stalker::vfBuildTravelLine(Fvector *tpDestinationPosition)
 		AI_Path.Nodes.clear		();
 		
 		AI::CTravelNode	T;
-		for (i=1; i<N; i++) {
+		for (u32 i=1; i<N; i++) {
 			m_tpaLine.clear();
 			m_tpaLine.push_back(m_tpaPoints[i-1]);
 			m_tpaLine.push_back(m_tpaPoints[i]);
@@ -436,10 +436,13 @@ void CAI_Stalker::vfFindAllSuspiciousNodes(u32 StartNode, Fvector tPointPosition
 			mk_rotation(tDirection,tRotation);
 			float fCost = ffGetCoverInDirection(tRotation.yaw,T);
 			
-			if (fCost < .6f) {
-				bool bOk = false;
+			if (fCost < .35f)
+			{
+				bool  bOk = false;
 				float fMax = 0.f;
-				for (int i=0, iIndex = -1; i<(int)Group.m_tpaSuspiciousNodes.size(); i++) {
+				int   iIndex = -1;
+
+				for (int i = 0; i < (int)Group.m_tpaSuspiciousNodes.size(); ++i) {
 					Fvector tP0 = AI.tfGetNodeCenter(Group.m_tpaSuspiciousNodes[i].dwNodeID);
 					float fDistance = tP0.distance_to(tNodePosition);
 					if (fDistance < 10.f) {
@@ -451,10 +454,10 @@ void CAI_Stalker::vfFindAllSuspiciousNodes(u32 StartNode, Fvector tPointPosition
 							bOk = true;
 							break;
 						}
-						tDirection.sub(tP0,tNodePosition);
+						tDirection.sub(tP0, tNodePosition);
 						tDirection.normalize_safe();
-						mk_rotation(tDirection,tRotation);
-						if (ffGetCoverInDirection(tRotation.yaw,T) > .3f) {
+						mk_rotation(tDirection, tRotation);
+						if (ffGetCoverInDirection(tRotation.yaw, T) > .3f) {
 							if (fCost < Group.m_tpaSuspiciousNodes[i].fCost) {
 								Group.m_tpaSuspiciousNodes[i].dwNodeID = Test;
 								Group.m_tpaSuspiciousNodes[i].fCost = fCost;
@@ -463,24 +466,24 @@ void CAI_Stalker::vfFindAllSuspiciousNodes(u32 StartNode, Fvector tPointPosition
 							break;
 						}
 					}
-					if (fCost > fMax) {
+					if (Group.m_tpaSuspiciousNodes[i].fCost > fMax) {
 						fMax = Group.m_tpaSuspiciousNodes[i].fCost;
 						iIndex = i;
 					}
 				}
+
 				if (!bOk) {
 					if (Group.m_tpaSuspiciousNodes.size() < MAX_SUSPICIOUS_NODE_COUNT) {
-						tSearchPlace.dwNodeID	= Test;
-						tSearchPlace.fCost		= fCost;
-						tSearchPlace.dwSearched	= 0;
-						tSearchPlace.dwGroup	= 0;
+						tSearchPlace.dwNodeID = Test;
+						tSearchPlace.fCost = fCost;
+						tSearchPlace.dwSearched = 0;
+						tSearchPlace.dwGroup = 0;
 						Group.m_tpaSuspiciousNodes.push_back(tSearchPlace);
 					}
-					else
-						if ((fMax > fCost) && (iIndex >= 0)) {
-							Group.m_tpaSuspiciousNodes[iIndex].dwNodeID = Test;
-							Group.m_tpaSuspiciousNodes[iIndex].fCost = fCost;
-						}
+					else if ((fMax > fCost) && (iIndex >= 0)) {
+						Group.m_tpaSuspiciousNodes[iIndex].dwNodeID = Test;
+						Group.m_tpaSuspiciousNodes[iIndex].fCost = fCost;
+					}
 				}
 			}
 		}
@@ -507,17 +510,21 @@ void CAI_Stalker::vfFindAllSuspiciousNodes(u32 StartNode, Fvector tPointPosition
 void CAI_Stalker::vfClasterizeSuspiciousNodes(CGroup &Group)
 {
  	u32 N = Group.m_tpaSuspiciousNodes.size();
-	for (int i=0, iGroupCounter = 1; i<(int)N; i++, iGroupCounter++) {
+
+	int i = 0;
+	int iGroupCounter = 1;
+
+	for (i=0, iGroupCounter = 1; i<(int)N; i++, iGroupCounter++) {
 		if (!Group.m_tpaSuspiciousNodes[i].dwGroup) 
 			Group.m_tpaSuspiciousNodes[i].dwGroup = iGroupCounter;
 		for (int j=0; j<(int)N; j++)
 			if (!Group.m_tpaSuspiciousNodes[j].dwGroup && (getAI().ffGetDistanceBetweenNodeCenters(Group.m_tpaSuspiciousNodes[j].dwNodeID,Group.m_tpaSuspiciousNodes[i].dwNodeID) < GROUP_RADIUS))
 				Group.m_tpaSuspiciousNodes[j].dwGroup = iGroupCounter;
 	}
-	for ( i=0; i<(int)N; i++)
+	for (i=0; i<(int)N; i++)
 		Group.m_tpaSuspiciousNodes[i].dwGroup--;
 	Group.m_tpaSuspiciousGroups.resize(--iGroupCounter);
-	for ( i=0; i<iGroupCounter; i++)
+	for (i=0; i<iGroupCounter; i++)
 		Group.m_tpaSuspiciousGroups[i] = 0;
 }
 
@@ -553,7 +560,10 @@ void CAI_Stalker::vfChooseSuspiciousNode(IBaseAI_NodeEvaluator &tSelector)
 		}
 	}
 	else {
-		for (int i=0, iCount = 0; i<(int)Group.m_tpaSuspiciousNodes.size(); i++)
+		int i = 0;
+		int iCount = 0;
+
+		for (i=0, iCount = 0; i<(int)Group.m_tpaSuspiciousNodes.size(); i++)
 			if (Group.m_tpaSuspiciousNodes[i].dwSearched != 2) {
 				if ((Group.m_tpaSuspiciousNodes[i].dwNodeID == AI_NodeID) || bfCheckForNodeVisibility(Group.m_tpaSuspiciousNodes[i].dwNodeID, i == m_iCurrentSuspiciousNodeIndex))
 					Group.m_tpaSuspiciousNodes[i].dwSearched = 2;

@@ -113,8 +113,8 @@ CActor::~CActor()
 	::Sound->destroy(sndZoneDetector);
 
 	// sounds 3D
-	for (i=0; i<SND_HIT_COUNT; i++) ::Sound->destroy(sndHit[i]);
-	for (i=0; i<SND_DIE_COUNT; i++) ::Sound->destroy(sndDie[i]);
+	for (int i=0; i<SND_HIT_COUNT; i++) ::Sound->destroy(sndHit[i]);
+	for (int i=0; i<SND_DIE_COUNT; i++) ::Sound->destroy(sndDie[i]);
 
 	if(m_phSkeleton) {
 		m_phSkeleton->Deactivate();

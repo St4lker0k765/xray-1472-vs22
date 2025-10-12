@@ -174,7 +174,7 @@ public:
 
 class ENGINE_API	CCF_Shape	: public CCFModel
 {
-private:
+public:
 	union shape_data
 	{
 		Fsphere		sphere;

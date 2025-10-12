@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include "game_cl_base.h"
 
 game_cl_GameState::game_cl_GameState()
 {

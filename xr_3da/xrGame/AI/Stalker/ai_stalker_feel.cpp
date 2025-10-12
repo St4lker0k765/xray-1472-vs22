@@ -223,8 +223,10 @@ void CAI_Stalker::vfUpdateDynamicObjects()
 		
 		if (!tpEntity || !bfCheckForVisibility(tpEntity))
 			continue;
-		
-		for (int j=0; j<(int)m_tpaDynamicObjects.size(); j++)
+
+		int j = 0;
+
+		for (j=0; j<(int)m_tpaDynamicObjects.size(); j++)
 			if (tpEntity == m_tpaDynamicObjects[j].tpEntity) {
 				m_tpaDynamicObjects[j].dwTime = dwTime;
 				m_tpaDynamicObjects[j].dwUpdateCount++;

@@ -350,7 +350,7 @@ void CPathNodes::BuildTravelLine(const Fvector& current_pos)
 	}
 
 	// path building
-	for (I=0; I<Segments.size(); I++)
+	for (u32 I=0; I<Segments.size(); I++)
 	{
 		// build probe point
 		PSegment& S = Segments[I];

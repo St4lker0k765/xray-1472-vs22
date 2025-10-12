@@ -215,7 +215,7 @@ void CAI_Stalker::vfUpdateParameters(bool &A, bool &B, bool &C, bool &D, bool &E
 	
 	H = false;
 	getAI().m_tpCurrentMember = this;
-	for ( i=0, n=VisibleEnemies.size(); i<n; i++) {
+	for (int i=0, n=VisibleEnemies.size(); i<n; i++) {
 		if (!(getAI().m_tpCurrentEnemy  = dynamic_cast<CEntityAlive*>(VisibleEnemies[i].key)))
 			continue;
 		if (H	= !!getAI().pfExpediency.dwfGetDiscreteValue(2))

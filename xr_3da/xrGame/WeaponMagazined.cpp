@@ -172,7 +172,7 @@ void CWeaponMagazined::UnloadMagazine() {
 
 void CWeaponMagazined::ReloadMagazine() {
 	SwitchState(eIdle);
-	static l_lockType = false;
+	static int l_lockType = false;
 	if(!l_lockType) m_ammoName = NULL;
 	if(m_pInventory) {
 		m_pAmmo = dynamic_cast<CWeaponAmmo*>(m_pInventory->Get(m_ammoTypes[m_ammoType],!dynamic_cast<CActor*>(H_Parent())));

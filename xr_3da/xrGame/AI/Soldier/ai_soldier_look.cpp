@@ -236,8 +236,9 @@ void CAI_Soldier::vfUpdateDynamicObjects()
 		
 		if (!tpEntity || !bfCheckForVisibility(tpEntity))
 			continue;
-		
-		for (int j=0; j<(int)tpaDynamicObjects.size(); j++)
+		int j = 0;
+
+		for (j = 0; j<(int)tpaDynamicObjects.size(); j++)
 			if (tpEntity == tpaDynamicObjects[j].tpEntity) {
 				tpaDynamicObjects[j].dwTime = dwTime;
 				tpaDynamicObjects[j].dwUpdateCount++;

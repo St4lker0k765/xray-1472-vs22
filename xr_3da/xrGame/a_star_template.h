@@ -105,7 +105,8 @@ public:
 				fValue = tpBestNode->f;
 				tpTemp1 = tpBestNode;
 				tpTemp = tpTemp1->tpBack;
-				for (u32 i=1; tpTemp; tpTemp = tpTemp->tpBack, i++) 
+				u32 i = 1;
+				for (i=1; tpTemp; tpTemp = tpTemp->tpBack, i++) 
 					tpTemp1 = tpTemp;
 
 				tpaNodes.resize(i);

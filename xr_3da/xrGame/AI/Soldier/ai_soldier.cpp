@@ -267,7 +267,10 @@ void CAI_Soldier::OnEvent(EVENT E, u32 P1, u32 P2)
 						}
 					}
 					if (!m_tpPath) {
-						for (int i=0, iCount = 1; buf2[i]; i++)
+						int i = 0;
+						int iCount = 1;
+
+						for (i=0, iCount = 1; buf2[i]; i++)
 							if (buf2[i] == ',')
 								iCount++;
 						if (iCount == 1) {

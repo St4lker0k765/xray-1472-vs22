@@ -1,12 +1,10 @@
 #include "StdAfx.h"
+#include <ode/ode.h>
 #include "PHDynamicData.h"
 #include "Physics.h"
 #include "tri-colliderknoopc/dTriList.h"
-//#include "..\ode\src\collision_kernel.h"
-//#include <..\ode\src\joint.h>
-//#include "dRay/include/dRay.h"
 #include "ExtendedGeom.h"
-union dInfBytes dInfinityValue = {{0,0,0x80,0x7f}};
+
 Shader* CPHElement::hWallmark=NULL;
 // #include "contacts.h"
 
@@ -191,9 +189,9 @@ void CPHJeep::Create1(dSpaceID space, dWorldID world){
 		dJointSetHinge2Param(Joints[i], dParamSuspensionCFM, 0.0003f);
 	}
 
-	GeomsGroup = dCreateGeomGroup(space);  
+	GeomsGroup = dSimpleSpaceCreate(space);
 	for(i = 0; i < NofGeoms-1; ++i)
-		dGeomGroupAdd(GeomsGroup, Geoms[i]);
+		dSpaceAdd(GeomsGroup, Geoms[i]);
 
 
 
@@ -321,10 +319,10 @@ void CPHJeep::Create(dSpaceID space, dWorldID world){
 	}
 
 
-	GeomsGroup = dCreateGeomGroup(space);  
+	GeomsGroup = dSimpleSpaceCreate(space);
 	for(i = 1; i < NofGeoms-1; ++i)
-		dGeomGroupAdd(GeomsGroup, Geoms[i]);
-	dGeomGroupAdd(GeomsGroup, Geoms[7]);
+		dSpaceAdd(GeomsGroup, Geoms[i]);
+	dSpaceAdd(GeomsGroup, Geoms[7]);
 
 
 	//dynamic data
@@ -370,8 +368,7 @@ void CPHJeep::Destroy(){
 	dGeomDestroy(Geoms[6]);
 //	dGeomDestroy(Geoms[5]);
 	dGeomDestroy(Geoms[7]);
-	dGeomDestroy(GeomsGroup);
-
+	dSpaceDestroy(GeomsGroup);
 
 }
 
@@ -946,290 +943,267 @@ void CPHElement::			add_Box		(const Fobb&		V){
 	m_boxes_data.push_back(V);
 }
 
-void CPHElement::			create_Box	(const Fobb&		V){
-														dGeomID geom,trans;
+dGeomID CPHElement::create_Box(const Fobb& V)
+{
+    dVector3 local_position = {
+        V.m_translate.x - m_mass_center.x,
+        V.m_translate.y - m_mass_center.y,
+        V.m_translate.z - m_mass_center.z
+    };
 
-														dVector3 local_position={
-															V.m_translate.x-m_mass_center.x,
-															V.m_translate.y-m_mass_center.y,
-															V.m_translate.z-m_mass_center.z};
+    dGeomID box = dCreateBox(0,
+        V.m_halfsize.x * 2.f,
+        V.m_halfsize.y * 2.f,
+        V.m_halfsize.z * 2.f);
 
-														if(dDOT(local_position,local_position)>0.0001||
-															m_spheras_data.size()+m_boxes_data.size()>1
-															){
-														geom=dCreateBox(0,
-																		V.m_halfsize.x*2.f,
-																		V.m_halfsize.y*2.f,
-																		V.m_halfsize.z*2.f);
-														
-														m_geoms.push_back(geom);
-														dGeomSetPosition(geom,
-															local_position[0],
-															local_position[1],
-															local_position[2]);
-														dMatrix3 R;
-														PHDynamicData::FMX33toDMX(V.m_rotate,R);
-														dGeomSetRotation(geom,R);
-														trans=dCreateGeomTransform(0);
+    m_geoms.push_back(box);
 
-														dGeomTransformSetGeom(trans,geom);
-														dGeomSetBody(trans,m_body);
-														m_trans.push_back(trans);
-														/////////////////////////////////////////////////////////
-														dGeomGroupAdd(m_group,trans);
-														/////////////////////////////////////////////////////////
-														dGeomTransformSetInfo(trans,1);
-														dGeomCreateUserData(geom);
-														dGeomGetUserData(geom)->material=ul_material;
-														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
-															}
-														else{
-													  geom=dCreateBox(0,
-																		V.m_halfsize.x*2.f,
-																		V.m_halfsize.y*2.f,
-																		V.m_halfsize.z*2.f);
-														
-														m_geoms.push_back(geom);
+    dMatrix3 Rloc;
+    PHDynamicData::FMX33toDMX(V.m_rotate, Rloc);
+    dGeomSetRotation(box, Rloc);
+    dGeomSetPosition(box, local_position[0], local_position[1], local_position[2]);
 
-														
-														dGeomSetPosition(geom,
-															local_position[0],
-															local_position[1],
-															local_position[2]);
+    dGeomID trans = dCreateGeomTransform(0);
+    dGeomTransformSetGeom(trans, box);
+    dGeomTransformSetInfo(trans, 1);
+    dGeomSetBody(trans, m_body);
 
-														dMatrix3 R;
-														PHDynamicData::FMX33toDMX(V.m_rotate,R);
-														dGeomSetRotation(geom,R);
+    m_trans.push_back(trans);
 
+    dGeomCreateUserData(box);
+    dGeomGetUserData(box)->material = ul_material;
+    if (contact_callback)
+        dGeomUserDataSetContactCallback(box, contact_callback);
 
-														trans=dCreateGeomTransform(0);
-														dGeomTransformSetInfo(trans,1);
-														dGeomTransformSetGeom(trans,geom);
-														dGeomSetBody(trans,m_body);
-														m_trans.push_back(trans);
-
-														dGeomCreateUserData(geom);
-														dGeomGetUserData(geom)->material=ul_material;
-
-														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
-														
-														}
-
-														
-														}
+    return trans;
+}
 
 void CPHElement::			add_Sphere	(const Fsphere&	V){
 	m_spheras_data.push_back(V);
 }
 
-void CPHElement::			create_Sphere	(const Fsphere&	V){
-														dGeomID geom,trans;
-														dVector3 local_position={
-															V.P.x-m_mass_center.x,
-															V.P.y-m_mass_center.y,
-															V.P.z-m_mass_center.z};
-														if(dDOT(local_position,local_position)>0.0001||
-															m_spheras_data.size()+m_boxes_data.size()>1
-															)
-														{
-														geom=dCreateSphere(0,V.R);
-														m_geoms.push_back(geom);
-														dGeomSetPosition(geom,local_position[0],local_position[1],local_position[2]);
-														trans=dCreateGeomTransform(0);
-														dGeomTransformSetGeom(trans,geom);
-														dGeomSetBody(trans,m_body);
-														m_trans.push_back(trans);
-														dGeomGroupAdd(m_group,trans);
-														dGeomTransformSetInfo(trans,1);		
-														dGeomCreateUserData(geom);
-														//dGeomGetUserData(geom)->material=GMLib.GetMaterialIdx("box_default");
-														dGeomGetUserData(geom)->material=0;
-														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
-														}
-														else
-														{
-														geom=dCreateSphere(0,V.R);
-														m_geoms.push_back(geom);
-														dGeomSetPosition(geom,
-															m_mass_center.x,
-															m_mass_center.y,
-															m_mass_center.z);
-														dGeomSetBody(geom,m_body);
-														dGeomCreateUserData(geom);
-														//dGeomGetUserData(geom)->material=GMLib.GetMaterialIdx("box_default");
-														dGeomGetUserData(geom)->material=0;
-														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
-														}
-														};
+dGeomID CPHElement::create_Sphere(const Fsphere& V)
+{
+	dVector3 local_position = {
+		V.P.x - m_mass_center.x,
+		V.P.y - m_mass_center.y,
+		V.P.z - m_mass_center.z
+	};
+
+	const bool need_transform =
+		(dDOT(local_position, local_position) > 1e-4f) ||
+		((m_spheras_data.size() + m_boxes_data.size()) > 1);
+
+	dGeomID sphere = dCreateSphere(0, V.R);
+	m_geoms.push_back(sphere);
+
+	if (need_transform)
+	{
+		dGeomSetPosition(sphere, local_position[0], local_position[1], local_position[2]);
+
+		dGeomID trans = dCreateGeomTransform(0);
+		dGeomTransformSetGeom(trans, sphere);
+		dGeomTransformSetInfo(trans, 1);
+		dGeomSetBody(trans, m_body);
+
+		m_trans.push_back(trans);
+
+		dGeomCreateUserData(sphere);
+		dGeomGetUserData(sphere)->material = 0;
+		if (contact_callback)
+			dGeomUserDataSetContactCallback(sphere, contact_callback);
+
+		return trans;
+	}
+	else
+	{
+
+		dGeomSetPosition(sphere, m_mass_center.x, m_mass_center.y, m_mass_center.z);
+		dGeomSetBody(sphere, m_body);
+
+		dGeomCreateUserData(sphere);
+		dGeomGetUserData(sphere)->material = 0;
+		if (contact_callback)
+			dGeomUserDataSetContactCallback(sphere, contact_callback);
+
+		return sphere;
+	}
+}
+
 void CPHElement::add_Cylinder(const Fcylinder& V)
 {
 	m_cylinders_data.push_back(V);
 }
 
-void CPHElement::create_Cylinder(const Fcylinder& V)
+dGeomID CPHElement::create_Cylinder(const Fcylinder& V)
 {
-	dGeomID geom,trans;
+    dVector3 local_position = {
+        V.m_translate.x - m_mass_center.x,
+        V.m_translate.y - m_mass_center.y,
+        V.m_translate.z - m_mass_center.z
+    };
 
-	dVector3 local_position=
+    dGeomID cyl = dCreateCylinder(0, V.m_radius, V.m_halflength * 2.f);
+    m_geoms.push_back(cyl);
+
+    dMatrix3 Rloc;
+    PHDynamicData::FMX33toDMX(V.m_rotate, Rloc);
+    dGeomSetRotation(cyl, Rloc);
+    dGeomSetPosition(cyl, local_position[0], local_position[1], local_position[2]);
+
+    dGeomID trans = dCreateGeomTransform(0);
+    dGeomTransformSetGeom(trans, cyl);
+    dGeomTransformSetInfo(trans, 1);
+    dGeomSetBody(trans, m_body);
+
+    m_trans.push_back(trans);
+
+    dGeomCreateUserData(cyl);
+    dGeomGetUserData(cyl)->material = ul_material;
+    if (contact_callback)
+        dGeomUserDataSetContactCallback(cyl, contact_callback);
+
+    return trans;
+}
+
+void CPHElement::build(dSpaceID space)
+{
+    m_body = dBodyCreate(phWorld);
+    m_saved_contacts = dJointGroupCreate(0);
+    b_contacts_saved = false;
+    dBodyDisable(m_body);
+
+    dBodySetMass(m_body, &m_mass);
+
+    if (m_spheras_data.size() + m_boxes_data.size() > 1)
 	{
-			V.m_translate.x-m_mass_center.x,
-			V.m_translate.y-m_mass_center.y,
-			V.m_translate.z-m_mass_center.z
-	};
+        m_group = dSimpleSpaceCreate(space);
+    }
+	else
+	{
+        m_group = 0;
+    }
 
-		if(m_group){
-				geom=dCreateCylinder
-					(
-					0,
-					V.m_halflength*2.f,
-					V.m_radius
-					);
+    Fvector mc = get_mc_data();
 
-				m_geoms.push_back(geom);
-				dGeomSetPosition(geom,
-					local_position[0],
-					local_position[1],
-					local_position[2]);
-				dMatrix3 R;
-				PHDynamicData::FMX33toDMX(V.m_rotate,R);
-				dGeomSetRotation(geom,R);
-				trans=dCreateGeomTransform(0);
+    m_inverse_local_transform.identity();
+    m_inverse_local_transform.c.set(mc);
+    m_inverse_local_transform.invert();
+    dBodySetPosition(m_body, mc.x, mc.y, mc.z);
 
-				dGeomTransformSetGeom(trans,geom);
-				dGeomSetBody(trans,m_body);
-				m_trans.push_back(trans);
-				/////////////////////////////////////////////////////////
-				dGeomGroupAdd(m_group,trans);
-				/////////////////////////////////////////////////////////
-				dGeomTransformSetInfo(trans,1);
-				dGeomCreateUserData(geom);
-				dGeomGetUserData(geom)->material=ul_material;
-				if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
-			}
-		else{
-				geom=dCreateCylinder
-					(
-					0,
-					V.m_halflength*2.f,
-					V.m_radius
-					);
+    for (auto it = m_boxes_data.begin(); it != m_boxes_data.end(); ++it) {
+        dGeomID g = create_Box(*it);
+        if (g) {
+            if (m_group) dSpaceAdd(m_group, g);
+            else         dSpaceAdd(space, g);
+        }
+    }
 
-			m_geoms.push_back(geom);
+    for (auto it = m_spheras_data.begin(); it != m_spheras_data.end(); ++it) {
+        dGeomID g = create_Sphere(*it);
+        if (g) {
+            if (m_group) dSpaceAdd(m_group, g);
+            else         dSpaceAdd(space, g);
+        }
+    }
 
-
-			dGeomSetPosition(geom,
-				local_position[0],
-				local_position[1],
-				local_position[2]);
-
-			dMatrix3 R;
-			PHDynamicData::FMX33toDMX(V.m_rotate,R);
-			dGeomSetRotation(geom,R);
-
-
-			trans=dCreateGeomTransform(0);
-			dGeomTransformSetInfo(trans,1);
-			dGeomTransformSetGeom(trans,geom);
-			dGeomSetBody(trans,m_body);
-			m_trans.push_back(trans);
-
-			dGeomCreateUserData(geom);
-			dGeomGetUserData(geom)->material=ul_material;
-
-			if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
-
-		}
+    for (auto it = m_cylinders_data.begin(); it != m_cylinders_data.end(); ++it) {
+        dGeomID g = create_Cylinder(*it);
+        if (g) {
+            if (m_group) dSpaceAdd(m_group, g);
+            else         dSpaceAdd(space, g);
+        }
+    }
 }
-void CPHElement::			build	(dSpaceID space){
 
-m_body=dBodyCreate(phWorld);
-m_saved_contacts=dJointGroupCreate (0);
-b_contacts_saved=false;
-dBodyDisable(m_body);
-//dBodySetFiniteRotationMode(m_body,1);
-//dBodySetFiniteRotationAxis(m_body,0,0,0);
-
-dBodySetMass(m_body,&m_mass);
-
-if(m_spheras_data.size()+m_boxes_data.size()>1)
-//m_group=dCreateGeomGroup(space);
-m_group=dCreateGeomGroup(0);
-
-Fvector mc=get_mc_data();
-//m_start=mc;
-
-m_inverse_local_transform.identity();
-m_inverse_local_transform.c.set(mc);
-m_inverse_local_transform.invert();
-dBodySetPosition(m_body,mc.x,mc.y,mc.z);
-///////////////////////////////////////////////////////////////////////////////////////
-	vector<Fobb>::iterator i_box;
-	for(i_box=m_boxes_data.begin();i_box!=m_boxes_data.end();i_box++){
-	create_Box(*i_box);
-	}
-///////////////////////////////////////////////////////////////////////////////////////
-	vector<Fsphere>::iterator i_sphere;
-	for(i_sphere=m_spheras_data.begin();i_sphere!=m_spheras_data.end();i_sphere++){
-		create_Sphere(*i_sphere);
-		}
-///////////////////////////////////////////////////////////////////////////////////////
-	vector<Fcylinder>::iterator i_cylinder;
-	for(i_cylinder=m_cylinders_data.begin();i_cylinder!=m_cylinders_data.end();i_cylinder++){
-		create_Cylinder(*i_cylinder);
-	}
-/////////////////////////////////////////////////////////////////////////////////////////
-}
 
 void CPHElement::RunSimulation()
 {
-if(m_group)
-dSpaceAdd(m_shell->GetSpace(),m_group);
-else
-if(m_boxes_data.size()==0)
-dSpaceAdd(m_shell->GetSpace(),*m_geoms.begin());
-else
-dSpaceAdd(m_shell->GetSpace(),*m_trans.begin());
+    dSpaceID parent = m_shell->GetSpace();
 
-dBodyEnable(m_body);
-}
-
-void CPHElement::			destroy	(){
-	m_attached_elements.clear();
-	dJointGroupDestroy(m_saved_contacts);
-	vector<dGeomID>::iterator i;
-
-
-	for(i=m_geoms.begin();i!=m_geoms.end();i++){
-	dGeomDestroyUserData(*i);
-	dGeomDestroy(*i);
-	}
-	for(i=m_trans.begin();i!=m_trans.end();i++){
-	dGeomDestroyUserData(*i);
-
-	
-	//if(!attached)
-	dGeomDestroy(*i);
-
-
-
-	if(m_body && !attached)
+    if (m_group)
+	{
+        dSpaceAdd(parent, (dGeomID)m_group);
+    }
+	else
+	{
+        if (m_boxes_data.empty())
 		{
-		dBodyDestroy(m_body);
-		m_body=NULL;
-		}
+            if (!m_geoms.empty())
+                dSpaceAdd(parent, *m_geoms.begin());
+        }
+		else
+		{
+            if (!m_trans.empty())
+                dSpaceAdd(parent, *m_trans.begin());
+        }
+    }
 
-
-
-
-	if(m_group){
-				dGeomDestroy(m_group);
-				m_group=NULL;
-				}
-	}
-
-	m_geoms.clear();
-	m_trans.clear();
+    dBodyEnable(m_body);
 }
+
+void CPHElement::destroy()
+{
+    m_attached_elements.clear();
+
+    if (m_saved_contacts)
+	{
+        dJointGroupDestroy(m_saved_contacts);
+        m_saved_contacts = 0;
+    }
+
+    for (auto it = m_trans.begin(); it != m_trans.end(); ++it) {
+        dGeomID trans = *it;
+        if (!trans) continue;
+
+        dGeomID inner = dGeomTransformGetGeom(trans);
+        if (inner)
+		{
+            dGeomDestroyUserData(inner);
+
+            dSpaceID sp = dGeomGetSpace(trans);
+            if (sp) dSpaceRemove(sp, trans);
+
+            dGeomDestroy(trans);
+        }
+		else
+		{
+            dSpaceID sp = dGeomGetSpace(trans);
+            if (sp) dSpaceRemove(sp, trans);
+            dGeomDestroy(trans);
+        }
+    }
+    m_trans.clear();
+
+    for (auto it = m_geoms.begin(); it != m_geoms.end(); ++it) {
+        dGeomID g = *it;
+        if (!g) continue;
+
+        dGeomDestroyUserData(g);
+
+        dSpaceID sp = dGeomGetSpace(g);
+        if (sp) dSpaceRemove(sp, g);
+
+        dGeomDestroy(g);
+    }
+    m_geoms.clear();
+
+    if (m_body && !attached)
+	{
+        dBodyDestroy(m_body);
+        m_body = 0;
+    }
+
+    if (m_group)
+	{
+        dSpaceID parent = dGeomGetSpace((dGeomID)m_group);
+        if (parent) dSpaceRemove(parent, (dGeomID)m_group);
+
+        dSpaceDestroy(m_group);
+        m_group = 0;
+    }
+}
+
 
 Fvector CPHElement::			get_mc_data	(){
 	Fvector mc,s;
@@ -1846,49 +1820,32 @@ void CPHElement::Enable(){
 	}
 
 
-void CPHElement::Disable(){
-	//return;
-	/*
-	if(!b_contacts_saved){
-		int num=dBodyGetNumJoints(m_body);
-		for(int i=0;i<num;i++){
-			dJointID joint=	dBodyGetJoint (m_body, i);
-			if(dJointGetType (joint)==dJointTypeContact){
-				dxJointContact* contact=(dxJointContact*) joint;
-				dBodyID b1=dGeomGetBody(contact->contact.geom.g1);
-				dBodyID b2=dGeomGetBody(contact->contact.geom.g2);
-				if(b1==0 || b2==0){
-					dJointID c = dJointCreateContact(phWorld, m_saved_contacts, &(contact->contact));
-					dJointAttach(c, b1, b2);
-					b_contacts_saved=true;
-				}
+void CPHElement::Disable()
+{
+    if (!dBodyIsEnabled(m_body)) return;
 
-			}
+    dGeomID mesh = ph_world->GetMeshGeom();
 
-		}
-	}
-	
-*/
-if(!dBodyIsEnabled(m_body)) return;
-if(m_group)
-	 SaveContacts(ph_world->GetMeshGeom(),m_group,m_saved_contacts);
-else 
-	SaveContacts(ph_world->GetMeshGeom(),m_trans[0],m_saved_contacts);
+    if (m_group)
+        SaveContacts(mesh, (dGeomID)m_group, m_saved_contacts);
+    else if (!m_trans.empty())
+        SaveContacts(mesh, m_trans[0], m_saved_contacts);
+    else if (!m_geoms.empty())
+        SaveContacts(mesh, m_geoms[0], m_saved_contacts);
 
-vector<CPHElement*>::iterator i;
-for(i=m_attached_elements.begin();i!=m_attached_elements.end();i++){
+    for (auto* el : m_attached_elements) {
+        if (!el) continue;
 
+        if (el->m_group)
+            SaveContacts(mesh, (dGeomID)el->m_group, m_saved_contacts);
+        else if (!el->m_trans.empty())
+            SaveContacts(mesh, el->m_trans[0], m_saved_contacts);
+        else if (!el->m_geoms.empty())
+            SaveContacts(mesh, el->m_geoms[0], m_saved_contacts);
+    }
 
-if((*i)->m_group)
-	 SaveContacts(ph_world->GetMeshGeom(),(*i)->m_group,m_saved_contacts);
-else 
-	SaveContacts(ph_world->GetMeshGeom(),(*i)->m_trans[0],m_saved_contacts);
-
+    dBodyDisable(m_body);
 }
-			
-	dBodyDisable(m_body);
-}
-
 
 void CPHElement::ReEnable(){
 	//if(b_contacts_saved && dBodyIsEnabled(m_body))
@@ -2047,73 +2004,85 @@ void CPHElement::InterpolateGlobalTransform(Fmatrix* m){
 
 void CPHElement::DynamicAttach(CPHElement* E)
 {
-	dVector3 p1;
-	dMatrix3 R1;
-	Memory.mem_copy(p1,dBodyGetPosition(m_body),sizeof(dVector3));
-	const dReal* p2=dBodyGetPosition(E->m_body);
-	Memory.mem_copy( R1,dBodyGetRotation(m_body),sizeof(dMatrix3));
-	const dReal* R2=dBodyGetRotation(E->m_body);
-	dVector3 pp={p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]};
-	dMatrix3 RR;
-	dMULTIPLY1_333(RR,R1,R2);
-	dVector3 ppr;
-	dMULTIPLY1_331(ppr,R1,pp);
-	vector<dGeomID>::iterator i;
-	Fmatrix RfRf;
-	PHDynamicData::DMXPStoFMX(RR,ppr,RfRf);
-	E->m_inverse_local_transform.mulA(RfRf);
-	//E->fixed_position.set(RfRf);
-	for(i=E->m_trans.begin();i!=E->m_trans.end();i++){
-	//	if(!m_group) {
-	//		m_group=dCreateGeomGroup(0);
-	//		dSpaceRemove (ph_world->GetSpace(), m_trans[0]);
-	//		dGeomGroupAdd(m_group,m_trans[0]);
-	//	}
-	//	dSpaceRemove (ph_world->GetSpace(), *i);
-	//	dGeomGroupAdd(m_group,*i);
-		dGeomID geom=dGeomTransformGetGeom(*i);
-		const dReal* pos=dGeomGetPosition(geom);
-		const dReal* rot=dGeomGetRotation(geom);
-		dMatrix3 rr;
-		dMULTIPLY0_333(rr,RR,rot);
+    const dReal* p1 = dBodyGetPosition(m_body);
+    const dReal* R1 = dBodyGetRotation(m_body);
 
-		dGeomSetRotation(geom,rr);
-		dGeomSetPosition(geom,pos[0]+ppr[0],pos[1]+ppr[1],pos[2]+ppr[2]);
+    const dReal* p2 = dBodyGetPosition(E->m_body);
+    const dReal* R2 = dBodyGetRotation(E->m_body);
 
-		dGeomSetBody(*i,m_body);
-		dBodySetPosition(m_body,p1[0],p1[1],p1[2]);
-		dBodySetRotation(m_body,R1);
+    dVector3 dp = { p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2] };
 
-		}
-	for(i=E->m_geoms.begin();i!=E->m_geoms.end();i++)
-		if(dGeomGetBody(*i)){
-		dGeomID trans=dCreateGeomTransform(0);
-		dGeomSetBody((*i),0);
-		dGeomSetPosition((*i),pp[0],pp[1],pp[2]);
-		dGeomSetRotation((*i),RR);
-		dGeomTransformSetGeom(trans,(*i));
-		dGeomTransformSetInfo(trans,1);
-		dGeomSetBody(trans,m_body);
-		dBodySetPosition(m_body,p1[0],p1[1],p1[2]);
-		dBodySetRotation(m_body,R1);
-		E->m_trans.push_back(trans);
-		}
+    dMatrix3 RR;
+    dMULTIPLY1_333(RR, R1, R2);
 
+    dVector3 ppr;
+    dMULTIPLY1_331(ppr, R1, dp);
 
+    {
+        Fmatrix RfRf;
+        PHDynamicData::DMXPStoFMX(RR, ppr, RfRf);
+        E->m_inverse_local_transform.mulA(RfRf);
+    }
 
-		dMass m1,m2;
-		dBodyGetMass(E->m_body,&m1);
-		dBodyGetMass(m_body,&m2);
-		dMassAdd(&m1,&m2);
-		dBodySetMass(m_body,&m1);
-		dBodyDestroy(E->m_body);
-		E->m_body=m_body;
-		E->m_body_interpolation.SetBody(m_body);
-		E->attached=true;
-		m_attached_elements.push_back(E);
-	//E->m_body;
+    for (auto it = E->m_trans.begin(); it != E->m_trans.end(); ++it)
+    {
+        dGeomID trans = *it;
+        dGeomID geom  = dGeomTransformGetGeom(trans);
+        if (!geom) continue;
 
+        const dReal* gpos = dGeomGetPosition(geom);
+        const dReal* grot = dGeomGetRotation(geom);
+
+        // grot' = RR * grot
+        dMatrix3 grot_local;
+        dMULTIPLY0_333(grot_local, RR, grot);
+
+        // gpos' = gpos + ppr
+        dVector3 gpos_local = { gpos[0] + ppr[0], gpos[1] + ppr[1], gpos[2] + ppr[2] };
+
+        dGeomSetRotation(geom, grot_local);
+        dGeomSetPosition(geom, gpos_local[0], gpos_local[1], gpos_local[2]);
+
+        dGeomSetBody(trans, m_body);
+    }
+
+    // голые бляди
+    for (auto it = E->m_geoms.begin(); it != E->m_geoms.end(); ++it)
+    {
+        dGeomID g = *it;
+        if (!g) continue;
+
+        if (dGeomGetBody(g))
+        {
+            dGeomSetBody(g, 0);
+            dGeomSetRotation(g, RR);
+            dGeomSetPosition(g, ppr[0], ppr[1], ppr[2]);
+
+            dGeomID trans = dCreateGeomTransform(0);
+            dGeomTransformSetGeom(trans, g);
+            dGeomTransformSetInfo(trans, 1);
+            dGeomSetBody(trans, m_body);
+
+            E->m_trans.push_back(trans);
+        }
+    }
+
+    {
+        dMass mE{}, mM{};
+        dBodyGetMass(E->m_body, &mE);
+        dBodyGetMass(m_body,   &mM);
+        dMassAdd(&mM, &mE);
+        dBodySetMass(m_body, &mM);
+    }
+
+    dBodyDestroy(E->m_body);
+    E->m_body = m_body;
+    E->m_body_interpolation.SetBody(m_body);
+    E->attached = true;
+
+    m_attached_elements.push_back(E);
 }
+
 
 void CPHShell::Activate(){
 	if(bActive)

@@ -20,22 +20,25 @@ public:
 		u32 size		= P.r_elapsed();
 		if (size)	
 		{
-			data.resize		(size);
-			P.r				(data.begin(),size);
+			data.resize(size);
+			P.r(data.data(), size);
 		}
 	}
-	void				export		(NET_Packet& P)
+	void				_export		(NET_Packet& P)
 	{
 		u16	ID			=	M_EVENT;
 		P.w_begin		(ID			);
 		P.w_u32			(timestamp	);
 		P.w_u16			(type		);
 		P.w_u16			(destination);
-		if (data.size())	P.w(data.begin(),data.size());
+		if (!data.empty())
+		{
+			P.w(data.data(), static_cast<u32>(data.size()));
+		}
 	}
 	void				implication	(NET_Packet& P) const
 	{
-		Memory.mem_copy	(P.B.data,data.begin(),data.size());
+		Memory.mem_copy(P.B.data, data.data(), static_cast<u32>(data.size()));
 		P.B.count		= data.size();
 		P.r_pos			= 0;
 	}

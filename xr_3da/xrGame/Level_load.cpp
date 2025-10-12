@@ -7,173 +7,239 @@
 
 void CLevel::vfCreateAllPossiblePaths(string64 sName, SPath &tpPatrolPath)
 {
-	vector<BYTE>		tpaFrom;
-	vector<BYTE>		tpaTo;
-	vector<Fvector>		tpaPoints;
-	vector<Fvector>		tpaDeviations;
-	vector<u32>			tpaNodes;
+    std::vector<BYTE>    tpaFrom;
+    std::vector<BYTE>    tpaTo;
+    std::vector<Fvector> tpaPoints;
+    std::vector<Fvector> tpaDeviations;
+    std::vector<u32>     tpaNodes;
 
-	int i;
-	int iStartPoint = -1, iFinishPoint = -1, iCurPoint = 0, iPrevPoint = -1;
-	u32 N = tpPatrolPath.tpaWayPoints.size(), dwOneZero = 0, dwZeroOne = 0, dwOneCount = 0, dwTwoCount = 0;
+    int  iStartPoint = -1, iFinishPoint = -1;
+    int  iCurPoint = 0, iPrevPoint = -1;
 
-	tpaFrom.resize		(N);
-	tpaTo.resize		(N);
-	
-	tpPatrolPath.dwType = PATH_LOOPED | PATH_BIDIRECTIONAL;
-	
-	// computing from-to arrays
-	for ( i=0; i<(int)N; i++)
-		tpaTo[i] = tpaFrom[i] = 0;
-	
-	for ( i=0; i<(int)tpPatrolPath.tpaWayLinks.size(); i++) {
-		tpaTo[tpPatrolPath.tpaWayLinks[i].wTo]++;
-		tpaFrom[tpPatrolPath.tpaWayLinks[i].wFrom]++;
-	}
-	
-	// counting types of points
-	for ( i=0; i<(int)N; i++) {
-		if (tpaTo[i] > 2)
-			Debug.fatal("Patrol path %s : invalid count of incoming links (%d) for point %d [%.2f,%.2f,%.2f]",sName,tpaTo[i],i,tpPatrolPath.tpaWayPoints[i].tWayPoint.x,tpPatrolPath.tpaWayPoints[i].tWayPoint.y,tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
-		if (tpaFrom[i] > 2)
-			Debug.fatal("Patrol path %s : invalid count of outcoming links (%d) for point %d [%.2f,%.2f,%.2f]",sName,tpaFrom[i],i,tpPatrolPath.tpaWayPoints[i].tWayPoint.x,tpPatrolPath.tpaWayPoints[i].tWayPoint.y,tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
-		if ((tpaTo[i] == 1) && (tpaFrom[i] == 0)) {
-			if (dwOneZero)
-				Debug.fatal("Patrol path %s : invalid count of start points [%.2f,%.2f,%.2f]",sName,tpPatrolPath.tpaWayPoints[i].tWayPoint.x,tpPatrolPath.tpaWayPoints[i].tWayPoint.y,tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
-			dwOneZero++;
-			iFinishPoint = i;
-		}
-		
-		if ((tpaTo[i] == 0) && (tpaFrom[i] == 1)) {
-			if (dwZeroOne)
-				Debug.fatal("Patrol path %s : invalid count of finish points [%.2f,%.2f,%.2f]",sName,tpPatrolPath.tpaWayPoints[i].tWayPoint.x,tpPatrolPath.tpaWayPoints[i].tWayPoint.y,tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
-			dwZeroOne++;
-			iStartPoint = i;
-		}
-		
-		if ((tpaTo[i] == 1) && (tpaFrom[i] == 1)) {
-			if ((!dwOneCount) && (!dwZeroOne) && (!dwOneZero))
-				iStartPoint = i;
-			else
-				if ((dwOneCount == 1) && (!dwZeroOne) && (!dwOneZero))
-					iFinishPoint = i;
-			dwOneCount++;
-		}
-		
-		if ((tpaTo[i] == 2) && (tpaFrom[i] == 2))
-			dwTwoCount++;
-	}
-	
-	// checking for supported path types
-	if (!(dwOneZero + dwZeroOne)) {
-		if ((dwOneCount == 2) && (dwTwoCount == N - 2)) {
-			iCurPoint = iStartPoint;
-			tpPatrolPath.dwType ^= PATH_LOOPED;
-		}
-		else
-			if (dwOneCount == N)
-				tpPatrolPath.dwType ^= PATH_BIDIRECTIONAL;
-			else
-				if (dwTwoCount != N)
-					Debug.fatal("Patrol path %s : invalid count of outcoming links (%d) for point %d [%.2f,%.2f,%.2f]",sName,tpaFrom[i],i,tpPatrolPath.tpaWayPoints[i].tWayPoint.x,tpPatrolPath.tpaWayPoints[i].tWayPoint.y,tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
-	}
-	else
-		if ((dwOneCount != N - 2) || (dwOneZero != 1) || (dwZeroOne != 1))
-			Debug.fatal("Patrol path %s : invalid count of outcoming links (%d) for point %d [%.2f,%.2f,%.2f] in non-looped one-directional path",sName,tpaFrom[i],i,tpPatrolPath.tpaWayPoints[i].tWayPoint.x,tpPatrolPath.tpaWayPoints[i].tWayPoint.y,tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
-		else {
-			iCurPoint = iStartPoint;
-			tpPatrolPath.dwType ^= PATH_LOOPED ^ PATH_BIDIRECTIONAL;
-		}
+    const u32 N = static_cast<u32>(tpPatrolPath.tpaWayPoints.size());
+    u32 dwOneZero = 0, dwZeroOne = 0, dwOneCount = 0, dwTwoCount = 0;
 
-	// building point sequencies and path
-	tpPatrolPath.tpaWayPointIndexes.resize(N);
-	for ( i=0; i<(int)N; i++) {			
-		tpPatrolPath.tpaWayPointIndexes[i] = iCurPoint;
-		for (int j=0; j<(int)tpPatrolPath.tpaWayLinks.size(); j++)
-			if ((tpPatrolPath.tpaWayLinks[j].wFrom == iCurPoint) && (tpPatrolPath.tpaWayLinks[j].wTo != iPrevPoint)) {
-				iPrevPoint = iCurPoint;
-				iCurPoint = tpPatrolPath.tpaWayLinks[j].wTo;
-				break;
-			}
-	}
+    tpaFrom.assign(N, 0);
+    tpaTo.assign(N, 0);
 
-	// creating realistic path
-	tpaDeviations.resize(N);
-	tpaPoints.resize(N);
-	for (int i=0; i<(int)N; i++)
-		tpaPoints[i] = tpPatrolPath.tpaWayPoints[tpPatrolPath.tpaWayPointIndexes[i]].tWayPoint;
+    tpPatrolPath.dwType = PATH_LOOPED | PATH_BIDIRECTIONAL;
 
-	getAI().vfCreateFastRealisticPath(tpaPoints,tpPatrolPath.tpaWayPoints[tpPatrolPath.tpaWayPointIndexes[0]].dwNodeID,tpaDeviations,tpPatrolPath.tpaVectors[0],tpaNodes,tpPatrolPath.dwType & PATH_LOOPED);
+    // computing from-to arrays
+    for (u32 i = 0; i < static_cast<u32>(tpPatrolPath.tpaWayLinks.size()); ++i) {
+        const auto &L = tpPatrolPath.tpaWayLinks[i];
+        ++tpaTo[L.wTo];
+        ++tpaFrom[L.wFrom];
+    }
 
-	// creating variations
-	if (!tpPatrolPath.tpaVectors[0].size())
-		Debug.fatal("Patrol path %s was not built - there are not enough nodes to build all the straight lines",sName);
-	tpPatrolPath.tpaVectors[1].resize(tpPatrolPath.tpaVectors[0].size());
-	tpPatrolPath.tpaVectors[2].resize(tpPatrolPath.tpaVectors[0].size());
-			
-	float fHalfSubnodeSize = getAI().Header().size*.5f;
+    // counting types of points
+    for (u32 ui = 0; ui < N; ++ui) {
+        const int i = static_cast<int>(ui);
+        if (tpaTo[ui] > 2)
+            Debug.fatal("Patrol path %s : invalid count of incoming links (%d) for point %d [%.2f,%.2f,%.2f]",
+                        sName, tpaTo[ui], i,
+                        tpPatrolPath.tpaWayPoints[i].tWayPoint.x,
+                        tpPatrolPath.tpaWayPoints[i].tWayPoint.y,
+                        tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
+        if (tpaFrom[ui] > 2)
+            Debug.fatal("Patrol path %s : invalid count of outcoming links (%d) for point %d [%.2f,%.2f,%.2f]",
+                        sName, tpaFrom[ui], i,
+                        tpPatrolPath.tpaWayPoints[i].tWayPoint.x,
+                        tpPatrolPath.tpaWayPoints[i].tWayPoint.y,
+                        tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
 
-	vector<Fvector> &tpaVector0 = tpPatrolPath.tpaVectors[0];
-	u32 M = tpaVector0.size();
+        if ((tpaTo[ui] == 1) && (tpaFrom[ui] == 0)) {
+            if (dwOneZero)
+                Debug.fatal("Patrol path %s : invalid count of start points [%.2f,%.2f,%.2f]",
+                            sName,
+                            tpPatrolPath.tpaWayPoints[i].tWayPoint.x,
+                            tpPatrolPath.tpaWayPoints[i].tWayPoint.y,
+                            tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
+            ++dwOneZero;
+            iFinishPoint = i;
+        }
 
-	for (int I=1; I<3; I++) {
-		vector<Fvector> &tpaVector1 = ((I == 1) ? tpPatrolPath.tpaVectors[1] : tpPatrolPath.tpaVectors[2]);
-		for (int i=0, j=0, k=0; i<(int)M; i++, j++) {
-			
-			tpaVector1[j] = tpaVector0[i];
+        if ((tpaTo[ui] == 0) && (tpaFrom[ui] == 1)) {
+            if (dwZeroOne)
+                Debug.fatal("Patrol path %s : invalid count of finish points [%.2f,%.2f,%.2f]",
+                            sName,
+                            tpPatrolPath.tpaWayPoints[i].tWayPoint.x,
+                            tpPatrolPath.tpaWayPoints[i].tWayPoint.y,
+                            tpPatrolPath.tpaWayPoints[i].tWayPoint.z);
+            ++dwZeroOne;
+            iStartPoint = i;
+        }
 
-			Fvector tTemp;
-			
-			if (tpPatrolPath.dwType & PATH_LOOPED) {
-				tTemp.sub(tpaVector0[i < (int)M - 1 ? i + 1 : 0], tpaVector0[i]);
-				tTemp.y = 0.f;
-				if (tTemp.magnitude() < EPS_L) {
-					tTemp.sub(tpaVector0[i < (int)M - 2 ? i + 2 : 1], tpaVector0[i]);
-					tTemp.y = 0.f;
-				}
-			}
-			else {
-				if (i < (int)M - 1)
-					tTemp.sub(tpaVector0[i < (int)M - 1 ? i + 1 : 0], tpaVector0[i]);
-				else
-					tTemp.sub(tpaVector0[i], tpaVector0[i - 1]);
-				tTemp.y = 0.f;
-			}
-			tTemp.normalize();
+        if ((tpaTo[ui] == 1) && (tpaFrom[ui] == 1)) {
+            if ((!dwOneCount) && (!dwZeroOne) && (!dwOneZero))
+                iStartPoint = i;
+            else
+                if ((dwOneCount == 1) && (!dwZeroOne) && (!dwOneZero))
+                    iFinishPoint = i;
+            ++dwOneCount;
+        }
 
-			if (I == 1)
-				tTemp.set(tTemp.z,0,-tTemp.x);
-			else
-				tTemp.set(-tTemp.z,0,tTemp.x);
-			
-			tpaVector1[j].add(tTemp);
+        if ((tpaTo[ui] == 2) && (tpaFrom[ui] == 2))
+            ++dwTwoCount;
+    }
 
-			for (int m=k; (k < (int)tpaNodes.size()) && (!getAI().bfInsideNode(getAI().Node(tpaNodes[k]),tpaVector0[i])); k++) ;
+    // checking for supported path types
+    if (!(dwOneZero + dwZeroOne)) {
+        if ((dwOneCount == 2) && (dwTwoCount == N - 2)) {
+            iCurPoint = iStartPoint;
+            tpPatrolPath.dwType ^= PATH_LOOPED;
+        } else if (dwOneCount == N) {
+            tpPatrolPath.dwType ^= PATH_BIDIRECTIONAL;
+        } else if (dwTwoCount != N) {
+            const int di = (N ? 0 : -1);
+            Debug.fatal("Patrol path %s : invalid count of outcoming links (%d) for point %d [%.2f,%.2f,%.2f]",
+                        sName,
+                        di >= 0 ? tpaFrom[di] : -1,
+                        di,
+                        di >= 0 ? tpPatrolPath.tpaWayPoints[di].tWayPoint.x : 0.f,
+                        di >= 0 ? tpPatrolPath.tpaWayPoints[di].tWayPoint.y : 0.f,
+                        di >= 0 ? tpPatrolPath.tpaWayPoints[di].tWayPoint.z : 0.f);
+        }
+    } else {
+        if ((dwOneCount != N - 2) || (dwOneZero != 1) || (dwZeroOne != 1)) {
+            const int di = (N ? 0 : -1);
+            Debug.fatal("Patrol path %s : invalid count of outcoming links (%d) for point %d [%.2f,%.2f,%.2f] in non-looped one-directional path",
+                        sName,
+                        di >= 0 ? tpaFrom[di] : -1,
+                        di,
+                        di >= 0 ? tpPatrolPath.tpaWayPoints[di].tWayPoint.x : 0.f,
+                        di >= 0 ? tpPatrolPath.tpaWayPoints[di].tWayPoint.y : 0.f,
+                        di >= 0 ? tpPatrolPath.tpaWayPoints[di].tWayPoint.z : 0.f);
+        } else {
+            iCurPoint = iStartPoint;
+            tpPatrolPath.dwType ^= (PATH_LOOPED ^ PATH_BIDIRECTIONAL);
+        }
+    }
 
-			if (k >= (int)tpaNodes.size()) {
-				k = m;
-				tpaVector1.erase(tpaVector1.begin() + j);
-				j--;
-				continue;
-			}
+    // building point sequences and path
+    tpPatrolPath.tpaWayPointIndexes.resize(N);
+    for (u32 ui = 0; ui < N; ++ui) {
+        tpPatrolPath.tpaWayPointIndexes[ui] = static_cast<u16>(iCurPoint);
+        for (u32 lj = 0; lj < static_cast<u32>(tpPatrolPath.tpaWayLinks.size()); ++lj) {
+            const auto &L = tpPatrolPath.tpaWayLinks[lj];
+            if ((L.wFrom == iCurPoint) && (L.wTo != iPrevPoint)) {
+                iPrevPoint = iCurPoint;
+                iCurPoint = L.wTo;
+                break;
+            }
+        }
+    }
 
-			CAI_NodeEvaluatorTemplate<aiSearchRange | aiInsideNode> tSearch;
-			tSearch.m_fSearchRange = 4*fHalfSubnodeSize;
-			tSearch.m_dwStartNode = tpaNodes[k];
-			tSearch.m_tStartPosition = tpaVector0[i];
-			tSearch.vfShallowGraphSearch(getAI().q_mark_bit_x);
-//			getAI().q_Range_Bit_X(tpaNodes[k],tpaVector0[i],4*fHalfSubnodeSize,&tNodePosition,dwBestNode,fBestCost);
-			tpaVector1[j].y = getAI().ffGetY(*(getAI().Node(tSearch.m_dwBestNode)),tpaVector1[j].x,tpaVector1[j].z);
-		}
-		if (tpaVector1[0].distance_to(tpaVector1[j - 1]) > EPS_L) {
-			tpaVector1.push_back(tpaVector1[0]);
-			j++;
-		}
-		tpaVector1.resize(j);
-	}
-	if ((tpPatrolPath.dwType & PATH_LOOPED) && (tpaVector0[0].distance_to(tpaVector0[tpaVector0.size() - 1]) > EPS_L))
-		tpaVector0.push_back(tpaVector0[0]);
+    // creating realistic path
+    tpaDeviations.resize(N);
+    tpaPoints.resize(N);
+    for (u32 ui = 0; ui < N; ++ui)
+        tpaPoints[ui] = tpPatrolPath.tpaWayPoints[tpPatrolPath.tpaWayPointIndexes[ui]].tWayPoint;
+
+    getAI().vfCreateFastRealisticPath(
+        tpaPoints,
+        tpPatrolPath.tpaWayPoints[tpPatrolPath.tpaWayPointIndexes[0]].dwNodeID,
+        tpaDeviations,
+        tpPatrolPath.tpaVectors[0],
+        tpaNodes,
+        (tpPatrolPath.dwType & PATH_LOOPED) != 0
+    );
+
+    // creating variations
+    if (tpPatrolPath.tpaVectors[0].empty())
+        Debug.fatal("Patrol path %s was not built - there are not enough nodes to build all the straight lines", sName);
+
+    tpPatrolPath.tpaVectors[1].resize(tpPatrolPath.tpaVectors[0].size());
+    tpPatrolPath.tpaVectors[2].resize(tpPatrolPath.tpaVectors[0].size());
+
+    const float fHalfSubnodeSize = getAI().Header().size * 0.5f;
+
+    std::vector<Fvector> &tpaVector0 = tpPatrolPath.tpaVectors[0];
+    const u32 M = static_cast<u32>(tpaVector0.size());
+
+    for (int I = 1; I < 3; ++I) {
+        std::vector<Fvector> &tpaVector1 = (I == 1) ? tpPatrolPath.tpaVectors[1] : tpPatrolPath.tpaVectors[2];
+
+        int j = 0;
+        int k = 0;
+
+        for (u32 ui = 0; ui < M; ++ui) {
+            const int i = static_cast<int>(ui);
+
+            if (static_cast<size_t>(j) >= tpaVector1.size())
+                tpaVector1.resize(static_cast<size_t>(j) + 1);
+
+            tpaVector1[j] = tpaVector0[i];
+
+            Fvector tTemp;
+
+            if (tpPatrolPath.dwType & PATH_LOOPED) {
+                const int next1 = (i < static_cast<int>(M) - 1) ? (i + 1) : 0;
+                tTemp.sub(tpaVector0[next1], tpaVector0[i]);
+                tTemp.y = 0.f;
+                if (tTemp.magnitude() < EPS_L) {
+                    const int next2 = (i < static_cast<int>(M) - 2) ? (i + 2) : 1;
+                    tTemp.sub(tpaVector0[next2], tpaVector0[i]);
+                    tTemp.y = 0.f;
+                }
+            } else {
+                if (i < static_cast<int>(M) - 1) {
+                    const int next1 = (i < static_cast<int>(M) - 1) ? (i + 1) : 0;
+                    tTemp.sub(tpaVector0[next1], tpaVector0[i]);
+                } else {
+                    tTemp.sub(tpaVector0[i], tpaVector0[i - 1]);
+                }
+                tTemp.y = 0.f;
+            }
+            tTemp.normalize();
+
+            if (I == 1)
+                tTemp.set(tTemp.z, 0.f, -tTemp.x);
+            else
+                tTemp.set(-tTemp.z, 0.f, tTemp.x);
+
+            tpaVector1[j].add(tTemp);
+
+            const int k_start = k;
+            while ((k < static_cast<int>(tpaNodes.size())) &&
+                   (!getAI().bfInsideNode(getAI().Node(tpaNodes[k]), tpaVector0[i])))
+            {
+                ++k;
+            }
+
+            if (k >= static_cast<int>(tpaNodes.size())) {
+                k = k_start;
+                tpaVector1.erase(tpaVector1.begin() + j);
+                continue;
+            }
+
+            CAI_NodeEvaluatorTemplate<aiSearchRange | aiInsideNode> tSearch;
+            tSearch.m_fSearchRange   = 4 * fHalfSubnodeSize;
+            tSearch.m_dwStartNode    = tpaNodes[k];
+            tSearch.m_tStartPosition = tpaVector0[i];
+            tSearch.vfShallowGraphSearch(getAI().q_mark_bit_x);
+            tpaVector1[j].y = getAI().ffGetY(*(getAI().Node(tSearch.m_dwBestNode)),
+                                             tpaVector1[j].x, tpaVector1[j].z);
+            ++j;
+        }
+
+        if (!tpaVector1.empty() &&
+            (tpaVector1[0].distance_to(tpaVector1[static_cast<size_t>(j) - 1]) > EPS_L))
+        {
+            tpaVector1.push_back(tpaVector1[0]);
+            ++j;
+        }
+
+        if (j >= 0)
+            tpaVector1.resize(static_cast<size_t>(j));
+    }
+
+    if ((tpPatrolPath.dwType & PATH_LOOPED) &&
+        (tpaVector0[0].distance_to(tpaVector0[tpaVector0.size() - 1]) > EPS_L))
+    {
+        tpaVector0.push_back(tpaVector0[0]);
+    }
 }
+
 
 BOOL CLevel::Load_GameSpecific_Before()
 {
@@ -212,7 +278,7 @@ BOOL CLevel::Load_GameSpecific_Before()
 				R_ASSERT(OBJ->find_chunk(WAYOBJECT_CHUNK_LINKS));
 				u32 dwCountL = OBJ->r_u16();
 				tPatrolPath.tpaWayLinks.resize(dwCountL);
-				for ( i=0; i<(int)dwCountL; i++){
+				for (int i=0; i<(int)dwCountL; i++){
 					tPatrolPath.tpaWayLinks[i].wFrom = OBJ->r_u16();
 					tPatrolPath.tpaWayLinks[i].wTo = OBJ->r_u16();
 				}
@@ -223,7 +289,7 @@ BOOL CLevel::Load_GameSpecific_Before()
 				bool bOk;
 				do {
 					bOk = true;
-					for ( i=1; i<(int)dwCountL; i++)
+					for (int i=1; i<(int)dwCountL; i++)
 						if ((tPatrolPath.tpaWayLinks[i - 1].wFrom > tPatrolPath.tpaWayLinks[i].wFrom) || ((tPatrolPath.tpaWayLinks[i - 1].wFrom == tPatrolPath.tpaWayLinks[i].wFrom) && (tPatrolPath.tpaWayLinks[i - 1].wTo > tPatrolPath.tpaWayLinks[i].wTo))) {
 							WORD wTemp = tPatrolPath.tpaWayLinks[i - 1].wFrom;
 							tPatrolPath.tpaWayLinks[i - 1].wFrom = tPatrolPath.tpaWayLinks[i].wFrom;

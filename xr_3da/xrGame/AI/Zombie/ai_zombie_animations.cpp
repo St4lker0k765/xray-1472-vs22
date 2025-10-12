@@ -129,14 +129,14 @@ void CAI_Zombie::SelectAnimation(const Fvector& _view, const Fvector& _move, flo
 					break;
 				}
 			if (!tpGlobalAnimation) {
-				for ( i=0; i<3; i++)
+				for (int i=0; i<3; i++)
 					if (m_tZombieAnimations.tNormal.tGlobal.tpaDeathIdle[i] == m_tpCurrentGlobalAnimation) {
 						tpGlobalAnimation = m_tZombieAnimations.tNormal.tGlobal.tpaStandUp[i];
 						break;
 					}
 				
 				if (!tpGlobalAnimation)
-					for ( i=0; i<3; i++)
+					for (int i=0; i<3; i++)
 						if (m_tZombieAnimations.tNormal.tGlobal.tpaDeath[i] == m_tpCurrentGlobalAnimation) {
 							tpGlobalAnimation = m_tZombieAnimations.tNormal.tGlobal.tpaStandUp[i];
 							break;

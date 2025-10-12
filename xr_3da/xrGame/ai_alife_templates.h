@@ -69,26 +69,31 @@ IC void load_bool_vector(vector<bool> &baVector, NET_Packet &tNetPacket)
 };
 
 template <class T>
-void save_base_vector(vector<T> &tpVector, NET_Packet &tNetPacket)
+void save_base_vector(std::vector<T> &tpVector, NET_Packet &tNetPacket)
 {
-	tNetPacket.w_u32			(tpVector.size());
-	vector<T>::iterator			I = tpVector.begin();
-	vector<T>::iterator			E = tpVector.end();
-	for ( ; I != E; I++)
-		tNetPacket.w			(I,sizeof(*I));
-};
+    tNetPacket.w_u32(static_cast<u32>(tpVector.size()));
+    const u32 elem_size = static_cast<u32>(sizeof(T));
+    if (!tpVector.empty())
+    {
+        tNetPacket.w(static_cast<const void*>(tpVector.data()),
+                     static_cast<u32>(tpVector.size() * elem_size));
+    }
+}
 
 template <class T>
-void load_base_vector(vector<T> &tpVector, NET_Packet &tNetPacket)
+void load_base_vector(std::vector<T> &tpVector, NET_Packet &tNetPacket)
 {
-	u32							dwDummy;
-	tNetPacket.r_u32			(dwDummy);
-	tpVector.resize				(dwDummy);
-	vector<T>::iterator			I = tpVector.begin();
-	vector<T>::iterator			E = tpVector.end();
-	for ( ; I != E; I++)
-		tNetPacket.r		(I,sizeof(*I));
-};
+    u32 count = 0;
+    tNetPacket.r_u32(count);
+    tpVector.resize(count);
+    const u32 elem_size = static_cast<u32>(sizeof(T));
+    if (count)
+    {
+        tNetPacket.r(static_cast<void*>(tpVector.data()),
+                     static_cast<u32>(count * elem_size));
+    }
+}
+
 
 template <class T>
 void init_vector(vector<T *> &tpVector, LPCSTR caSection)

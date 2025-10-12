@@ -490,7 +490,10 @@ float ffGetCoverInDirection(float fAngle, u32 dwNodeID)
 int ifFindNearestPatrolPoint(vector<Fvector> &tpaVector, const Fvector &tPosition)
 {
 	float fMinDistance = 1000.f, fCurDistance;
-	for (int i=0, iIndex = 0; i<(int)(tpaVector.size()); i++)
+	int i = 0;
+	int iIndex = 0;
+
+	for (i = 0, iIndex = 0; i<(int)(tpaVector.size()); i++)
 		if ((fCurDistance = tPosition.distance_to(tpaVector[i])) < fMinDistance) {
 			fMinDistance = fCurDistance;
 			iIndex = i;

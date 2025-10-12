@@ -481,7 +481,7 @@ u32 CAI_Soldier::tfGetAloneFightType()
 #pragma todo("Leadership changed")
 	INIT_SQUAD_AND_LEADER
 	CGroup &Group = Squad.Groups[g_Group()];
-	for ( i=0; i<(int)Group.Members.size() + 1; i++) {
+	for (int i=0; i<(int)Group.Members.size() + 1; i++) {
 		
 		if (i<(int)Group.Members.size())
 			tpCustomMonster = dynamic_cast<CCustomMonster*>(Group.Members[i]);
@@ -723,7 +723,7 @@ u32 CAI_Soldier::tfGetGroupFightType()
 #pragma todo("Leadership changed")
 	INIT_SQUAD_AND_LEADER
 	CGroup &Group = Squad.Groups[g_Group()];
-	for ( i=0; i<(int)Group.Members.size() + 1; i++) {
+	for (int i=0; i<(int)Group.Members.size() + 1; i++) {
 		
 		if (i<(int)Group.Members.size())
 			tpCustomMonster = dynamic_cast<CCustomMonster*>(Group.Members[i]);
@@ -1004,7 +1004,10 @@ void CAI_Soldier::vfFindAllSuspiciousNodes(u32 StartNode, Fvector tPointPosition
 			if (fCost < .35f) {
 				bool bOk = false;
 				float fMax = 0.f;
-				for (int i=0, iIndex = -1; i<(int)Group.m_tpaSuspiciousNodes.size(); i++) {
+				int i = 0;
+				int iIndex = -1;
+
+				for (i=0, iIndex = -1; i<(int)Group.m_tpaSuspiciousNodes.size(); i++) {
 					Fvector tP0 = AI.tfGetNodeCenter(Group.m_tpaSuspiciousNodes[i].dwNodeID);
 					float fDistance = tP0.distance_to(tNodePosition);
 					if (fDistance < 10.f) {
@@ -1115,7 +1118,11 @@ void CAI_Soldier::vfClasterizeSuspiciousNodes(CGroup &Group)
 //		Group.m_tpaSuspiciousGroups[i] = 0;
 
  	u32 N = Group.m_tpaSuspiciousNodes.size();
-	for (int i=0, iGroupCounter = 1; i<(int)N; i++, iGroupCounter++) {
+
+	int iGroupCounter = 1;
+	int i = 0;
+
+	for (i=0, iGroupCounter = 1; i<(int)N; i++, iGroupCounter++) {
 		if (!Group.m_tpaSuspiciousNodes[i].dwGroup) 
 			Group.m_tpaSuspiciousNodes[i].dwGroup = iGroupCounter;
 		for (int j=0; j<(int)N; j++)

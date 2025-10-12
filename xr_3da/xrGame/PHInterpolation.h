@@ -7,7 +7,7 @@ class CPHInterpolation {
 public:
 CPHInterpolation();
 void SetBody(dBodyID body);
-static const PH_INTERPOLATION_POINTS=2;
+static const int PH_INTERPOLATION_POINTS=2;
 void InterpolatePosition(Fvector& pos);
 void	UpdatePositions();
 void	UpdateRotations();

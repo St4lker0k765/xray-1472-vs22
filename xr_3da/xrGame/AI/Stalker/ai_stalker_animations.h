@@ -41,10 +41,13 @@ public:
 	
 	IC	void		Load(CKinematics *tpKinematics, LPCSTR caBaseName)
 	{
+		int j = 0;
+		int i = 0;
+
 		string256 S;
-		for (int j=0; caBaseNames[j]; j++);
+		for (j=0; caBaseNames[j]; j++);
 		A.resize	(j);
-		for (int i=0; i<j; i++)
+		for (i=0; i<j; i++)
 			A[i] = tpKinematics->ID_Cycle(strconcat(S,caBaseName,caBaseNames[i]));
 	}
 };
@@ -55,10 +58,13 @@ public:
 	
 	IC	void		Load(CKinematics *tpKinematics, LPCSTR caBaseName)
 	{
+		int j = 0;
+		int i = 0;
+
 		string256	S;
-		for (int j=0; caBaseNames[j]; j++);
+		for (j=0; caBaseNames[j]; j++);
 		A.resize	(j);
-		for (int i=0; i<j; i++)
+		for (i=0; i<j; i++)
 			A[i].Load	(tpKinematics,strconcat(S,caBaseName,caBaseNames[i]));
 	}
 };

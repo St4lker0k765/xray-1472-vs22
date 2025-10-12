@@ -47,15 +47,18 @@ void CAI_ALife::vfNewGame()
 
 	ALIFE_ENTITY_P_IT			B = m_tpSpawnPoints.begin();
 	ALIFE_ENTITY_P_IT			E = m_tpSpawnPoints.end();
+
+	ALIFE_ENTITY_P_IT			j;
+
 	for (ALIFE_ENTITY_P_IT I = B ; I != E; ) {
 		u32	wGroupID = (*I)->m_dwSpawnGroup;
 		float fSum = (*I)->m_ucProbability;
-		for (ALIFE_ENTITY_P_IT j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++)
+		for (j = I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++)
 			fSum += (*j)->m_ucProbability;
 		float fProbability = ::Random.randF(0,fSum);
 		fSum = (*I)->m_ucProbability;
 		ALIFE_ENTITY_P_IT m = j, k = I;
-		for ( j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++) {
+		for (j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++) {
 			fSum += (*j)->m_ucProbability;
 			if (fSum > fProbability) {
 				k = j;
