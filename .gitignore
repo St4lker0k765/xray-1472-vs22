@@ -6,3 +6,6 @@
 /Debug_Dedicated/
 .vs/
 *.user
+*.pch
+*.asm
+*.cod

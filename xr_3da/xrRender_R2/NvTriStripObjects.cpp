@@ -95,7 +95,7 @@ void NvStripifier::BuildStripifyInfo(NvFaceInfoVec &faceInfos, NvEdgeInfoVec &ed
 	// iterate through the triangles of the triangle list
 	int numTriangles = numIndices / 3;
 	int index        = 0;
-	for (i = 0; i < numTriangles; i++)
+	for (int i = 0; i < numTriangles; i++)
 	{	
 		// grab the indices
 		int v0 = indices[index++];
@@ -554,7 +554,7 @@ void NvStripInfo::Combine(const NvFaceInfoVec &forward, const NvFaceInfoVec &bac
 	
 	// add forward faces
 	numFaces = forward.size();
-	for (i = 0; i < numFaces; i++)
+	for (int i = 0; i < numFaces; i++)
 		m_faces.push_back(forward[i]);
 }
 
@@ -924,7 +924,7 @@ void NvStripifier::Stripify(const WordVec &in_indices, const int in_cacheSize,
 		xr_delete(allStrips[i]);
 	}
 	
-	for (i = 0; i < allEdgeInfos.size(); i++)
+	for (int i = 0; i < allEdgeInfos.size(); i++)
 	{
 		NvEdgeInfo *info = allEdgeInfos[i];
 		while (info != NULL)
@@ -962,8 +962,10 @@ void NvStripifier::SplitUpStripsAndOptimize(NvStripInfoVec &allStrips, NvStripIn
 			
 			int numTimes    = allStrips[i]->m_faces.size() / threshold;
 			int numLeftover = allStrips[i]->m_faces.size() % threshold;
-			
-			for(int j = 0; j < numTimes; j++)
+
+			int j;
+
+			for(j = 0; j < numTimes; j++)
 			{
 				currentStrip = xr_new<NvStripInfo> (startInfo, 0, -1);
 				
@@ -1019,7 +1021,7 @@ void NvStripifier::SplitUpStripsAndOptimize(NvStripInfoVec &allStrips, NvStripIn
 		int firstIndex = 0;
 		float minCost = 10000.0f;
 		
-		for(i = 0; i < tempStrips2.size(); i++)
+		for(int i = 0; i < tempStrips2.size(); i++)
 		{
 			int numNeighbors = 0;
 			
@@ -1298,7 +1300,7 @@ void NvStripifier::FindAllStrips(NvStripInfoVec &allStrips,
 		// far we get
 		//
 		int numExperiments = experimentIndex;
-		for (i = 0; i < numExperiments; i++){
+		for (int i = 0; i < numExperiments; i++){
 			
 			// get the strip set
 			
@@ -1326,7 +1328,7 @@ void NvStripifier::FindAllStrips(NvStripInfoVec &allStrips,
 		//
 		int bestIndex = 0;
 		double bestValue = 0;
-		for (i = 0; i < numExperiments; i++)
+		for (int i = 0; i < numExperiments; i++)
 		{
 			const float avgStripSizeWeight = 1.0f;
 			const float numTrisWeight      = 1.0f;
@@ -1347,7 +1349,7 @@ void NvStripifier::FindAllStrips(NvStripInfoVec &allStrips,
 		CommitStrips(allStrips, experiments[bestIndex]);
 		
 		// and destroy all of the others
-		for (i = 0; i < numExperiments; i++)
+		for (int i = 0; i < numExperiments; i++)
 		{
 			if (i != bestIndex)
 			{
