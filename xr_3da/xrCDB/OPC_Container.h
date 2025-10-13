@@ -109,8 +109,8 @@
 					#ifdef CONTAINER_STATS
 					mUsedRam-=mMaxNbEntries*sizeof(udword);
 					#endif
-					xr_free			(mEntries);
-					mCurNbEntries	= mMaxNbEntries = 0;
+					DELETEARRAY(mEntries);
+					mCurNbEntries = mMaxNbEntries = 0;
 					return *this;
 				}
 

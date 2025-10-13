@@ -43,3 +43,24 @@ void CSoundRender_Emitter::rewind()
 	position					=	0;
 	if (target)	SoundRender.i_rewind	(this);
 }
+
+void CSoundRender_Emitter::cancel()
+{
+	// Msg		("- %10s : %3d[%1.4f] : %s","cancel",dbg_ID,priority(),source->fname);
+	switch	(state) 
+	{
+	case stPlaying:
+		// switch to: SIMULATE
+		state					=	stSimulating;		// switch state
+		SoundRender.i_stop		(this);
+		break;
+	case stPlayingLooped:
+		// switch to: SIMULATE
+		state					=	stSimulatingLooped;	// switch state
+		SoundRender.i_stop		(this);
+		break;
+	default:
+		R_ASSERT2	(0, "Non playing sound forced out of render queue");
+		break;
+	}
+}

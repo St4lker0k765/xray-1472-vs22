@@ -72,7 +72,7 @@ void CSoundRender_Emitter::update	(float dt)
 				// switch to: PLAY
 				state					=	stPlaying;
 				position				= 	(((dwTime-dwTimeStarted)%source->dwTimeTotal)*source->dwBytesPerMS);
-				SoundRender.i_start	(this);
+				SoundRender.i_start		(this);
 			}
 		}
 		break;
@@ -95,7 +95,7 @@ void CSoundRender_Emitter::update	(float dt)
 			// switch to: PLAY
 			state					=	stPlayingLooped;	// switch state
 			position				= (((dwTime-dwTimeStarted)%source->dwTimeTotal)*source->dwBytesPerMS);
-			SoundRender.i_start	(this);
+			SoundRender.i_start		(this);
 		}
 		break;
 	}
@@ -112,11 +112,11 @@ BOOL	CSoundRender_Emitter::update_culling	(float dt)
 {
 	// Check range
 	float	dist		= SoundRender.Listener.vPosition.distance_to	(p_source.position);
-	if (dist>p_source.max_distance)	return FALSE;
+	if (dist>p_source.max_distance)										{ smooth_volume = 0; return FALSE; }
 
 	// Calc attenuated volume
 	float att			= p_source.min_distance/(psSoundRolloff*dist);	clamp(att,0.f,1.f);
-	if (att*p_source.volume*psSoundVEffects<psSoundCull)				return FALSE;
+	if (att*p_source.volume*psSoundVEffects<psSoundCull)				{ smooth_volume = 0; return FALSE; }
 
 	// Update occlusion
 	float occ			=	(SoundRender.get_occlusion	(p_source.position,.2f,occluder))?-1.f:1.f;
@@ -126,8 +126,20 @@ BOOL	CSoundRender_Emitter::update_culling	(float dt)
 	// Update smoothing
 	float vol_occ		=	occluder_volume*(1.f-psSoundOcclusionScale)+psSoundOcclusionScale;
 	smooth_volume		=	.9f*smooth_volume + .1f*(p_source.volume*psSoundVEffects*vol_occ);
-	if (smooth_volume*att<psSoundCull)	return FALSE;
-	return TRUE;
+	if (smooth_volume*att<psSoundCull)									return FALSE;	// allow volume to go up
+
+	// Here we has enought "PRIORITY" to be soundable
+	// If we are playing already, return OK
+	// --- else check availability of resources
+	if (target)			return	TRUE;
+	else				return	SoundRender.i_allow_play	(this);
+}
+
+float	CSoundRender_Emitter::priority				()
+{
+	float	dist		= SoundRender.Listener.vPosition.distance_to	(p_source.position);
+	float	att			= p_source.min_distance/(psSoundRolloff*dist);	clamp(att,0.f,1.f);
+	return	smooth_volume*att;
 }
 
 void	CSoundRender_Emitter::update_environment	(float dt)

@@ -64,8 +64,10 @@ void CLightPPA::Render	(SGeometry* hGeom)
 	CDB::TRI* tris		= pCreator->ObjectSpace.GetStaticTris();
 
 	// Lock
+	RCache.set_Geometry		(hGeom);
+	u32 triLock				= _min(256u,triCount);
 	u32	vOffset;
-	CLightPPA_Vertex* VB = (CLightPPA_Vertex*)RCache.Vertex.Lock(triCount*3,hGeom->vb_stride,vOffset);
+	CLightPPA_Vertex* VB	= (CLightPPA_Vertex*)RCache.Vertex.Lock(triLock*3,hGeom->vb_stride,vOffset);
 
 	// Cull and triangulate polygons
 	Fvector	cam		= Device.vCameraPosition;
@@ -89,14 +91,20 @@ void CLightPPA::Render	(SGeometry* hGeom)
 		mk_vertex(*VB,V2,Poly.n,sphere.P,r2);	VB++;
 		mk_vertex(*VB,V3,Poly.n,sphere.P,r2);	VB++;
 		actual++;
+
+		if (actual>=triLock)
+		{
+			RCache.Vertex.Unlock		(actual*3,hGeom->vb_stride);
+			if (actual) RCache.Render	(D3DPT_TRIANGLELIST,vOffset,actual);
+			actual						= 0;
+			triLock						= _min(256u,triCount-t);
+			VB							= (CLightPPA_Vertex*)RCache.Vertex.Lock(triLock*3,hGeom->vb_stride,vOffset);
+		}
 	}
 
 	// Unlock and render
 	RCache.Vertex.Unlock		(actual*3,hGeom->vb_stride);
-	if (actual) {
-		RCache.set_Geometry		(hGeom);
-		RCache.Render			(D3DPT_TRIANGLELIST,vOffset,actual);
-	}
+	if (actual) RCache.Render	(D3DPT_TRIANGLELIST,vOffset,actual);
 }
 
 void CLightPPA_Manager::Initialize	()

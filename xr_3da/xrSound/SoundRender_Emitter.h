@@ -25,6 +25,8 @@ public:
 		stFORCEDWORD	= u32(-1)
 	};
 public:
+	u32							dbg_ID;
+
 	CSoundRender_Target*		target;
 	CSoundRender_Source*		source;
 	sound*						owner;
@@ -43,6 +45,8 @@ public:
 	u32							dwTimeStarted;			// time of "Start"
 	u32							dwTimeToStop;			// time to "Stop"
 	u32							dwTimeToPropagade;
+
+	u32							marker;
 public:
 	void						PropagadeEvent			();
 	BOOL						isPlaying				(void)					{ return state!=stStopped; }
@@ -55,7 +59,9 @@ public:
 
 	void						fill_block				(void* ptr, u32 size);
 
+	float						priority				();
 	void						start					(sound* _owner, BOOL _loop);
+	void						cancel					();						// manager forces out of rendering
 	void						update					(float dt);
 	BOOL						update_culling			(float dt);
 	void						update_environment		(float dt);

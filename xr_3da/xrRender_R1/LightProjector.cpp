@@ -8,7 +8,7 @@
 #include "lighttrack.h"
 
 const	int		P_rt_size	= 512;
-const	int		P_o_size	= 61;
+const	int		P_o_size	= 56;
 const	int		P_o_line	= P_rt_size/P_o_size;
 const	int		P_o_count	= P_o_line*P_o_line;
 const	float	P_distance	= 48;
@@ -117,7 +117,11 @@ public:
 // 
 void CLightProjector::setup		(int id)
 {
-	VERIFY				(id<int(receivers.size()));
+	if (id>=int(receivers.size()))
+	{
+		Log		("! CLightProjector::setup - ID out of range");
+		return;
+	}
 	RCache.set_xform	(D3DTS_TEXTURE0,receivers[id].UVgen);
 }
 
@@ -128,7 +132,7 @@ void CLightProjector::calculate	()
 	
 	Device.Statistic.RenderDUMP_Pcalc.Begin	();
 	RCache.set_RT				(RT_temp->pRT);
-	RCache.set_ZB				(HW.pTempZB);
+	RCache.set_ZB				(RImplementation.Target.pTempZB);
 	CHK_DX(HW.pDevice->Clear	(0,0, D3DCLEAR_ZBUFFER | (HW.Caps.bStencil?D3DCLEAR_STENCIL:0), 0,1,0 ));
 	RCache.set_xform_world		(Fidentity);
 

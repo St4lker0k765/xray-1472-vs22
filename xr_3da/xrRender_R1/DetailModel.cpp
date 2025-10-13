@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "detailmodel.h"
+#include "xrstripify.h"
 
 CDetail::~CDetail()
 {
@@ -43,8 +44,6 @@ void CDetail::Load		(IReader* S)
 
 	Optimize	();
 }
-
-#include "xrstripify.h"
 
 void CDetail::Optimize	()
 {

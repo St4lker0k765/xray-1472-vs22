@@ -2,12 +2,12 @@
 #include "fstaticrender_rendertarget.h"
 
 static LPCSTR		RTname			= "$user$rendertarget";
-int					psSupersample	= 0;
 
 CRenderTarget::CRenderTarget()
 {
 	bAvailable			= FALSE;
 	RT					= 0;
+	pTempZB				= 0;
 
 	pShaderSet			= 0;
 	pShaderGray			= 0;
@@ -32,7 +32,7 @@ BOOL CRenderTarget::Create	()
 	curHeight			= Device.dwHeight;
 
 	// Select mode to operate in
-	switch (psSupersample)
+	switch (ps_r__Supersample)
 	{
 	case	1:		rtWidth = 1*Device.dwWidth;					rtHeight=1*Device.dwHeight;					break;
 	case	2:		rtWidth = iFloor(1.414f*Device.dwWidth);	rtHeight=iFloor(1.414f*Device.dwHeight);	break;
@@ -55,7 +55,10 @@ BOOL CRenderTarget::Create	()
 		ZB			= HW.pBaseZB;
 		ZB->AddRef	();
 	}
-	
+
+	// Temp ZB, used by some of the shadowing code
+	R_CHK	(HW.pDevice->CreateDepthStencilSurface	(512,512,HW.Caps.fDepth,D3DMULTISAMPLE_NONE,0,TRUE,&pTempZB,NULL));
+
 	// Shaders and stream
 	string64	_rt_2_name;
 	strconcat					(_rt_2_name,RTname,",",RTname);
@@ -77,6 +80,7 @@ void CRenderTarget::OnDeviceCreate	()
 
 void CRenderTarget::OnDeviceDestroy	()
 {
+	_RELEASE					(pTempZB);
 	_RELEASE					(ZB);
 	Device.Shader.Delete		(pShaderNoise);
 	Device.Shader.Delete		(pShaderDuality);
@@ -185,7 +189,7 @@ void CRenderTarget::e_render_duality()
 
 BOOL CRenderTarget::Perform		()
 {
-	return Available() && ( NeedPostProcess() || (psSupersample>1));
+	return Available() && ( NeedPostProcess() || (ps_r__Supersample>1));
 }
 
 void CRenderTarget::Begin		()

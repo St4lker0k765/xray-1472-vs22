@@ -40,8 +40,10 @@ private:
 	// Containers
 	xr_vector<CSoundRender_Source*>		s_sources;
 	xr_vector<CSoundRender_Emitter*>		s_emitters;
+	u32									s_emitters_u;			// emitter update marker
 	xr_vector<CSoundRender_Target*>		s_targets;
 	xr_vector<CSoundRender_Target*>		s_targets_defer;
+	u32									s_targets_pu;			// parameters update
 	SoundEnvironment_LIB*				s_environment;
 	CSoundRender_Environment			s_user_environment;
 public:
@@ -65,6 +67,8 @@ public:
 	virtual void						set_handler				( sound_event* E );
 
 	virtual void						update					( const Fvector& P, const Fvector& D, const Fvector& N, float dt );
+	virtual u32							stat_render				( );
+	virtual u32							stat_simulate			( );
 
 #ifdef _EDITOR
 	virtual SoundEnvironment_LIB*		get_env_library			()																{ return s_environment; }
@@ -78,6 +82,7 @@ public:
 	void								i_start					( CSoundRender_Emitter* E	);
 	void								i_stop					( CSoundRender_Emitter* E	);
 	void								i_rewind				( CSoundRender_Emitter* E	);
+	BOOL								i_allow_play			( CSoundRender_Emitter* E	);
 
 	BOOL								get_occlusion			( Fvector& P, float R, Fvector* occ );
 	CSoundRender_Environment*			get_environment			( Fvector& P );

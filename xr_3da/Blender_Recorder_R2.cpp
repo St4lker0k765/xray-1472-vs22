@@ -29,12 +29,16 @@ void	CBlender_Compile::SetMapping	()
 void	CBlender_Compile::r2_Pass		(LPCSTR _vs, LPCSTR _ps, BOOL bZtest, BOOL bZwrite,	BOOL bABlend, u32 abSRC, u32 abDST, BOOL aTest, u32 aRef)
 {
 	RS.Invalidate			();
+	ctable.clear			();
 	passTextures.clear		();
+	passMatrices.clear		();
+	passConstants.clear		();
 	dwStage					= 0;
 
 	// Setup FF-units (Z-buffer, blender)
 	PassSET_ZB				(bZtest,bZwrite);
 	PassSET_Blend			(bABlend,abSRC,abDST,aTest,aRef);
+	PassSET_LightFog		(FALSE,FALSE);
 
 	// Create shaders
 	SPS* ps					= Device.Shader._CreatePS			(_ps);
@@ -53,8 +57,13 @@ void	CBlender_Compile::r2_Constant	(LPCSTR name, R_constant_setup* s)
 	if (C)					C->handler	= s;
 }
 
-void	CBlender_Compile::r2_Sampler	(LPCSTR name, LPCSTR texture, u32 address, u32 fmin, u32 fmip, u32 fmag, u32 element)
+void	CBlender_Compile::r2_Sampler	(LPCSTR _name, LPCSTR texture, u32 address, u32 fmin, u32 fmip, u32 fmag, u32 element)
 {
+	//
+	string256				name;
+	strcpy					(name,_name);
+	if (strext(name)) *strext(name)=0;
+
 	// Find index
 	R_constant*	C			= ctable.get(name);
 	if (0==C)				return;
@@ -74,6 +83,11 @@ void	CBlender_Compile::r2_Sampler	(LPCSTR name, LPCSTR texture, u32 address, u32
 	RS.SetSAMP				(stage,D3DSAMP_MIPFILTER,	fmip);
 	RS.SetSAMP				(stage,D3DSAMP_MAGFILTER,	fmag);
 	RS.SetSAMP				(stage,D3DSAMP_ELEMENTINDEX,element);
+}
+
+void	CBlender_Compile::r2_Sampler_rtf(LPCSTR name, LPCSTR texture, u32 element/* =0 */)
+{
+	r2_Sampler	(name,texture,D3DTADDRESS_CLAMP,D3DTEXF_POINT,D3DTEXF_NONE,D3DTEXF_POINT,element);
 }
 
 void	CBlender_Compile::r2_End		()

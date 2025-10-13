@@ -11,7 +11,7 @@
 
 #include <xrCore.h>
 
-#define DIRECTINPUT_VERSION 0x0700
+#define DIRECTINPUT_VERSION 0x0800
 #pragma warning(disable:4995)
 #include <d3d9.h>
 #include <d3dx9.h>
@@ -58,7 +58,7 @@
 
 #pragma comment( lib, "d3d9.lib"		)
 #pragma comment( lib, "d3dx9.lib"		)
-#pragma comment( lib, "dinput.lib"		)
+#pragma comment( lib, "dinput8.lib"		)
 #pragma comment( lib, "dxguid.lib"		)
 
 //{{AFX_INSERT_LOCATION}}

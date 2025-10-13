@@ -254,8 +254,10 @@ void CRender::Calculate()
 	marker++;
 	calc_DetailTexturing					();
 	set_Object								(0);
+	if (0!=pLastSector)	pLastSector->Render_prepare(ViewBase);
+	pCreator->pHUD->Render_First			();	
 	if (0!=pLastSector) pLastSector->Render	(ViewBase);
-	pCreator->pHUD->Render_Calculate		();	
+	pCreator->pHUD->Render_Last				();	
 	L_Shadows.calculate						();
 	L_Projector.calculate					();
 	
@@ -288,7 +290,7 @@ void __fastcall mapNormal_Render	(SceneGraph::mapNormalItems& N)
 		N.sorted.clear			();
 		
 		// DIRECT:UNSORTED
-		std::vector<IVisual*>&	L			= N.unsorted;
+		xr_vector<IVisual*>&	L			= N.unsorted;
 		IVisual **I=&*L.begin(), **E = &*L.end();
 		for (; I!=E; I++)
 		{
@@ -365,13 +367,10 @@ void CRender::flush_Patches	()
 
 		// Rotation
 		float _sin1, _cos1, _sin2, _cos2;
-		{
-			const float s = std::sinf(P.angle);
-			const float c = std::cosf(P.angle);
-			_sin1 = s;  _cos1 = c;
-			_sin2 = c;  _cos2 = -s;
-		}
-
+		float			da	= P.angle;
+		_sincos			(da,_sin1,_cos1);
+		da				+= PI_DIV_2;
+		_sincos			(da,_sin2,_cos2);
 
 		V->set			(	cx + size * _sin1,	// sx
 							cy + size * _cos1,	// sy

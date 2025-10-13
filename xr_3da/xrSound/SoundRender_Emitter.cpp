@@ -11,6 +11,9 @@ extern	float			psSoundVEffects;
 //////////////////////////////////////////////////////////////////////
 CSoundRender_Emitter::CSoundRender_Emitter(void)
 {
+	static	u32			incrementalID = 0;
+
+	dbg_ID				= ++incrementalID;
 	target				= NULL;
 	source				= NULL;
 	owner				= NULL;
@@ -25,6 +28,7 @@ CSoundRender_Emitter::CSoundRender_Emitter(void)
 	dwTimeStarted		= 0;
 	dwTimeToStop		= 0;
 	dwTimeToPropagade	= 0;
+	marker				= 0xabababab;
 }
 
 CSoundRender_Emitter::~CSoundRender_Emitter(void)

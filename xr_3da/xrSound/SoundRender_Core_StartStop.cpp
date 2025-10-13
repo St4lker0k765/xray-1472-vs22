@@ -4,37 +4,42 @@
 #include "SoundRender_Core.h"
 #include "SoundRender_Emitter.h"
 #include "SoundRender_Target.h"
+#include "SoundRender_Source.h"
 
 void	CSoundRender_Core::i_start		(CSoundRender_Emitter* E)
 {
 	R_ASSERT	(E);
 
-	// Search available target
-	CSoundRender_Target*	T	= 0;
+	// Search lowest-priority target
+	float					Ptest	= E->priority	();
+	float					Ptarget	= flt_max;
+	s32						Pslot	= -1;
+	CSoundRender_Target*	T		= 0;
 	for (u32 it=0; it<s_targets.size(); it++)
 	{
-		if (0==s_targets[it]->get_emitter())	
+		CSoundRender_Target*	Ttest	= s_targets[it];
+		if (Ttest->priority < Ptarget)
 		{
-			T = s_targets[it];
-			break;
+			T		= Ttest;
+			Ptarget	= Ttest->priority;
+			Pslot	= it;
 		}
 	}
-	
-	// If not found - create new
-	if (0==T)
-	{
-		T					=	xr_new<CSoundRender_Target>();
-		T->_initialize		();
-		s_targets.push_back	(T);
-	}
+	// Msg			("- %10s : %3d[%1.4f] : %s --- slot: %d","i_start",E->dbg_ID,E->priority(),E->source->fname,Pslot);
+
+	// Stop currently playing
+	if (T->get_emitter())
+		T->get_emitter()->cancel();
 
 	// Associate
 	E->target			= T;
 	T->start			(E);
+	T->priority			= Ptest;
 }
 
 void	CSoundRender_Core::i_stop		(CSoundRender_Emitter* E)
 {
+	// Msg					("- %10s : %3d[%1.4f] : %s","i_stop",E->dbg_ID,E->priority(),E->source->fname);
 	R_ASSERT			(E);
 	R_ASSERT			(E == E->target->get_emitter());
 	E->target->stop		();
@@ -43,7 +48,20 @@ void	CSoundRender_Core::i_stop		(CSoundRender_Emitter* E)
 
 void	CSoundRender_Core::i_rewind		(CSoundRender_Emitter* E)
 {
+	// Msg					("- %10s : %3d[%1.4f] : %s","i_rewind",E->dbg_ID,E->priority(),E->source->fname);
 	R_ASSERT			(E);
 	R_ASSERT			(E == E->target->get_emitter());
 	E->target->rewind	();
+}
+
+BOOL	CSoundRender_Core::i_allow_play	(CSoundRender_Emitter* E)
+{
+	// Search available target
+	float	Ptest	= E->priority	();
+	for (u32 it=0; it<s_targets.size(); it++)
+	{
+		CSoundRender_Target*	T		= s_targets	[it];
+		if (T->priority<Ptest)			return TRUE;
+	}
+	return FALSE;
 }

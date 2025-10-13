@@ -27,10 +27,8 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 namespace PAPI{
 float ParticleAction::dt;
 
-ParticleGroup **_ParticleState::group_list;
-PAHeader **_ParticleState::alist_list;
-int _ParticleState::group_count;
-int _ParticleState::alist_count;
+_ParticleState::ParticleGroupVec	_ParticleState::group_vec;
+_ParticleState::PAHeaderVec			_ParticleState::alist_vec;
 
 // This AutoCall struct allows for static initialization of the above shared variables.
 struct AutoCall
@@ -40,17 +38,11 @@ struct AutoCall
 
 AutoCall::AutoCall()
 {
-	// The list of groups, etc.		
-	_ParticleState::group_list = xr_alloc<ParticleGroup*>(16);
-	_ParticleState::group_count = 16;
-	_ParticleState::alist_list = xr_alloc<PAHeader*>(16);
-	_ParticleState::alist_count = 16;
-	for(int i=0; i<16; i++)
-	{
-		_ParticleState::group_list[i] = NULL;
-		_ParticleState::alist_list[i] = NULL;
-	}
+	// The list of groups, etc.	
+	_ParticleState::group_vec.reserve(128);
+	_ParticleState::alist_vec.reserve(128);
 }
+static AutoCall AC;
 
 // This is the global state.
 _ParticleState __ps;
@@ -90,7 +82,7 @@ _ParticleState::_ParticleState()
 
 void _ParticleState::ResetState()
 {
-	vertexB_tracks	= TRUE;
+	flags.set		(PASource::flVertexB_tracks,TRUE);
 	Size			= pDomain(PDPoint, 1.0f, 1.0f, 1.0f);
 	Vel				= pDomain(PDPoint, 0.0f, 0.0f, 0.0f);
 	VertexB			= pDomain(PDPoint, 0.0f, 0.0f, 0.0f);
@@ -104,24 +96,14 @@ void _ParticleState::ResetState()
 
 ParticleGroup *_ParticleState::GetGroupPtr(int p_group_num)
 {
-	if(p_group_num < 0)
-		return NULL; // IERROR
-
-	if(p_group_num >= group_count)
-		return NULL; // IERROR
-
-	return group_list[p_group_num];
+	R_ASSERT(p_group_num>=0&&p_group_num<(int)group_vec.size());
+	return group_vec[p_group_num];
 }
 
 PAHeader *_ParticleState::GetListPtr(int a_list_num)
 {
-	if(a_list_num < 0)
-		return NULL; // IERROR
-
-	if(a_list_num >= alist_count)
-		return NULL; // IERROR
-
-	return alist_list[a_list_num];
+	R_ASSERT(a_list_num>=0&&a_list_num<(int)alist_vec.size());
+	return alist_vec[a_list_num];
 }
 
 // Return an index into the list of particle groups where
@@ -131,15 +113,11 @@ int _ParticleState::GenerateGroups(int p_group_count)
 	int num_empty = 0;
 	int first_empty = -1;
 	
-	for(int i=0; i<group_count; i++)
-	{
-		if(group_list[i])
-		{
+	for(int i=0; i<(int)group_vec.size(); i++){
+		if(group_vec[i]){
 			num_empty = 0;
 			first_empty = -1;
-		}
-		else
-		{
+		}else{
 			if(first_empty < 0)
 				first_empty = i;
 			num_empty++;
@@ -149,16 +127,10 @@ int _ParticleState::GenerateGroups(int p_group_count)
 	}
 	
 	// Couldn't find a big enough gap. Reallocate.
-	int new_count = 16 + group_count + p_group_count;
-	ParticleGroup **glist = xr_alloc<ParticleGroup*>(new_count);
-	Memory.mem_copy(glist, group_list, group_count * sizeof(void*));
-	for(int i=group_count; i<new_count; i++)
-		glist[i] = NULL;
-	xr_free(group_list);
-	group_list = glist;
-	group_count = new_count;
+	first_empty = group_vec.size();
+	group_vec.push_back	(xr_alloc<ParticleGroup>(p_group_count));
 	
-	return GenerateGroups(p_group_count);
+	return first_empty;
 }
 
 // Return an index into the list of action lists where
@@ -168,9 +140,9 @@ int _ParticleState::GenerateLists(int list_count)
 	int num_empty = 0;
 	int first_empty = -1;
 	
-	for(int i=0; i<alist_count; i++)
+	for(int i=0; i<(int)alist_vec.size(); i++)
 	{
-		if(alist_list[i])
+		if(alist_vec[i])
 		{
 			num_empty = 0;
 			first_empty = -1;
@@ -185,17 +157,11 @@ int _ParticleState::GenerateLists(int list_count)
 		}
 	}
 	
-	// Couldn't find a big enough gap. Reallocate.
-	int new_count = 16 + alist_count + list_count;
-	PAHeader **new_list = xr_alloc<PAHeader*>(new_count);
-	Memory.mem_copy(new_list, alist_list, alist_count * sizeof(void*));
-	for(int i=list_count; i<new_count; i++)
-		new_list[i] = NULL;
-	xr_free(alist_list);
-	alist_list = new_list;
-	alist_count = new_count;
+	// Couldn't find a big enough gap. Allocate.
+	first_empty = alist_vec.size();
+	alist_vec.push_back(xr_alloc<PAHeader>(list_count));
 	
-	return GenerateLists(list_count);
+	return first_empty;
 }
 
 ////////////////////////////////////////////////////////
@@ -332,7 +298,7 @@ void _pAddActionToList(ParticleAction *S, int size)
 		Memory.mem_copy(new_alist, alist, alist->count * sizeof(PAHeader));
 		
 		xr_free(alist);
-		_ps.alist_list[_ps.list_id] = _ps.pact = alist = new_alist;
+		_ps.alist_vec[_ps.list_id] = _ps.pact = alist = new_alist;
 		
 		alist->actions_allocated = new_alloc;
 	}
@@ -413,7 +379,7 @@ PARTICLEDLL_API void pVertexBTracks(BOOL trackVertex)
 {
 	_ParticleState &_ps = _GetPState();
 
-	_ps.vertexB_tracks = trackVertex;
+	_ps.flags.set(PASource::flVertexB_tracks,trackVertex);
 }
 
 PARTICLEDLL_API void pParentMotion(float scale)
@@ -486,10 +452,10 @@ PARTICLEDLL_API int pGenActionLists(int action_list_count)
 	
 	for(int i=ind; i<ind+action_list_count; i++)
 	{
-		_ps.alist_list[i] = xr_alloc<PAHeader>(8);
-		_ps.alist_list[i]->actions_allocated = 8;
-		_ps.alist_list[i]->type = PAHeaderID;
-		_ps.alist_list[i]->count = 1;
+		_ps.alist_vec[i] 					= xr_alloc<PAHeader>(8);
+		_ps.alist_vec[i]->actions_allocated = 8;
+		_ps.alist_vec[i]->type				= PAHeaderID;
+		_ps.alist_vec[i]->count				= 1;
 	}
 
 	return ind;
@@ -537,20 +503,13 @@ PARTICLEDLL_API void pDeleteActionLists(int action_list_num, int action_list_cou
 	if(action_list_num < 0)
 		return; // ERROR
 
-	if(action_list_num + action_list_count > _ps.alist_count)
+	if(action_list_num + action_list_count > (int)_ps.alist_vec.size())
 		return; // ERROR
 
 	for(int i = action_list_num; i < action_list_num + action_list_count; i++)
 	{
-		if(_ps.alist_list[i])
-		{
-			xr_free(_ps.alist_list[i]);
-			_ps.alist_list[i] = NULL;
-		}
-		else
-		{
-			return; // ERROR
-		}
+		if(_ps.alist_vec[i])	xr_free(_ps.alist_vec[i]);
+		else					return; // ERROR
 	}
 }
 
@@ -588,7 +547,7 @@ PARTICLEDLL_API void pCallActionList(int action_list_num)
 	}
 }
 
-PARTICLEDLL_API void pSetActionListParenting(int action_list_num, const Fmatrix& m, const Fvector& vel)
+PARTICLEDLL_API void pSetActionListParenting(int action_list_num, const Fmatrix& full, const Fvector& vel)
 {
 	_ParticleState &_ps = _GetPState();
 
@@ -603,10 +562,15 @@ PARTICLEDLL_API void pSetActionListParenting(int action_list_num, const Fmatrix&
 
 	int num_act = pa->count-1; pa++;
 
+	Fmatrix mR=full;	mR.c.set(0,0,0);
+	Fmatrix mT;			mT.translate(full.c);
+
 	// Step through all the actions in the action list.
-	for(int act = 0; act < num_act; act++, pa++)
-	{
-		if (!pa->flags.is(ParticleAction::ALLOW_PARENT)) continue;
+	for(int act = 0; act < num_act; act++, pa++){
+		BOOL t = pa->m_Flags.is(ParticleAction::ALLOW_TRANSLATE);
+		BOOL r = pa->m_Flags.is(ParticleAction::ALLOW_ROTATE);
+		if ((!t)&&(!r)) continue;
+		const Fmatrix& m = t&&r?full:(t?mT:mR);
 		switch(pa->type)
 		{
 		case PAAvoidID:
@@ -674,6 +638,41 @@ PARTICLEDLL_API void pSetActionListParenting(int action_list_num, const Fmatrix&
 	}
 }
 
+PARTICLEDLL_API void pStopPlaying(int action_list_num)
+{
+	_ParticleState &_ps = _GetPState();
+	if(_ps.in_new_list) return; // ERROR
+	// Execute the specified action list.
+	PAHeader *pa		= _ps.GetListPtr(action_list_num);
+	if(pa == NULL)		return; // ERROR
+	int num_act = pa->count-1; pa++;
+	// Step through all the actions in the action list.
+	for(int act = 0; act < num_act; act++, pa++){
+		switch(pa->type){
+		case PASourceID:
+			((PASource *)pa)->m_Flags.set(PASource::flSilent,TRUE);
+			break;
+		}
+	}
+}
+
+PARTICLEDLL_API void pStartPlaying(int action_list_num)
+{
+	_ParticleState &_ps = _GetPState();
+	if(_ps.in_new_list) return; // ERROR
+	// Execute the specified action list.
+	PAHeader *pa		= _ps.GetListPtr(action_list_num);
+	if(pa == NULL)		return; // ERROR
+	int num_act = pa->count-1; pa++;
+	// Step through all the actions in the action list.
+	for(int act = 0; act < num_act; act++, pa++){
+		switch(pa->type){
+		case PASourceID:
+			((PASource *)pa)->m_Flags.set(PASource::flSilent,FALSE);
+			break;
+		}
+	}
+}
 
 ////////////////////////////////////////////////////////
 // Particle Group Calls
@@ -690,10 +689,10 @@ PARTICLEDLL_API int pGenParticleGroups(int p_group_count, int max_particles)
 	
 	for(int i=ind; i<ind+p_group_count; i++)
 	{
-		_ps.group_list[i] = (ParticleGroup *)xr_alloc<Particle>(max_particles + 2);
-		_ps.group_list[i]->max_particles = max_particles;
-		_ps.group_list[i]->particles_allocated = max_particles;
-		_ps.group_list[i]->p_count = 0;
+		_ps.group_vec[i] = (ParticleGroup *)xr_alloc<Particle>(max_particles + 2);
+		_ps.group_vec[i]->max_particles = max_particles;
+		_ps.group_vec[i]->particles_allocated = max_particles;
+		_ps.group_vec[i]->p_count = 0;
 	}
 	
 	return ind;
@@ -706,20 +705,13 @@ PARTICLEDLL_API void pDeleteParticleGroups(int p_group_num, int p_group_count)
 	if(p_group_num < 0)
 		return; // ERROR
 
-	if(p_group_num + p_group_count > _ps.group_count)
+	if(p_group_num + p_group_count > (int)_ps.group_vec.size())
 		return; // ERROR
 	
 	for(int i = p_group_num; i < p_group_num + p_group_count; i++)
 	{
-		if(_ps.group_list[i])
-		{
-			xr_free(_ps.group_list[i]);
-			_ps.group_list[i] = NULL;
-		}
-		else
-		  {
-			return; // ERROR
-		  }
+		if(_ps.group_vec[i])	xr_free(_ps.group_vec[i]);
+		else					return; // ERROR
 	}
 }
 
@@ -780,9 +772,9 @@ PARTICLEDLL_API int pSetMaxParticlesG(int group_num, int max_count)
 	
 	xr_free(pg);
 	
-	_ps.group_list[_ps.group_id] = _ps.pgrp = pg2;
-	pg2->max_particles = max_count;
-	pg2->particles_allocated = max_count;
+	_ps.group_vec[_ps.group_id] = _ps.pgrp = pg2;
+	pg2->max_particles			= max_count;
+	pg2->particles_allocated	= max_count;
 
 	return max_count;
 }

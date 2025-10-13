@@ -10,9 +10,9 @@
 CSoundRender_Core				SoundRender;
 CSound_manager_interface*		Sound		= &SoundRender;
 
-int		psSoundRelaxTime		= 10;
+int		psSoundTargets			= 12;
 Flags32	psSoundFlags			= {ssWaveTrace | ssSoftware};
-float	psSoundOcclusionScale	= 0.85f;
+float	psSoundOcclusionScale	= 0.5f;
 float	psSoundCull				= 0.01f;
 float	psSoundRolloff			= 0.25f;
 float	psSoundDoppler			= 0.3f;
@@ -34,6 +34,8 @@ CSoundRender_Core::CSoundRender_Core	()
 	geom_ENV					= NULL;
 	s_environment				= NULL;
 	Handler						= NULL;
+	s_targets_pu				= 0;
+	s_emitters_u				= 0;
 }
 
 CSoundRender_Core::~CSoundRender_Core()
@@ -111,7 +113,7 @@ void CSoundRender_Core::_initialize	(u32 window)
 
 	// Pre-create targets
 	CSoundRender_Target*	T	= 0;
-	for (u32 tit=0; tit<32; tit++)
+	for (u32 tit=0; tit<u32(psSoundTargets); tit++)
 	{
 		T							=	xr_new<CSoundRender_Target>();
 		T->_initialize				();	
@@ -147,8 +149,8 @@ void CSoundRender_Core::env_load	()
 void CSoundRender_Core::env_unload	()
 {
 	// Unload 
-	R_ASSERT					(s_environment);
-	s_environment->Unload		();
+	if (s_environment)
+		s_environment->Unload	();
 	xr_delete					(s_environment);
 
 	// Unload geometry
@@ -176,7 +178,7 @@ void CSoundRender_Core::set_geometry_env(IReader* I)
 	if (0==s_environment)	return;
 
 	// Assosiate names
-	xr_vector<u16>			ids;
+	xr_vector<u16>		ids;
 	IReader*			names	= I->open_chunk(0);
 	while (!names->eof())
 	{

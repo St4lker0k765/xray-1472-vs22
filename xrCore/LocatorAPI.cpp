@@ -15,12 +15,7 @@
 #include "FS_internal.h"
 
 CLocatorAPI*	xr_FS	= NULL;
-
-#ifdef _EDITOR
 #define FSLTX	"fs.ltx"
-#else
-#define FSLTX	"fsgame.ltx"
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // FS_Path

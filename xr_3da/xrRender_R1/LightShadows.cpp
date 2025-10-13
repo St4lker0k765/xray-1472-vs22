@@ -7,6 +7,7 @@
 #include "LightTrack.h"
 #include "..\xr_object.h"
 #include "..\fbasicvisual.h"
+#include "..\CustomHUD.h"
 
 const	float	S_distance	= 48;
 const	float	S_distance2	= S_distance*S_distance;
@@ -179,7 +180,7 @@ void CLightShadows::calculate	()
 			if (!bRTS)	{
 				bRTS						= TRUE;
 				RCache.set_RT				(RT_temp->pRT);
-				RCache.set_ZB				(HW.pTempZB);
+				RCache.set_ZB				(RImplementation.Target.pTempZB);
 				RCache.set_Shader			(sh_Texture);
 				HW.pDevice->Clear			(0,0,D3DCLEAR_TARGET,D3DCOLOR_XRGB(255,255,255),1,0);
 			}
@@ -288,7 +289,7 @@ void CLightShadows::calculate	()
 		
 		// Actual rendering (pass0, temp2real)
 		RCache.set_RT			(RT->pRT	);
-		RCache.set_ZB			(HW.pTempZB	);
+		RCache.set_ZB			(RImplementation.Target.pTempZB	);
 		RCache.set_Shader		(sh_BlurTR	);
 		RCache.set_Geometry		(geom_Blur	);
 		RCache.Render			(D3DPT_TRIANGLELIST,Offset,0,4,0,2);
@@ -436,8 +437,7 @@ void CLightShadows::render	()
 	}
 	
 	// Clear all shadows
-	shadows.clear			();
-
+	shadows.clear				();
 	// Debug
 /*
 	{

@@ -60,7 +60,8 @@ void	CSoundRender_Target::_initialize		()
 	dsBD.dwReserved			= 0;
 	dsBD.lpwfxFormat		= &wfx;
 
-	switch (psSoundModel) {
+	switch (psSoundModel) 
+	{
 	case sq_DEFAULT:	dsBD.guid3DAlgorithm = DS3DALG_DEFAULT; 			break;
 	case sq_NOVIRT:		dsBD.guid3DAlgorithm = DS3DALG_NO_VIRTUALIZATION; 	break;
 	case sq_LIGHT:		dsBD.guid3DAlgorithm = DS3DALG_HRTF_LIGHT;			break;
@@ -114,25 +115,28 @@ void	CSoundRender_Target::start			(CSoundRender_Emitter* E)
 	// 5. Deferred-play-signal (emitter-exist, rendering-false)
 	pEmitter		= E;
 	pos_write		= 0;
-	fill_parameters	();
-	fill_block		();
-	fill_block		();
 	rendering		= FALSE;
 }
 
 void	CSoundRender_Target::render			()
 {
-	R_CHK	(pBuffer->SetCurrentPosition	(0));
-	R_CHK	(pBuffer->Play(0,0,DSBPLAY_LOOPING));
-	rendering = TRUE;
+	fill_block		();
+	fill_block		();
+
+	R_CHK			(pBuffer->SetCurrentPosition	(0));
+	R_CHK			(pBuffer->Play(0,0,DSBPLAY_LOOPING));
+	rendering		= TRUE;
 }
 
 void	CSoundRender_Target::stop			()
 {
+	if (rendering)
+	{
+		R_CHK			(pBuffer->Stop());
+		R_CHK			(pControl->SetMode(DS3DMODE_DISABLE,DS3D_DEFERRED));
+	}
 	pEmitter		= NULL;
 	rendering		= FALSE;
-	R_CHK	(pBuffer->Stop());
-	R_CHK	(pControl->SetMode(DS3DMODE_DISABLE,DS3D_DEFERRED));
 }
 
 void	CSoundRender_Target::rewind			()
@@ -155,7 +159,7 @@ void	CSoundRender_Target::update			()
 {
 	R_ASSERT		(pEmitter);
 
-	fill_parameters	();
+	// fill_parameters	();
 
 	// Analyze if we really need more data to stream them ahead
 	u32				cursor_write;

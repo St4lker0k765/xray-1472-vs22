@@ -79,6 +79,8 @@ void CRender::level_Unload()
 		xr_delete(Sectors[I]);
 	Sectors.clear			();
 	// 3.
+	for (I=0; I<Portals.size(); I++)
+		xr_delete(Portals[I]);
 	Portals.clear			();
 
 	//*** Lights

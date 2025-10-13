@@ -1353,6 +1353,8 @@ void PASinkVelocity::Transform(const Fmatrix& m)
 // Randomly add particles to the system
 void PASource::Execute(ParticleGroup *group)
 {
+	if (m_Flags.is(flSilent)) return;
+
 	int rate = int(floor(particle_rate * dt));
 	
 	// Dither the fraction particle in time.
@@ -1365,10 +1367,8 @@ void PASource::Execute(ParticleGroup *group)
 	
 	pVector pos, posB, vel, col, siz, rt;
 	
-	if(vertexB_tracks)
-	{
-		for(int i = 0; i < rate; i++)
-		{
+	if(m_Flags.is(flVertexB_tracks)){
+		for(int i = 0; i < rate; i++){
 			position.Generate(pos);
 			size.Generate(siz);
 			rot.Generate(rt);
@@ -1533,8 +1533,8 @@ void PAVortex::Execute(ParticleGroup *group)
 			// Figure amount of rotation
 			// Resultant is (cos theta) u + (sin theta) v
 			float theta = magdt / (rSqr + epsilon);
-			float s = sinf(theta);
-			float c = cosf(theta);
+			float s = _sin(theta);
+			float c = _cos(theta);
 			
 			offset = (u * c + v * s + w) * r;
 			
@@ -1573,8 +1573,8 @@ void PAVortex::Execute(ParticleGroup *group)
 			// Figure amount of rotation
 			// Resultant is (cos theta) u + (sin theta) v
 			float theta = magdt / (rSqr + epsilon);
-			float s = sinf(theta);
-			float c = cosf(theta);
+			float s = _sin(theta);
+			float c = _cos(theta);
 			
 			offset = (u * c + v * s + w) * r;
 			
@@ -1734,7 +1734,7 @@ pDomain::pDomain(PDomainEnum dtype, float a0, float a1,
 			
 			// Find a vector orthogonal to n.
 			pVector basis(1.0f, 0.0f, 0.0f);
-			if(fabs(basis * n) > 0.999)
+			if(_abs(basis * n) > 0.999)
 				basis = pVector(0.0f, 1.0f, 0.0f);
 			
 			// Project away N component, normalize and cross to get
@@ -1770,7 +1770,7 @@ pDomain::pDomain(PDomainEnum dtype, float a0, float a1,
 			
 			// Find a vector orthogonal to n.
 			pVector basis(1.0f, 0.0f, 0.0f);
-			if(fabs(basis * p2) > 0.999)
+			if(_abs(basis * p2) > 0.999)
 				basis = pVector(0.0f, 1.0f, 0.0f);
 			
 			// Project away N component, normalize and cross to get
@@ -1906,8 +1906,8 @@ void pDomain::Generate(pVector &pos) const
 			// Distance from axis
 			float r = radius2 + drand48() * (radius1 - radius2);
 			
-			float x = r * cosf(theta); // Weighting of each frame vector
-			float y = r * sinf(theta);
+			float x = r * _cos(theta); // Weighting of each frame vector
+			float y = r * _sin(theta);
 			
 			// Scale radius along axis for cones
 			if(type == PDCone)
@@ -1931,8 +1931,8 @@ void pDomain::Generate(pVector &pos) const
 			// Distance from center
 			float r = radius2 + drand48() * (radius1 - radius2);
 			
-			float x = r * cosf(theta); // Weighting of each frame vector
-			float y = r * sinf(theta);
+			float x = r * _cos(theta); // Weighting of each frame vector
+			float y = r * _sin(theta);
 			
 			pos = p1 + u * x + v * y;
 		}

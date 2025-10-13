@@ -37,7 +37,7 @@ void	CBlender_Compile::Compile		(ShaderElement* _SH)
 	SH =			_SH;
 	RS.Invalidate	();
 	BT->Compile		(*this);
-	if (bDetail && (!bEditor) && BT->canBeDetailed())		PassTemplate_Detail(BT->oT_Name);
+	if (bDetail && BT->canBeDetailed())		PassTemplate_Detail(BT->oT_Name);
 }
 void	CBlender_Compile::SetParams		(int iPriority, bool bStrictB2F, bool bLighting, bool bPixelShader)
 {
