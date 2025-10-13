@@ -106,10 +106,9 @@ bool CPSLibrary::Load(const char* nm)
     R_ASSERT(F->find_chunk(PS_CHUNK_FIRSTGEN));
     u32 count 				= F->r_u32();
     if (count){
-        m_PSs.resize		(count);
-        F->r				(&m_PSs.begin(), count*sizeof(PS::SDef));
-        for (PS::PSIt s_it = m_PSs.begin(); s_it!=m_PSs.end(); s_it++)
-            s_it->m_CachedShader = 0;
+        m_PSs.resize(count);
+        F->r(m_PSs.data(), count * sizeof(PS::SDef));
+        for (auto& d : m_PSs) d.m_CachedShader = 0;
     }
     // second generation
     IReader* OBJ 			= F->open_chunk(PS_CHUNK_SECONDGEN);
