@@ -82,7 +82,7 @@ void CAI_ALife::vfNewGame()
 		if (tpALifeAbstractGroup) {
 			i->ID				= m_tpServer->PerformIDgen(0xffff);
 			i->m_tObjectID		= i->ID;
-			m_tObjectRegistry.insert(make_pair(i->m_tObjectID,i));
+			m_tObjectRegistry.insert(std::make_pair(i->m_tObjectID,i));
 			
 			tpALifeAbstractGroup->m_tpMembers.resize(tpALifeAbstractGroup->m_wCount);
 			OBJECT_IT			II = tpALifeAbstractGroup->m_tpMembers.begin();
@@ -106,7 +106,7 @@ void CAI_ALife::vfNewGame()
 				tp2->ID				= 0xffff;
 				vfCreateObject		(tp2);
 				*II					= tp2->m_tObjectID = tp2->ID;
-				m_tObjectRegistry.insert(make_pair(tp2->m_tObjectID,tp2));
+				m_tObjectRegistry.insert(std::make_pair(tp2->m_tObjectID,tp2));
 				CALifeMonsterAbstract *tp3 = dynamic_cast<CALifeMonsterAbstract*>(tp2);
 				if (tp3) 
 					vfAssignGraphPosition(tp3);
@@ -118,7 +118,7 @@ void CAI_ALife::vfNewGame()
 		else {
             vfCreateObject		(i);
 			i->m_tObjectID		= i->ID;
-			m_tObjectRegistry.insert(make_pair(i->m_tObjectID,i));
+			m_tObjectRegistry.insert(std::make_pair(i->m_tObjectID,i));
 			CALifeMonsterAbstract *tp3 = dynamic_cast<CALifeMonsterAbstract*>(i);
 			if (tp3)
 				vfAssignGraphPosition(tp3);

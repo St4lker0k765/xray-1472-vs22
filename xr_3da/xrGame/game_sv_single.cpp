@@ -32,7 +32,7 @@ BOOL	game_sv_Single::OnTouch			(u16 eid_who, u16 eid_what)
 		if (W) 
 		{
 			// Weapon
-			//vector<u16>&	C			=	A->children;
+			//xr_vector<u16>&	C			=	A->children;
 			//u8 slot						=	W->get_slot	();
 			//for (u32 it=0; it<C.size(); it++)
 			//{
@@ -59,7 +59,7 @@ BOOL	game_sv_Single::OnTouch			(u16 eid_who, u16 eid_what)
 			if (W) 
 			{
 //				// Weapon
-//				vector<u16>&	C			=	A->children;
+//				xr_vector<u16>&	C			=	A->children;
 //				u8 slot						=	W->get_slot	();
 //				for (u32 it=0; it<C.size(); it++)
 //				{
@@ -116,7 +116,7 @@ void	game_sv_Single::OnPlayerKillPlayer	(u32 id_killer, u32 id_killed)
 {
 	//xrServer*	S					=	Level().Server;
 	//// Drop everything
-	//vector<u16>*	C				=	get_children(id_killed);
+	//xr_vector<u16>*	C				=	get_children(id_killed);
 	//if (0==C)						return;
 	//while(C->size())
 	//{

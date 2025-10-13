@@ -1,6 +1,9 @@
 // xrCore.cpp : Defines the entry point for the DLL application.
 //
 #include "stdafx.h"
+#pragma hdrstop
+
+#include <objbase.h>
 #include "xrCore.h"
  
 #pragma comment(lib,"winmm.lib")
@@ -23,37 +26,60 @@ BOOL APIENTRY	DllMain(	HANDLE hModule,
     return TRUE;
 }
 
-void xrCore::_initialize	(LPCSTR _ApplicationName, LogCallback cb)
+namespace CPU
 {
-	static BOOL				bInitialized	= FALSE;
+	extern	void			Detect	();
+};
+static u32	init_counter	= 0;
+void xrCore::_initialize	(LPCSTR _ApplicationName, LogCallback cb, BOOL init_fs)
+{
+	if (0==init_counter){	
+		// Init COM so we can use CoCreateInstance
+		CoInitializeEx		(NULL, COINIT_MULTITHREADED);
 
-	strcpy_s				(ApplicationName,_ApplicationName);
-	R_ASSERT2				(!bInitialized, "xrCore already initialized.");
+		strcpy				(ApplicationName,_ApplicationName);
+		strlwr				(strcpy(Params,GetCommandLine()));
 
-	// Parameters
-	strcpy_s				(Params,GetCommandLine());
-	strlwr					(Params);
+		// User/Comp Name
+		DWORD	sz_user		= sizeof(UserName);
+		GetUserName			(UserName,&sz_user);
 
-	// User/Comp Name
-	DWORD	sz_user			= sizeof(UserName);
-	GetUserName				(UserName,&sz_user);
+		DWORD	sz_comp		= sizeof(CompName);
+		GetComputerName		(CompName,&sz_comp);
 
-	DWORD	sz_comp			= sizeof(CompName);
-	GetComputerName			(CompName,&sz_comp);
+		// Mathematics & PSI detection
+		CPU::Detect			();
+		if (strstr(Params,"-mem_debug"))	Memory._initialize		(TRUE);
+		else								Memory._initialize		(FALSE);
+		InitMath			();
+		Debug._initialize	();
 
-	// Mathematics & PSI detection
-	InitMath				();
-
-	Debug._initialize		();
-	Memory._initialize		();
-	FS._initialize			();
-	CreateLog				(cb);
-
-	bInitialized			= TRUE;
+		rtc_initialize		();
+		xr_FS				= xr_new<CLocatorAPI>	();
+		xr_EFS				= xr_new<EFS_Utils>		();
+	}
+	if (init_fs){
+		u32 flags			= 0;
+		if (0!=strstr(Params,"-build"))	 flags |= CLocatorAPI::flBuildCopy;
+		if (0!=strstr(Params,"-ebuild")) flags |= CLocatorAPI::flBuildCopy|CLocatorAPI::flEBuildCopy;
+#ifdef	DEBUG
+		if (0==strstr(Params,"-nocache"))flags |= CLocatorAPI::flCacheFiles;
+#endif
+		FS._initialize		(flags);
+		EFS._initialize		();
+	}
+	SetLogCB				(cb);
+	init_counter++;
 }
 
 void xrCore::_destroy		()
 {
-	FS._destroy				();
-	CloseLog				();
+	--init_counter;
+	if (0==init_counter){
+		FS._destroy			();
+		EFS._destroy		();
+		xr_delete			(xr_FS);
+		xr_delete			(xr_EFS);
+		Memory._destroy		();
+	}
 }

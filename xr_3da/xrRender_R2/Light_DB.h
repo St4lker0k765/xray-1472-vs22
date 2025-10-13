@@ -10,15 +10,15 @@ public:
 	Fvector4				sun_color;
 
 private:
-	vector<xrLIGHT_control>	v_static_controls;
-	vector<light*>			v_static;
-	set<light*>				v_dynamic_active;
-	set<light*>				v_dynamic_inactive;
+	xr_vector<xrLIGHT_control>	v_static_controls;
+	xr_vector<light*>			v_static;
+	std::set<light*>				v_dynamic_active;
+	std::set<light*>				v_dynamic_inactive;
 
-	vector<light*>			v_selected_shadowed;
-	vector<light*>			v_selected_unshadowed;
+	xr_vector<light*>			v_selected_shadowed;
+	xr_vector<light*>			v_selected_unshadowed;
 public:
-	void					add_sector_lights	(vector<WORD> &L);
+	void					add_sector_lights	(xr_vector<WORD> &L);
 
 	void					Load				(IReader* fs);
 	void					Unload				();

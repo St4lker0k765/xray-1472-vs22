@@ -9,7 +9,7 @@
 #define R_CHK(expr) { HRESULT hr = expr; if (FAILED(hr)) ::Debug.error(hr,#expr,__FILE__, __LINE__); }
 
 #ifdef DEBUG
-#define	NODEFAULT VERIFY2(0,"nodefault: reached")
+#define	NODEFAULT Debug.fatal("nodefault: reached")
 #define VERIFY(expr) if (!(expr)) ::Debug.fail(#expr,__FILE__, __LINE__)
 #define VERIFY2(expr, e2) if (!(expr)) ::Debug.fail(#expr,e2,__FILE__, __LINE__)
 #define VERIFY3(expr, e2, e3) if (!(expr)) ::Debug.fail(#expr,e2,e3,__FILE__, __LINE__)
@@ -46,4 +46,13 @@
 	" -------------------------------------------------\n" )
 #define todo( x )  message( __FILE__LINE__" TODO :   " #x "\n" ) 
 #define fixme( x )  message( __FILE__LINE__" FIXME:   " #x "\n" ) 
+
+//--------- static assertion
+template<bool>	struct CompileTimeError;
+template<>		struct CompileTimeError<true>	{};
+#define STATIC_CHECK(expr, msg) \
+{ \
+	CompileTimeError<((expr) != 0)> ERROR_##msg; \
+	(void)ERROR_##msg; \
+}
 #endif

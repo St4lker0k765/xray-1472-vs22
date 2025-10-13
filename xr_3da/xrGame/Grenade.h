@@ -36,7 +36,7 @@ public:
 	CGrenade *m_pFake;
 	f32 m_blast, m_blastR, m_fragsR, m_fragHit;
 	s32 m_frags;
-	list<CGameObject*> m_blasted;
+	std::list<CGameObject*> m_blasted;
 
 	LPSTR pstrWallmark;
 	Shader* hWallmark;
@@ -45,7 +45,7 @@ public:
 	ESoundTypes m_eSoundRicochet, m_eSoundExplode;
 	u32 m_expoldeTime;
 	char m_effectsSTR[255];
-	vector<LPCSTR> m_effects;
+	xr_vector<LPCSTR> m_effects;
 	IRender_Light* m_pLight;
 	Fcolor m_lightColor;
 	f32 m_lightRange;

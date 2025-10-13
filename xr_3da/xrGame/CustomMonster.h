@@ -185,7 +185,7 @@ public:
 //		}
 //
 	};
-	deque<net_update>	NET;
+	std::deque<net_update>	NET;
 	net_update			NET_Last;
 	BOOL				NET_WasInterpolating;	// previous update was by interpolation or by extrapolation
 	u32				NET_Time;				// server time of last update
@@ -243,7 +243,7 @@ public:
 	// miscellaneous
 	IC		int			ifGetMemberIndex() 
 	{
-		vector<CEntity*> &tpaMembers = Level().Teams[g_Team()].Squads[g_Squad()].Groups[g_Group()].Members;
+		xr_vector<CEntity*> &tpaMembers = Level().Teams[g_Team()].Squads[g_Squad()].Groups[g_Group()].Members;
 		int iCount = (int)tpaMembers.size();
 		for (int i=0; i<iCount; i++)
 			if (this == tpaMembers[i])

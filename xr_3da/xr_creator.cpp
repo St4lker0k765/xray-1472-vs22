@@ -113,15 +113,24 @@ BOOL CCreator::Load(u32 dwNum)
 	{
 		CInifile::Sect& S = pLevel->r_section		("static_sounds");
 		Sounds.reserve			(S.size());
-		for (CInifile::SectIt I=S.begin(); I!=S.end(); I++) {
-			Fvector				pos;
-			string128			fname;
-			sscanf				( I->second,"%[^,],%f,%f,%f",fname,&pos.x,&pos.y,&pos.z);
-			if (0==stricmp(fname,"ambient"))	continue;
-			Sounds.push_back	(sound());
-			Sound->create		(Sounds.back(),TRUE,fname);
-			Sound->play_at_pos	(Sounds.back(),0,pos,true);
+		for (CInifile::SectIt I = S.begin(); I != S.end(); ++I)
+		{
+			Fvector   pos;
+			string128 fname;
+
+			const char* line = I->second.c_str();
+
+			if (std::sscanf(line, "%127[^,],%f,%f,%f", fname, &pos.x, &pos.y, &pos.z) != 4)
+				continue;
+
+			if (_stricmp(fname, "ambient") == 0)
+				continue;
+
+			Sounds.push_back(sound());
+			Sound->create(Sounds.back(), TRUE, fname);
+			Sound->play_at_pos(Sounds.back(), 0, pos, true);
 		}
+
 		if (pLevel->line_exist("static_sounds","ambient"))
 		{
 			LPCSTR fname		= pLevel->r_string("static_sounds","ambient");
@@ -130,15 +139,19 @@ BOOL CCreator::Load(u32 dwNum)
 		} 
 	}
 	{
-		if (pLevel->section_exist("random_sounds"))	
+		if (pLevel->section_exist("random_sounds"))
 		{
-			CInifile::Sect& S		= pLevel->r_section("random_sounds");
-			Sounds_Random.reserve	(S.size());
-			for (CInifile::SectIt I=S.begin(); I!=S.end(); I++) {
-				Sounds_Random.push_back	(sound());
-				Sound->create			(Sounds_Random.back(),TRUE,I->second);
+			CInifile::Sect& S = pLevel->r_section("random_sounds");
+			Sounds_Random.reserve(S.size());
+
+			for (CInifile::SectIt I = S.begin(); I != S.end(); ++I)
+			{
+				Sounds_Random.push_back(sound());
+				const char* snd_name = I->second.c_str();
+				Sound->create(Sounds_Random.back(), TRUE, snd_name);
 			}
-			Sounds_dwNextTime		= Device.TimerAsync	()	+ 5000;
+
+			Sounds_dwNextTime = Device.TimerAsync() + 5000;
 		}
 	}
 	Environment.Load_Music		(pLevel);

@@ -1,25 +1,43 @@
-#ifndef STATS_TIMER_H
-#define STATS_TIMER_H
+#ifndef FTimerH
+#define FTimerH
 #pragma once
 
-class CStatTimer
-{
-	friend class CStats;
-	friend class CRenderDevice;
+class XRCORE_API CTimer {
 private:
+	u64			qwStartTime;
+	float		fResult;
+public:
+	IC void		Start			()		{	qwStartTime = CPU::GetCycleCount(); }
+	IC float	Stop			()		{	return (fResult = GetElapsed_sec()); }
+	IC float	Get				()		{	return fResult; }
+	IC u64		GetElapsed_clk	()		{	return CPU::GetCycleCount()-qwStartTime-CPU::cycles_overhead; }
+	IC u32		GetElapsed_ms	()		{	return u32(u64(GetElapsed_clk())/u64(CPU::cycles_per_milisec)); }
+	IC float	GetElapsed_sec	()		{	return float(GetElapsed_clk())*CPU::cycles2seconds; }
+	IC void		Dump			()
+	{
+		Msg("* Elapsed time (sec): %f",GetElapsed_sec());
+	}
+};
+
+class XRCORE_API CStatTimer
+{
+public:
 	CTimer		T;
 	__int64		accum;
 	float		result;
 	u32			count;
 public:
-	CStatTimer();
-	void		FrameStart	();
-	void		FrameEnd	();
+				CStatTimer		();
+	void		FrameStart		();
+	void		FrameEnd		();
 
-	IC void		Begin()
-	{	count++; T.Start(); }
-	IC void		End()
-	{	accum += T.GetElapsed(); }
+	IC void		Begin			()		{	count++; T.Start(); }
+	IC void		End				()		{	accum += T.GetElapsed_clk(); }
+
+	IC u64		GetElapsed_clk	()		{	return accum; }
+	IC u32		GetElapsed_ms	()		{	return u32(u64(GetElapsed_clk())/u64(CPU::cycles_per_milisec)); }
+	IC float	GetElapsed_sec	()		{	return float(GetElapsed_clk())*CPU::cycles2seconds; }
+	IC float	GetFrame_sec	()		{	return result; }
 };
 
-#endif
+#endif // FTimerH

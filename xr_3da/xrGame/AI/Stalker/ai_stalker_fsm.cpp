@@ -81,8 +81,8 @@ void CAI_Stalker::ForwardCover()
 
 	if (m_bStateChanged) {
 		float						fDistance = m_tEnemy.Enemy->Position().distance_to(vPosition);
-		m_tSelectorCover.m_fMaxEnemyDistance = max(fDistance - 3.f,m_tSelectorCover.m_fOptEnemyDistance + 3.f);
-		m_tSelectorCover.m_fMinEnemyDistance = max(1*fDistance - 1*m_tSelectorCover.m_fSearchRange,m_tSelectorCover.m_fOptEnemyDistance - 3.f);
+		m_tSelectorCover.m_fMaxEnemyDistance = std::max(fDistance - 3.f,m_tSelectorCover.m_fOptEnemyDistance + 3.f);
+		m_tSelectorCover.m_fMinEnemyDistance = std::max(1*fDistance - 1*m_tSelectorCover.m_fSearchRange,m_tSelectorCover.m_fOptEnemyDistance - 3.f);
 		CWeapon						*tpWeapon = dynamic_cast<CWeapon*>(m_inventory.ActiveItem());
 		if (tpWeapon)
 			m_tSelectorCover.m_fOptEnemyDistance = tpWeapon->m_fMinRadius;
@@ -115,8 +115,8 @@ void CAI_Stalker::ForwardCover()
 //			Msg							("State STAND");
 			
 			float						fDistance = m_tEnemy.Enemy->Position().distance_to(vPosition);
-			m_tSelectorCover.m_fMaxEnemyDistance = max(fDistance - 3.f,m_tSelectorCover.m_fOptEnemyDistance + 3.f);
-			m_tSelectorCover.m_fMinEnemyDistance = max(1*fDistance - 1*m_tSelectorCover.m_fSearchRange,m_tSelectorCover.m_fOptEnemyDistance - 3.f);
+			m_tSelectorCover.m_fMaxEnemyDistance = std::max(fDistance - 3.f,m_tSelectorCover.m_fOptEnemyDistance + 3.f);
+			m_tSelectorCover.m_fMinEnemyDistance = std::max(1*fDistance - 1*m_tSelectorCover.m_fSearchRange,m_tSelectorCover.m_fOptEnemyDistance - 3.f);
 			CWeapon						*tpWeapon = dynamic_cast<CWeapon*>(m_inventory.ActiveItem());
 			if (tpWeapon)
 				m_tSelectorCover.m_fOptEnemyDistance = tpWeapon->m_fMinRadius;

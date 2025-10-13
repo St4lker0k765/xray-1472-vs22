@@ -94,13 +94,13 @@ void CObjectList::Update		()
 void CObjectList::net_Register	(CObject* O)
 {
 	R_ASSERT		(O);
-	map_NETID.insert(make_pair(O->ID(),O));
+	map_NETID.insert(std::make_pair(O->ID(),O));
 	Msg				("-------------------------------- Register: %s",O->cName());
 }
 
 void CObjectList::net_Unregister(CObject* O)
 {
-	map<u32,CObject*>::iterator	it = map_NETID.find(O->ID());
+	xr_map<u32,CObject*>::iterator	it = map_NETID.find(O->ID());
 	if ((it!=map_NETID.end()) && (it->second == O))	{
 		Msg				("-------------------------------- Unregster: %s",O->cName());
 		map_NETID.erase(it);
@@ -138,7 +138,7 @@ void CObjectList::net_Import		(NET_Packet* Packet)
 
 CObject* CObjectList::net_Find			(u32 ID)
 {
-	map<u32,CObject*>::iterator	it = map_NETID.find(ID);
+	xr_map<u32,CObject*>::iterator	it = map_NETID.find(ID);
 	return (it==map_NETID.end())?0:it->second;
 }
 

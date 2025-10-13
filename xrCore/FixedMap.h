@@ -41,11 +41,11 @@ private:
 			TNode*	Nnew	= newNodes + I;
 
 			if (Nold->left) {
-				u32	Lid		= Nold->left  - nodes;
+				size_t	Lid		= Nold->left  - nodes;
 				Nnew->left		= newNodes + Lid;
 			}
 			if (Nold->right) {
-				u32	Rid		= Nold->right - nodes;
+				size_t	Rid		= Nold->right - nodes;
 				Nnew->right		= newNodes + Rid;
 			}
 		}
@@ -66,8 +66,8 @@ private:
 	}
 	IC TNode*	CreateChild	(TNode* &parent, const K& key)
 	{
-		u32 PID	= parent-nodes;
-		TNode*	N	= Alloc(key);
+		size_t	PID	= size_t(parent-nodes);
+		TNode*	N	= Alloc	(key);
 		parent		= nodes+PID;
 		return	N;
 	}
@@ -84,25 +84,25 @@ private:
 		CB(N);
 		if (N->left)	recurseRL(N->left,CB);
 	}
-	IC void		getLR		(TNode* N, std::vector<T>&	D)
+	IC void		getLR		(TNode* N, xr_vector<T>&	D)
 	{
 		if (N->left)	getLR(N->left,D);
 		D.push_back		(N->val);
 		if (N->right)	getLR(N->right,D);
 	}
-	IC void		getRL		(TNode* N, std::vector<T>&	D)
+	IC void		getRL		(TNode* N, xr_vector<T>&	D)
 	{
 		if (N->right)	getRL(N->right,D);
 		D.push_back		(N->val);
 		if (N->left)	getRL(N->left,D);
 	}
-	IC void		getLR_P		(TNode* N, std::vector<TNode*>& D)
+	IC void		getLR_P		(TNode* N, xr_vector<TNode*>& D)
 	{
 		if (N->left)	getLR_P(N->left,D);
 		D.push_back		(N);
 		if (N->right)	getLR_P(N->right,D);
 	}
-	IC void		getRL_P		(TNode* N, std::vector<TNode*>& D)
+	IC void		getRL_P		(TNode* N, xr_vector<TNode*>& D)
 	{
 		if (N->right)	getRL_P(N->right,D);
 		D.push_back		(N);
@@ -190,12 +190,12 @@ public:
 		return	N;
 	}
 	IC void		discard()	{ if (nodes) xr_free(nodes); nodes = 0; pool=0; limit=0;	}
-	IC u32	allocated()	{ return this->limit;				}
+	IC u32		allocated()	{ return this->limit;				}
 	IC void		clear()		{ pool=0;				}
 	IC TNode*	begin()		{ return nodes;			}
 	IC TNode*	end()		{ return nodes+pool;	}
 	IC TNode*	last()		{ return nodes+limit;	}	// for setup only
-	IC u32	size()		{ return pool;			}
+	IC u32		size()		{ return pool;			}
 	IC TNode&	operator[] (int v) { return nodes[v]; }
 
 	IC void		traverseLR	(callback CB) 
@@ -208,27 +208,27 @@ public:
 			CB(cur);
 	}
 
-	IC void		getLR		(std::vector<T>&	D)
+	IC void		getLR		(xr_vector<T>&	D)
 	{ if (pool)	getLR(nodes,D); }
-	IC void		getLR_P		(std::vector<TNode*>&	D)
+	IC void		getLR_P		(xr_vector<TNode*>&	D)
 	{ if (pool)	getLR_P(nodes,D); }
-	IC void		getRL		(std::vector<T>&	D)
+	IC void		getRL		(xr_vector<T>&	D)
 	{ if (pool)	getRL(nodes,D); }
-	IC void		getRL_P		(std::vector<TNode*>&	D)
+	IC void		getRL_P		(xr_vector<TNode*>&	D)
 	{ if (pool)	getRL_P(nodes,D); }
-	IC void		getANY		(std::vector<T>&	D)
+	IC void		getANY		(xr_vector<T>&	D)
 	{
 		TNode*	_end = end();
 		for (TNode* cur = begin(); cur!=_end; cur++) D.push_back(cur->val);
 	}
-	IC void		getANY_P	(std::vector<TNode*>&	D)
+	IC void		getANY_P	(xr_vector<TNode*>&	D)
 	{
 		D.resize			(size());
 		TNode** _it			= &*D.begin();
 		TNode*	_end		= end();
 		for (TNode* cur = begin(); cur!=_end; cur++,_it++) *_it = cur;
 	}
-	IC void		getANY_P	(std::vector<void*>&	D)
+	IC void		getANY_P	(xr_vector<void*>&	D)
 	{
 		D.resize			(size());
 		void** _it			= &*D.begin();

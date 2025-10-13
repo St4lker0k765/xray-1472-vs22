@@ -20,7 +20,7 @@ class CModelPool
 		IVisual*		model;
 	};
 
-	vector<ModelDef>	Models;
+	xr_vector<ModelDef>	Models;
 
 	void				Destroy	();
 public:

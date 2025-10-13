@@ -25,8 +25,8 @@ private:
 	};
 private:
 	CObject*				current;
-	vector<recv>			receivers;
-	vector<Fbox>			boxes;
+	xr_vector<recv>			receivers;
+	xr_vector<Fbox>			boxes;
 
 	CRT*					RT;
 	CRT*					RT_temp;

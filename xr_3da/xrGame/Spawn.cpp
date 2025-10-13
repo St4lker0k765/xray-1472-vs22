@@ -42,7 +42,7 @@ CSpawn* CSpawn::Create		(CLASS_ID cls)
 	}
 }
 
-void CSpawn::CreatePalette	(vector<CSpawn*> & palette)
+void CSpawn::CreatePalette	(xr_vector<CSpawn*> & palette)
 {
 	palette.push_back		(Create(CLSID_SPAWN_EVENT));
 	palette.push_back		(Create(CLSID_SPAWN_ZONE));

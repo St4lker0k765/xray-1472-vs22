@@ -3,26 +3,42 @@
 
 template <class T>
 struct _sphere {
-	_vector<T>	P;
+	_vector3<T>	P;
 	T			R;
 public:
-	IC void		set(const _vector<T> &_P, T _R)		{ P.set(_P); R = _R; }
+	IC void		set(const _vector3<T> &_P, T _R)	{ P.set(_P); R = _R; }
 	IC void		set(const _sphere<T> &S)			{ P.set(S.P); R=S.R; }
 	IC void		identity()							{ P.set(0,0,0); R=1; }
 
+	enum ERP_Result{
+		rpNone			= 0,
+		rpOriginInside	= 1,
+		rpOriginOutside	= 2,
+		fcv_forcedword = u32(-1)
+	};
 	// Ray-sphere intersection
-	IC BOOL		intersect(const _vector<T>& S, const _vector<T>& D, T& range)	
+	IC ERP_Result intersect(const _vector3<T>& S, const _vector3<T>& D, T& range)	
     {
-		_vector<T> Q;	Q.sub(P,S);
+		_vector3<T> Q;	Q.sub(P,S);
 	
-		T c = Q.magnitude	();
-		T v = Q.dotproduct	(D);
-		T d = R*R - (c*c - v*v);
-		if ((d>0) && (d<range)){ range = d; return TRUE;}else return FALSE;
-    }
-	IC BOOL		intersect(const _vector<T>& S, const _vector<T>& D)	
+		T R2	= R*R;
+		T c2	= Q.square_magnitude	();
+		T v		= Q.dotproduct			(D);
+		T d		= R2 - (c2 - v*v);
+
+		if		(d > 0.f)
+		{
+			T _range	= v - _sqrt(d);
+			if (_range<range)	{
+				range = _range;
+				return (c2<R2)?rpOriginInside:rpOriginOutside;
+			}
+		}
+		return rpNone;
+	}
+	IC BOOL		intersect(const _vector3<T>& S, const _vector3<T>& D)	
 	{
-		_vector<T> Q;	Q.sub(P,S);
+		_vector3<T> Q;	Q.sub(P,S);
 	
 		T c = Q.magnitude	();
 		T v = Q.dotproduct	(D);
@@ -34,7 +50,7 @@ public:
 		T SumR = R+S.R;
 		return P.distance_to_sqr(S.P) < SumR*SumR;
 	}
-	IC BOOL		contains(const _vector<T>& PT) const 
+	IC BOOL		contains(const _vector3<T>& PT) const 
 	{
 		return P.distance_to_sqr(PT) <= (R*R+EPS_S);
 	}
@@ -54,11 +70,13 @@ public:
 	{
 		return T( PI_MUL_4 / 3 ) * (R*R*R);
 	}
-	void		compute_fast	(const _vector<T> *verts, int count);
 };
 
 typedef _sphere<float>	Fsphere;
 typedef _sphere<double> Dsphere;
+
+template <class T>
+BOOL	_valid			(const _sphere<T>& s)		{ return _valid(s.P) && _valid(s.R);	}
 
 void	XRCORE_API		Fsphere_compute		(Fsphere& dest, const Fvector *verts, int count);
 

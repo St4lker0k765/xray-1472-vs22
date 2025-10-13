@@ -914,7 +914,7 @@ void CWeapon::SpawnAmmo(u32 boxCurr, LPCSTR ammoSect) {
 	D->ID = 0xffff;
 	D->ID_Parent = (u16)H_Parent()->ID();
 	D->ID_Phantom = 0xffff;
-	D->s_flags.set(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL);
+	D->s_flags.assign(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL);
 	D->RespawnTime = 0;
 	// Send
 	if(boxCurr == 0xffffffff) boxCurr = l_pA->m_boxSize;

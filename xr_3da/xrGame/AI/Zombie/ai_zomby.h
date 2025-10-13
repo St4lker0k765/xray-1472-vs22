@@ -69,7 +69,7 @@ class CAI_Zomby : public CCustomMonster
 		DWORD			m_dwHitInterval;
 		DWORD			m_dwAttackStartTime;
 		
-		vector<SSubNode> tpSubNodes;
+		xr_vector<SSubNode> tpSubNodes;
 		DWORD			m_dwLastUpdate;
 
 		// finite state machine
@@ -82,8 +82,8 @@ class CAI_Zomby : public CCustomMonster
 		void Retreat();
 		IC bool bfCheckForMember(Fvector &tFireVector, Fvector &tMyPoint, Fvector &tMemberPoint);
 		bool bfCheckPath(AI::Path &Path);
-			int	 ifDivideNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, vector<SSubNode> &tpSubNodes);
-			int	 ifDivideNearestNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, vector<SSubNode> &tpSubNodes);
+			int	 ifDivideNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, xr_vector<SSubNode> &tpSubNodes);
+			int	 ifDivideNearestNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, xr_vector<SSubNode> &tpSubNodes);
 		IC	bool bfInsideSubNode(const Fvector &tCenter, const SSubNode &tpSubNode);
 		IC	bool bfInsideSubNode(const Fvector &tCenter, const float fRadius, const SSubNode &tpSubNode);
 		IC	bool bfNeighbourNode(const SSubNode &tCurrentSubNode, const SSubNode &tMySubNode);

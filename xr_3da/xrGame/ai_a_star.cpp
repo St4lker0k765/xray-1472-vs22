@@ -697,7 +697,7 @@ float CAI_Space::vfFindTheXestPath(u32 dwStartNode, u32 dwGoalNode, AI::Path& Re
 	return(MAX_VALUE);
 }
 
-float CAI_Space::vfFindTheXestPath(u32 dwStartNode, u32 dwGoalNode, vector<u32> &tpResult)
+float CAI_Space::vfFindTheXestPath(u32 dwStartNode, u32 dwGoalNode, xr_vector<u32> &tpResult)
 {
 	Device.Statistic.AI_Path.Begin();
 	// initialization

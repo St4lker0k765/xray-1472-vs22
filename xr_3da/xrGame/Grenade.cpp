@@ -91,7 +91,7 @@ void CGrenade::OnH_A_Chield() {
 		D->ID				=	0xffff;
 		D->ID_Parent		=	(u16)ID();
 		D->ID_Phantom		=	0xffff;
-		D->s_flags.set		(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
+		D->s_flags.assign	(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
 		D->RespawnTime		=	0;
 		// Send
 		NET_Packet			P;
@@ -145,8 +145,8 @@ void CGrenade::Explode() {
 	Fvector l_dir; f32 l_dst;
 	m_blasted.clear();
 	feel_touch_update(vPosition, m_blastR);
-	list<s16> l_elsemnts;
-	list<Fvector> l_bs_positions;
+	std::list<s16> l_elsemnts;
+	std::list<Fvector> l_bs_positions;
 	while(m_blasted.size()) {
 		CGameObject *l_pGO = *m_blasted.begin();
 		l_dir.sub(l_pGO->Position(), vPosition); l_dst = l_dir.magnitude(); l_dir.div(l_dst);

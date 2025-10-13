@@ -1,4 +1,6 @@
-#include "StdAfx.h"
+#include "stdafx.h"
+#pragma hdrstop
+
 #include "xrdebug.h"
 #include "resource.h"
 #include "dbghelp.h"
@@ -9,19 +11,24 @@
 #ifdef __BORLANDC__
 	#include "d3d9.h"
 	#include "d3dx9.h"
-	#include "D3DX_Wrapper.h"
-	#pragma comment(lib,"ETools.lib")
+	#include "D3DX_Wrapper.h"    
+	#pragma comment		(lib,"EToolsB.lib")
 	static BOOL			bException	= TRUE;
 #else
-	#pragma comment(lib,"dxerr9.lib")
 	static BOOL			bException	= FALSE;
 #endif
-	
+
+#ifdef _M_AMD64
+#define DEBUG_INVOKE	DebugBreak	()
+#else
+#define DEBUG_INVOKE	__asm		{ int 3 }
+#ifndef __BORLANDC__
+	#pragma comment			(lib,"dxerr9.lib")
+#endif
+#endif
+
 extern "C" int __vsnwprintf(wchar_t* buffer, size_t count, const wchar_t* format, va_list argptr) {
     return _vsnwprintf(buffer, count, format, argptr);
-}
-extern "C" int __vsnprintf(char* buffer, size_t count, const char* format, va_list argptr) {
-	return _vsnprintf(buffer, count, format, argptr);
 }
 
 XRCORE_API	xrDebug		Debug;
@@ -31,7 +38,7 @@ static const char * dlgExpr		= NULL;
 static const char * dlgFile		= NULL;
 static char			dlgLine		[16];
 
-static BOOL CALLBACK DialogProc	( HWND hw, UINT msg, WPARAM wp, LPARAM lp )
+static INT_PTR CALLBACK DialogProc	( HWND hw, UINT msg, WPARAM wp, LPARAM lp )
 {
 	switch( msg ){
 	case WM_INITDIALOG:
@@ -96,27 +103,35 @@ void xrDebug::backend(const char* reason, const char *file, int line)
 		else				RaiseException	(0, 0, 0, NULL);
 		break;
 	case IDC_DEBUG:
-		__asm { int 3 };
+		DEBUG_INVOKE;
 		break;
 	}
 
 	CS.Leave			();
 }
 
-
-void xrDebug::error		(HRESULT hr, const char* expr, const char *file, int line)
+std::string xrDebug::error2string	(long code)
 {
-	string1024	buffer;
-	string1024	reason;
+	std::string			desc;
 
-	const char *desc	= DXGetErrorDescription9	(hr);
-	if (desc==0) 
+#ifdef _M_AMD64
+#else
+	desc				= DXGetErrorDescription9	(code);
+#endif
+	if (desc.empty()) 
 	{
-		FormatMessage	(FORMAT_MESSAGE_FROM_SYSTEM,0,hr,0,buffer,1024,0);
-		desc			= buffer;
+		LPVOID lpMsgBuf = NULL;
+		FormatMessage	(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM,0,code,0,(LPTSTR)&lpMsgBuf,0,0);
+		desc			= (LPCSTR)lpMsgBuf;
+		LocalFree		(lpMsgBuf);
 	}
+	return		desc;
+}
 
-	sprintf		(reason,"*** API-failure ***\n%s\nExpression: %s",desc,expr);
+void xrDebug::error		(long hr, const char* expr, const char *file, int line)
+{
+	string1024	reason;
+	sprintf		(reason,"*** API-failure ***\n%s\nExpression: %s",error2string(hr).c_str(),expr);
 	backend		(reason,file,line);
 }
 
@@ -138,7 +153,6 @@ void xrDebug::fail		(const char *e1, const char *e2, const char *e3, const char 
 	sprintf		(reason,"*** Assertion failed ***\nExpression: %s\n%s\n%s",e1,e2,e3);
 	backend		(reason,file,line);
 }
-
 void __cdecl xrDebug::fatal(const char* F,...)
 {
 	string1024	buffer;
@@ -152,16 +166,16 @@ void __cdecl xrDebug::fatal(const char* F,...)
 	sprintf		(reason,"*** Fatal Error ***\n%s",buffer);
 	backend		(reason,0,0);
 }
+int __cdecl _out_of_memory	(size_t size)
+{
+	Debug.fatal				("Out of memory. Memory request: %d K",size/1024);
+	return					1;
+}
+void __cdecl _terminate		()
+{
+	Debug.fatal				("Unexpected application termination");
+}
 
-int __cdecl _out_of_memory(unsigned size)
-{
-	Debug.fatal	("Out of memory. Memory request: %d K",size/1024);
-	return 1;
-}
-void __cdecl _terminate()
-{
-	Debug.fatal("Unexpected application termination");
-}
 // based on dbghelp.h
 typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE DumpType,
 										 CONST PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
@@ -179,7 +193,7 @@ LONG WINAPI UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
 	// look next to the EXE first, as the one in System32 might be old 
 	// (e.g. Windows 2000)
 	HMODULE hDll	= NULL;
-	char szDbgHelpPath[_MAX_PATH];
+	string_path		szDbgHelpPath;
 
 	if (GetModuleFileName( NULL, szDbgHelpPath, _MAX_PATH ))
 	{
@@ -204,8 +218,8 @@ LONG WINAPI UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
 		MINIDUMPWRITEDUMP pDump = (MINIDUMPWRITEDUMP)::GetProcAddress( hDll, "MiniDumpWriteDump" );
 		if (pDump)
 		{
-			char		szDumpPath	[_MAX_PATH];
-			char		szScratch	[_MAX_PATH];
+			string_path	szDumpPath;
+			string_path	szScratch;
 			string64	t_stemp;
 
 			// work out a good place for the dump file
@@ -220,7 +234,12 @@ LONG WINAPI UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
 
 			// create the file
 			HANDLE hFile = ::CreateFile( szDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
-
+			if (INVALID_HANDLE_VALUE==hFile)	
+			{
+				// try to place into current directory
+				MoveMemory	(szDumpPath,szDumpPath+5,strlen(szDumpPath));
+				hFile		= ::CreateFile( szDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL );
+			}
 			if (hFile!=INVALID_HANDLE_VALUE)
 			{
 				_MINIDUMP_EXCEPTION_INFORMATION ExInfo;
@@ -272,7 +291,9 @@ LONG WINAPI UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
 //////////////////////////////////////////////////////////////////////
 #ifdef M_BORLAND
 //	typedef void ( _RTLENTRY *___new_handler) ();
+namespace std{
 	extern new_handler _RTLENTRY _EXPFUNC set_new_handler( new_handler new_p );
+};
 
 //    typedef int	(__stdcall * _PNH)( size_t );
 //    _CRTIMP int	__cdecl _set_new_mode( int );
@@ -286,22 +307,21 @@ LONG WINAPI UnhandledFilter	( struct _EXCEPTION_POINTERS *pExceptionInfo )
 
     void	xrDebug::_initialize		()
     {
-//        _set_new_mode					(1);					// gen exception if can't allocate memory
+//        std::set_new_mode 				(1);					// gen exception if can't allocate memory
         std::set_new_handler			(def_new_handler  );	// exception-handler for 'out of memory' condition
         ::SetUnhandledExceptionFilter	( UnhandledFilter );	// exception handler to all "unhandled" exceptions
     }
 #else
 static void __cdecl def_new_handler()
 {
-	_out_of_memory(static_cast<size_t>(~0u));
+    _out_of_memory(static_cast<size_t>(~0u));
 }
-
-    void	xrDebug::_initialize		()
-    {
-		std::set_new_handler(def_new_handler);
-		std::set_terminate(_terminate);
-		std::set_unexpected(_terminate);
-		::SetUnhandledExceptionFilter(UnhandledFilter);
-    }
+void    xrDebug::_initialize()
+{
+    std::set_new_handler(def_new_handler);
+    std::set_terminate(_terminate);
+    std::set_unexpected(_terminate);
+    ::SetUnhandledExceptionFilter(UnhandledFilter);
+}
 #endif
 

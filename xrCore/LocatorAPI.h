@@ -7,7 +7,7 @@
 #pragma once
 
 // refs 
-class TShellChangeThread;
+class	CFS_PathNotificator;
 
 enum FS_List
 {
@@ -18,7 +18,8 @@ enum FS_List
 	FS_forcedword	=u32(-1)
 };
 
-class XRCORE_API FS_Path{
+class XRCORE_API FS_Path
+{
 public:
 	enum{
     	flRecurse	= (1<<0),
@@ -32,39 +33,16 @@ public:
 	LPSTR		m_DefExt;
 	LPSTR		m_FilterCaption;
     Flags32		m_Flags;
-#ifdef __BORLANDC__
-	const AnsiString& _update(AnsiString& dest) const;
-	const AnsiString& _update(AnsiString& dest, LPCSTR src) const;
-    void __fastcall rescan_path_cb();
-#endif
 public:
-	FS_Path		(LPCSTR _Root, LPCSTR _Add, LPCSTR _DefExt=0, LPCSTR _FilterString=0, u32 flags=0);
-	~FS_Path	()
-	{
-		xr_free	(m_Root);
-		xr_free	(m_Path);
-		xr_free	(m_Add);
-		xr_free	(m_DefExt);
-		xr_free	(m_FilterCaption);
-	}
+				FS_Path		(LPCSTR _Root, LPCSTR _Add, LPCSTR _DefExt=0, LPCSTR _FilterString=0, u32 flags=0);
+				~FS_Path	();
 	LPCSTR		_update		(LPSTR dest, LPCSTR src) const;
-	void		_set		(LPSTR add)
-	{
-		// m_Add
-		R_ASSERT		(add);
-		xr_free			(m_Add);
-		m_Add			= strlwr(xr_strdup(add));
+	void		_update		(std::string& dest, LPCSTR src) const;
+	void		_set		(LPSTR add);
 
-		// m_Path
-		string256		temp;
-		strconcat		(temp,m_Root,m_Add);
-		if (temp[strlen(temp)-1]!='\\') strcat(temp,"\\");
-		xr_free			(m_Path);
-		m_Path			= strlwr(xr_strdup(temp));
-	}
+    void __stdcall rescan_path_cb	();
 };
 
-#ifdef __BORLANDC__
 // query
 struct FS_QueryItem
 {
@@ -75,47 +53,56 @@ struct FS_QueryItem
 	u32			size;
     u32			modif;
     Flags32		flags;
-    			FS_QueryItem	(u32 sz, u32 mf, u32 fl=0)
+    			FS_QueryItem	():size(0),modif(0){flags.zero();}
+    			FS_QueryItem	(u32 sz, u32 mf, u32 fl=0){set(sz,mf,fl);}
+    void 		set				(u32 sz, u32 mf, u32 fl=0)
     {
     	size	= sz;
         modif	= mf;
-        flags.set(fl);
+        flags.assign(fl);
     }
 };
-DEFINE_MAP(AnsiString,FS_QueryItem,FS_QueryMap,FS_QueryPairIt);
-#endif
+DEFINE_MAP(std::string,FS_QueryItem,FS_QueryMap,FS_QueryPairIt);
 
 class XRCORE_API CLocatorAPI  
 {
 public:
 	struct	file
 	{
-		LPCSTR	name;			// low-case name
-		u32		vfs;			// 0xffffffff - standart file
-		u32		ptr;			// pointer inside vfs
-		u32		size;			// for REAL file - its file size, for COMPRESSED inside VFS - compressed size, for PLAIN inside VFS - file size
-        u32		modif;			// for editor
-		BOOL	bCompressed;
+		LPCSTR					name;			// low-case name
+		u32						vfs;			// 0xffffffff - standart file
+		u32						ptr;			// pointer inside vfs
+		u32						size_real;		// 
+		u32						size_compressed;// if (size_real==size_compressed) - uncompressed
+        u32						modif;			// for editor
 	};
 	struct	file_pred
 	{	
 		IC bool operator()	(const file& x, const file& y) const
-		{	return strcmp(x.name,y.name)<0;	}
+		{	return xr_strcmp(x.name,y.name)<0;	}
 	};
 	struct	archive
 	{
-		IReader*	vfs;
+		shared_str				path;
+		void					*hSrcFile, *hSrcMap;
 	};
-	DEFINE_MAP_PRED(LPCSTR,FS_Path*,PathMap,PathPairIt,pred_str);
+	DEFINE_MAP_PRED				(LPCSTR,FS_Path*,PathMap,PathPairIt,pred_str);
 	PathMap						pathes;
 
-	DEFINE_SET_PRED(file,files_set,files_it,file_pred);
-    DEFINE_VECTOR(archive,archives_vec,archives_it);
+	DEFINE_SET_PRED				(file,files_set,files_it,file_pred);
+    DEFINE_VECTOR				(archive,archives_vec,archives_it);
 
-    TShellChangeThread*			FThread;
+    CFS_PathNotificator*		FThread;
 	enum{
-    	flNeedRescan	= (1<<0),
-        flLockRescan	= (1<<1)
+    	flNeedRescan			= (1<<0),
+        flLockRescan			= (1<<1),
+		flBuildCopy				= (1<<2),
+		flReady					= (1<<3),
+		flEBuildCopy			= (1<<4),
+        flEventNotificator      = (1<<5),
+		flTargetFolderOnly		= (1<<6),
+		flCacheFiles			= (1<<7),
+		flScanAppRoot			= (1<<8),
     };    
     Flags32						m_Flags;
     void						rescan_path		(LPCSTR full_path, BOOL bRecurse);
@@ -126,17 +113,21 @@ private:
     archives_vec				archives;
 	BOOL						bNoRecurse;
 
-	void						Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size, BOOL bCompressed, u32 modif);
+	void						Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size_real, u32 size_compressed, u32 modif);
 	void						ProcessArchive	(LPCSTR path);
-	void						ProcessOne		(LPCSTR path, LPVOID F);
+	void						ProcessOne		(LPCSTR path, void* F);
 	bool						Recurse			(LPCSTR path);
 
     void						SetEventNotification	();
     void						ClearEventNotification	();
+
+	files_it					file_find_it	(LPCSTR n);
+public:
+	u32							dwAllocGranularity;
 public:
 								CLocatorAPI		();
 								~CLocatorAPI	();
-	void						_initialize		();
+	void						_initialize		(u32 flags, LPCSTR target_folder=0);
 	void						_destroy		();
 
 	IReader*					r_open			(LPCSTR initial, LPCSTR N);
@@ -152,80 +143,38 @@ public:
 	const file*					exist			(LPSTR fn, LPCSTR path, LPCSTR name);
 	const file*					exist			(LPSTR fn, LPCSTR path, LPCSTR name, LPCSTR ext);
 
-	files_it					file_find		(LPCSTR n);
-    void 						dir_delete		(LPCSTR path,LPCSTR nm);
-    void 						dir_delete		(LPCSTR full_path){dir_delete(0,full_path);}
+    BOOL 						dir_delete		(LPCSTR path,LPCSTR nm,BOOL remove_files);
+    BOOL 						dir_delete		(LPCSTR full_path,BOOL remove_files){return dir_delete(0,full_path,remove_files);}
     void 						file_delete		(LPCSTR path,LPCSTR nm);
     void 						file_delete		(LPCSTR full_path){file_delete(0,full_path);}
 	void 						file_copy		(LPCSTR src, LPCSTR dest);
-	void 						file_rename		(LPCSTR src, LPCSTR dest);
+	void 						file_rename		(LPCSTR src, LPCSTR dest,bool bOwerwrite=true);
     int							file_length		(LPCSTR src);
 
-    int  						get_file_age	(LPCSTR nm);
-    void 						set_file_age	(LPCSTR nm, int age);
+    u32  						get_file_age	(LPCSTR nm);
+    void 						set_file_age	(LPCSTR nm, u32 age);
 
-	vector<char*>*				file_list_open	(LPCSTR path, u32 flags=FS_ListFiles);
-	void						file_list_close	(vector<char*>* &lst);
-
+	xr_vector<LPSTR>*			file_list_open	(LPCSTR initial, LPCSTR folder,	u32 flags=FS_ListFiles);
+	xr_vector<LPSTR>*			file_list_open	(LPCSTR path,					u32 flags=FS_ListFiles);
+	void						file_list_close	(xr_vector<LPSTR>* &lst);
+                                                     
     bool						path_exist		(LPCSTR path);
     FS_Path*					get_path		(LPCSTR path);
+    FS_Path*					append_path		(LPCSTR path_alias, LPCSTR root, LPCSTR add, BOOL recursive);
     LPCSTR						update_path		(LPSTR dest, LPCSTR initial, LPCSTR src);
 
-#ifdef __BORLANDC__
-	int							file_list		(FS_QueryMap& dest, LPCSTR path, u32 flags=FS_ListFiles, LPCSTR ext_mask=0);
-	const AnsiString&			update_path		(LPCSTR initial, AnsiString& dest);
-    const AnsiString&			update_path		(AnsiString& dest, LPCSTR initial, LPCSTR src);
+    // editor functions
+	int							file_list		(FS_QueryMap& dest, LPCSTR path, u32 flags=FS_ListFiles, LPCSTR mask=0);
+	bool						file_find		(FS_QueryItem& dest, LPCSTR path, LPCSTR name, bool clamp_ext);
+    void						update_path		(std::string& dest, LPCSTR initial, LPCSTR src);
 	void						lock_rescan		();
 	void						unlock_rescan	();
-#endif    
+
+	void						register_archieve(LPCSTR path);
 };
 
-extern XRCORE_API	CLocatorAPI	FS;
+extern XRCORE_API	CLocatorAPI*			xr_FS;
+#define FS (*xr_FS)
 
 #endif // LocatorAPIH
-/*
-class FS_query
-{
-    files_set		files;
-public:
-    ~files_query	()	
-    { 
-        clear		();
-    }
-    IC void clear	()
-    {
-        for(CLocatorAPI::files_it I=files.begin(); I!=files.end(); I++){
-            char* str	= LPSTR(I->name);
-            xr_free		(str);
-        }
-        files.clear	();
-    }
-    IC bool insert	(LPCSTR name, u32 vfs, u32 ptr, u32 size, BOOL bCompressed, u32 modif, bool bClampExt=false)
-    {
-        file desc;
-        desc.name		= strlwr(xr_strdup(name));
-        if (bClampExt&&(strext(desc.name)))	*strext(desc.name) = 0;
-        desc.vfs		= vfs;
-        desc.ptr		= ptr;
-        desc.size		= size;
-        desc.modif		= modif;
-        desc.bCompressed= bCompressed;
-        pair<files_it,bool> I = files.insert(desc);
-        if (!I.second)	xr_free(desc.name);
-        return I.second;
-    }
-    IC bool insert	(const file& entry, bool bClampExt=false)
-    {
-        return insert	(entry.name,entry.vfs,entry.ptr,entry.size,entry.modif,entry.bCompressed,bClampExt);
-    }
-    IC bool insert	(LPCSTR new_name, const file& entry, bool bClampExt=false)
-    {
-        return insert	(new_name,entry.vfs,entry.ptr,entry.size,entry.modif,entry.bCompressed,bClampExt);
-    }
-    IC files_it find(LPCSTR nm)	{ file desc; desc.name=nm; return files.find(desc);	}
-    IC int size		()			{ return files.size();		}
-    IC bool empty	()			{ return files.empty();		}
-    IC files_it 	begin	()	{ return files.begin();		}
-    IC files_it		end		()	{ return files.end();		}
-};
-*/
+

@@ -48,15 +48,15 @@ enum EWayType{
 /*
 - chunk RPOINT_CHUNK
 	- chunk #0
-        vector	(PPosition);
-        vector	(PRotation);
+        xr_vector	(PPosition);
+        xr_vector	(PRotation);
         dword	(m_dwTeamId);
     ...
     - chunk #n
 
 - chunk AIPOINT_CHUNK
 	- chunk #0
-        vector	(PPosition);
+        xr_vector	(PPosition);
     ...
     - chunk #n
 

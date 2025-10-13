@@ -117,7 +117,7 @@ protected:
 		Fvector				pos,angles;
 		void	lerp		(net_update& A,net_update& B, float f);
 	};
-	deque<net_update>		NET;
+	std::deque<net_update>		NET;
 	net_update				NET_Last;
 protected:
 	void					Light_Start			();
@@ -225,14 +225,14 @@ public:
 
 	CWeaponAmmo *m_pAmmo;
 	char m_tmpName[255], m_ammoSect[255];
-	vector<LPCSTR> m_ammoTypes;
+	xr_vector<LPCSTR> m_ammoTypes;
 	u32 m_ammoType;
 	LPCSTR m_ammoName;
 	f32 m_resource, m_abrasion;
 	//
 
 	// Multitype ammo support
-	stack<CCartridge> m_magazine;
+	std::stack<CCartridge> m_magazine;
 	//
 };
 

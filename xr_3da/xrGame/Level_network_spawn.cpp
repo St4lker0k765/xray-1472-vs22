@@ -16,7 +16,7 @@ void CLevel::g_cl_Spawn		(LPCSTR name, u8 rp, u16 flags)
 	E->ID				=	0xffff;
 	E->ID_Parent		=	0xffff;
 	E->ID_Phantom		=	0xffff;
-	E->s_flags.set		(flags);
+	E->s_flags.assign  (flags);
 	E->RespawnTime		=	0;
 
 	// Send
@@ -39,7 +39,7 @@ void CLevel::g_sv_Spawn		(xrServerEntity* E)
 	// Client spawn
 	T.Start		();
 	CObject*	O		= Objects.Create	(E->s_name);
-	Msg			("--spawn--CREATE: %f ms",1000.f*T.GetAsync());
+	Msg			("--spawn--CREATE: %f ms",1000.f*T.GetElapsed_sec());
 
 	T.Start		();
 	if (0==O || (!O->net_Spawn	(E))) 
@@ -47,7 +47,7 @@ void CLevel::g_sv_Spawn		(xrServerEntity* E)
 		O->net_Destroy			( );
 		Msg						("! Failed to spawn entity '%s'",E->s_name);
 	} else {
-		Msg			("--spawn--SPAWN: %f ms",1000.f*T.GetAsync());
+		Msg			("--spawn--SPAWN: %f ms",1000.f*T.GetElapsed_sec());
 
 		if ((E->s_flags.is(M_SPAWN_OBJECT_LOCAL)) && (E->s_flags.is(M_SPAWN_OBJECT_ASPLAYER)))	SetEntity		(O);
 		if (E->s_flags.is(M_SPAWN_OBJECT_ACTIVE))											O->OnActivate	( );

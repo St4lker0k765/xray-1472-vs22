@@ -30,9 +30,9 @@ public:
 	void SoundDestroy(sound& dest);
 
 	FLOAT m_radius, m_buzzer_radius;
-	list<CCustomZone*> m_zones;
-	map<CLASS_ID, sound*> m_sounds;
-	map<CCustomZone*, u32> m_times;
+	std::list<CCustomZone*> m_zones;
+	std::map<CLASS_ID, sound*> m_sounds;
+	std::map<CCustomZone*, u32> m_times;
 	sound m_noise, m_buzzer;
 
 	virtual void		OnRender				( );

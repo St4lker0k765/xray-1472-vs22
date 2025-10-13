@@ -209,7 +209,7 @@ namespace PAPI{
 				P.alpha = alpha;
 				P.age = age;
 				P.frame = frame;
-				P.flags.set(flags);
+				P.flags.assign(flags);
 				p_count++;
 				return TRUE;
 			}

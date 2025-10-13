@@ -61,11 +61,11 @@ public:
 	game_cl_GameState			game;
 	BOOL						game_configured;
 	NET_Queue_Event				game_events;
-	deque<xrServerEntity*>		game_spawn_queue;
+	std::deque<xrServerEntity*>		game_spawn_queue;
 
 	xrServer*					Server;
 
-	vector<CTeam>				Teams;
+	xr_vector<CTeam>				Teams;
 
 	CTracer						Tracers;
 	CEffect_Rain				eff_Rain;
@@ -82,13 +82,13 @@ public:
 		WORD	wTo;
 	} SWayLink;
 
-	typedef vector<Fvector>			SPointVector;
+	typedef xr_vector<Fvector>			SPointVector;
 
 	typedef struct tagSPath {
 		u32							dwType;
-		vector<SWayPoint>			tpaWayPoints;
-		vector<SWayLink>			tpaWayLinks;
-		vector<u32>					tpaWayPointIndexes;
+		xr_vector<SWayPoint>			tpaWayPoints;
+		xr_vector<SWayLink>			tpaWayLinks;
+		xr_vector<u32>					tpaWayPointIndexes;
 		SPointVector				tpaVectors[3];
 	} SPath;
 

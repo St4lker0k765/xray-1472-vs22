@@ -390,7 +390,7 @@ class CAI_Soldier : public CCustomMonster
 		int						m_iCurrentSuspiciousNodeIndex;
 		SuspiciousPoints		m_tpaSuspiciousPoints;
 		SuspiciousForces		m_tpaSuspiciousForces;
-		vector<u32>				m_tpaNodeStack;
+		xr_vector<u32>				m_tpaNodeStack;
 
 		
 		// performance data
@@ -436,7 +436,7 @@ class CAI_Soldier : public CCustomMonster
 		float					m_fMaxPatrolDistance;
 
 		// finite state machine
-		stack<ESoldierStates>	m_tStateStack;
+		std::stack<ESoldierStates>	m_tStateStack;
 		svector<SSoldierStates,MAX_STATE_LIST_SIZE>	m_tStateList;
 		bool					m_bStateChanged;
 		

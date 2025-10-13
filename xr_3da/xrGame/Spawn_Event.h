@@ -45,7 +45,7 @@ public:
 		}
 	};
 protected:
-	vector<Pair>	Commands;
+	xr_vector<Pair>	Commands;
 
 	void					ExportAction	(NET_Packet& P, Action& A);
 public:

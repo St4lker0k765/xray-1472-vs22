@@ -62,7 +62,7 @@ void CCustomDetector::Load(LPCSTR section) {
 void CCustomDetector::net_Destroy() {
 	inherited::net_Destroy();
 	SoundDestroy(m_noise);
-	map<CLASS_ID, sound*>::iterator l_it;
+	std::map<CLASS_ID, sound*>::iterator l_it;
 	for(l_it = m_sounds.begin(); l_it != m_sounds.end(); l_it++) SoundDestroy(*l_it->second);
 }
 
@@ -82,7 +82,7 @@ void CCustomDetector::Update(u32 dt) {
 	if(H_Parent()) {
 		f32 l_maxPow = 0;
 		BOOL l_buzzer = false;
-		list<CCustomZone*>::iterator l_it;
+		std::list<CCustomZone*>::iterator l_it;
 		for(l_it = m_zones.begin(); l_it != m_zones.end(); l_it++) {
 			CCustomZone *l_pZ = *l_it;
 			u32 &l_time = m_times[l_pZ];
@@ -90,7 +90,7 @@ void CCustomDetector::Update(u32 dt) {
 			f32 l_dst = P.distance_to(l_pZ->Position()); if(l_dst > m_radius) l_dst -= m_radius; else l_dst = 0;
 			f32 l_relPow = l_pZ->Power(l_dst) / l_pZ->m_maxPower;
 			if(l_relPow > 0 && l_pZ->feel_touch_contact(this)) l_buzzer = true;
-			l_maxPow = max(l_maxPow, l_relPow); l_relPow = 1.f - l_relPow;
+			l_maxPow = std::max(l_maxPow, l_relPow); l_relPow = 1.f - l_relPow;
 			if((f32)l_time > 5000.f * (l_relPow/**l_relPow*l_relPow*l_relPow*/)) {
 				l_time = 0;
 				if(m_sounds.find(l_pZ->SUB_CLS_ID) != m_sounds.end()) {
@@ -117,7 +117,7 @@ void CCustomDetector::Update(u32 dt) {
 void CCustomDetector::UpdateCL() {
 	inherited::UpdateCL();
 	f32 l_zonePow = 0;
-	list<CCustomZone*>::iterator l_it;
+	std::list<CCustomZone*>::iterator l_it;
 	for(l_it = m_zones.begin(); l_it != m_zones.end(); l_it++) l_zonePow = _max(l_zonePow, (*l_it)->Power((*l_it)->Position().distance_to(vPosition)));
 	/*
 	CGameFont* H		= HUD().pFontMedium;

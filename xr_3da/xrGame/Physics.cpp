@@ -644,7 +644,7 @@ void CPHWorld::Destroy(){
 	Mesh.Destroy();
 	//Jeep.Destroy();
 	//Gun.Destroy();
-	//vector<CPHElement*>::iterator i;
+	//xr_vector<CPHElement*>::iterator i;
 	//for(i=elements.begin();i!=elements.end();i++){
 	//delete(*i);
 	//}
@@ -662,7 +662,7 @@ void CPHWorld::Step(dReal step)
 
 	// compute contact joints and forces
 
-	list<CPHObject*>::iterator iter;
+	std::list<CPHObject*>::iterator iter;
 	//step+=astep;
 
 	//const  dReal k_p=24000000.f;//550000.f;///1000000.f;
@@ -1209,14 +1209,14 @@ Fvector CPHElement::			get_mc_data	(){
 	Fvector mc,s;
 	float pv,volume=0.f;
 	mc.set(0,0,0);
-	vector<Fobb>::iterator i_box;
+	xr_vector<Fobb>::iterator i_box;
 	for(i_box=m_boxes_data.begin();i_box!=m_boxes_data.end();i_box++){
 	pv=(*i_box).m_halfsize.x*(*i_box).m_halfsize.y*(*i_box).m_halfsize.z*8;
 	s.mul((*i_box).m_translate,pv);
 	volume+=pv;
 	mc.add(s);
 	}
-	vector<Fsphere>::iterator i_sphere;
+	xr_vector<Fsphere>::iterator i_sphere;
 	for(i_sphere=m_spheras_data.begin();i_sphere!=m_spheras_data.end();i_sphere++){
 	pv=(*i_sphere).R*(*i_sphere).R*(*i_sphere).R*4/3*M_PI;
 	s.mul((*i_sphere).P,pv);
@@ -1225,7 +1225,7 @@ Fvector CPHElement::			get_mc_data	(){
 	}
 
 
-	vector<Fcylinder>::iterator i_cylider;
+	xr_vector<Fcylinder>::iterator i_cylider;
 	for(i_cylider=m_cylinders_data.begin();i_cylider!=m_cylinders_data.end();i_cylider++){
 		pv=M_PI*(*i_cylider).m_radius*(*i_cylider).m_radius*(*i_cylider).m_halflength*2.f;
 		s.mul((*i_cylider).m_translate,pv);
@@ -1248,7 +1248,7 @@ return mc;
 void CPHElement::calculate_it_data(const Fvector& mc,float mas){
 	dMass m;
 	dMassSetZero(&m_mass);
-	vector<Fobb>::iterator i_box;
+	std::vector<Fobb>::iterator i_box;
 	for(i_box=m_boxes_data.begin();i_box!=m_boxes_data.end();i_box++){
 	Fvector& hside=(*i_box).m_halfsize;
 	Fvector& pos=(*i_box).m_translate;
@@ -1264,7 +1264,7 @@ void CPHElement::calculate_it_data(const Fvector& mc,float mas){
 	
 	}
 
-	vector<Fsphere>::iterator i_sphere;
+	std::vector<Fsphere>::iterator i_sphere;
 	for(i_sphere=m_spheras_data.begin();i_sphere!=m_spheras_data.end();i_sphere++){
 	Fvector& pos=(*i_sphere).P;
 	Fvector l;
@@ -1275,7 +1275,7 @@ void CPHElement::calculate_it_data(const Fvector& mc,float mas){
 
 	}
 
-	vector<Fcylinder>::iterator i_cylinder;
+	std::vector<Fcylinder>::iterator i_cylinder;
 	for(i_cylinder=m_cylinders_data.begin();i_cylinder!=m_cylinders_data.end();i_cylinder++){
 		Fvector& pos=(*i_cylinder).m_translate;
 		Fvector l;
@@ -1294,7 +1294,7 @@ void CPHElement::calculate_it_data(const Fvector& mc,float mas){
 
 void CPHElement::calculate_it_data_use_density(const Fvector& mc,float density){
 
-//	vector<Fobb>::iterator i_box=m_boxes_data.begin();
+//	xr_vector<Fobb>::iterator i_box=m_boxes_data.begin();
 //	if(m_boxes_data.size()==1,m_spheras_data.size()==0){
 //	Fvector& hside=(*i_box).m_halfsize;
 
@@ -1306,7 +1306,7 @@ void CPHElement::calculate_it_data_use_density(const Fvector& mc,float density){
 
 	dMass m;
 	dMassSetZero(&m_mass);
-	vector<Fobb>::iterator i_box;
+	xr_vector<Fobb>::iterator i_box;
 	for(i_box=m_boxes_data.begin();i_box!=m_boxes_data.end();i_box++){
 	Fvector& hside=(*i_box).m_halfsize;
 	Fvector& pos=(*i_box).m_translate;
@@ -1322,7 +1322,7 @@ void CPHElement::calculate_it_data_use_density(const Fvector& mc,float density){
 	
 	}
 
-	vector<Fsphere>::iterator i_sphere;
+	std::vector<Fsphere>::iterator i_sphere;
 	for(i_sphere=m_spheras_data.begin();i_sphere!=m_spheras_data.end();i_sphere++){
 	Fvector& pos=(*i_sphere).P;
 	Fvector l;
@@ -1334,7 +1334,7 @@ void CPHElement::calculate_it_data_use_density(const Fvector& mc,float density){
 
 	}
 
-	vector<Fcylinder>::iterator i_cylinder;
+	std::vector<Fcylinder>::iterator i_cylinder;
 	for(i_cylinder=m_cylinders_data.begin();i_cylinder!=m_cylinders_data.end();i_cylinder++){
 		Fvector& pos=(*i_cylinder).m_translate;
 		Fvector l;
@@ -1399,7 +1399,7 @@ CPHElement::~CPHElement	(){
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CPHShell::setMass(float M){
-	vector<CPHElement*>::iterator i;
+	xr_vector<CPHElement*>::iterator i;
 	float volume=0.f;
 	for(i=elements.begin();i!=elements.end();i++)	volume+=(*i)->get_volume();
 
@@ -1415,7 +1415,7 @@ void CPHShell::Activate(const Fmatrix &m0,float dt01,const Fmatrix &m2,bool disa
 		return;
 	m_ident=ph_world->AddObject(this);
 
-		vector<CPHElement*>::iterator i;
+		xr_vector<CPHElement*>::iterator i;
 		
 		mXFORM.set(m0);
 		m_space=dSimpleSpaceCreate(ph_world->GetSpace());
@@ -1435,7 +1435,7 @@ void CPHShell::Activate(const Fmatrix &transform,const Fvector& lin_vel,const Fv
 		return;
 	m_ident=ph_world->AddObject(this);
 
-	vector<CPHElement*>::iterator i;
+	xr_vector<CPHElement*>::iterator i;
 
 	mXFORM.set(transform);
 	m_space=dSimpleSpaceCreate(ph_world->GetSpace());
@@ -1543,11 +1543,11 @@ void CPHElement::Activate(const Fmatrix &transform,const Fvector& lin_vel,const 
 void CPHShell::Deactivate(){
 if(!bActive)
 		return;
-	vector<CPHElement*>::iterator i;
+	xr_vector<CPHElement*>::iterator i;
 	for(i=elements.begin();i!=elements.end();i++)
 	(*i)->Deactivate();
 
-	vector<CPHJoint*>::iterator j;
+	xr_vector<CPHJoint*>::iterator j;
 	for(j=joints.begin();j!=joints.end();j++)
 	(*j)->Deactivate();
 
@@ -1562,7 +1562,7 @@ bActivating=false;
 
 void CPHShell::PhDataUpdate(dReal step){
 
-vector<CPHElement*>::iterator i;
+xr_vector<CPHElement*>::iterator i;
 for(i=elements.begin();i!=elements.end();i++)
 					(*i)->PhDataUpdate(step);
 }
@@ -1859,7 +1859,7 @@ void CPHShell::PhTune(dReal step){
 }
 
 void CPHShell::Update(){
-	vector<CPHElement*>::iterator i;
+	xr_vector<CPHElement*>::iterator i;
 	for(i=elements.begin();i!=elements.end();i++)
 	(*i)->Update();
 	mXFORM.set((*elements.begin())->mXFORM);
@@ -2089,14 +2089,14 @@ void CPHShell::Activate(){
 		return;
 	m_ident=ph_world->AddObject(this);
 
-		//vector<CPHElement*>::iterator i;
+		//xr_vector<CPHElement*>::iterator i;
 
 		//for(i=elements.begin();i!=elements.end();i++){
 														//(*i)->Start();
 														//(*i)->SetTransform(m0);
 											//			(*i)->Activate();
 			//}
-		vector<CPHJoint*>::iterator i;
+		xr_vector<CPHJoint*>::iterator i;
 
 		for(i=joints.begin();i!=joints.end();i++){
 														(*i)->Activate();
@@ -2972,7 +2972,7 @@ void CPHJoint::SetForceAndVelocity		(const float force,const float velocity,cons
 
 void CPHShell::SetTransform(Fmatrix m){
 Fmatrix init;
-vector<CPHElement*>::iterator i=elements.begin();
+xr_vector<CPHElement*>::iterator i=elements.begin();
 (*i)->InterpolateGlobalTransform(&init);
 init.invert();
 Fmatrix add;
@@ -2995,7 +2995,7 @@ void CPHShell::Enable()
 {
 if(!bActive)
 		return;
-	vector<CPHElement*>::iterator i;
+	xr_vector<CPHElement*>::iterator i;
 	for(i=elements.begin();i!=elements.end();i++)
 	(*i)->Enable();
 }
@@ -3007,7 +3007,7 @@ if(!bActive)
 	contact_callback=callback;
 	return;
 	}
-	vector<dGeomID>::iterator i;
+	xr_vector<dGeomID>::iterator i;
 	for(i=m_geoms.begin();i!=m_geoms.end();i++)
 	{
 		dGeomUserDataSetContactCallback(*i,callback);
@@ -3016,7 +3016,7 @@ if(!bActive)
 
 void CPHShell::set_ContactCallback(ContactCallbackFun* callback)
 {
-	vector<CPHElement*>::iterator i;
+	xr_vector<CPHElement*>::iterator i;
 	for(i=elements.begin();i!=elements.end();i++)
 					(*i)->set_ContactCallback(callback);
 }

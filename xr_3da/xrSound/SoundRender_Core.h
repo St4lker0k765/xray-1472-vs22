@@ -38,10 +38,10 @@ private:
 	CDB::MODEL*							geom_ENV;
 
 	// Containers
-	vector<CSoundRender_Source*>		s_sources;
-	vector<CSoundRender_Emitter*>		s_emitters;
-	vector<CSoundRender_Target*>		s_targets;
-	vector<CSoundRender_Target*>		s_targets_defer;
+	xr_vector<CSoundRender_Source*>		s_sources;
+	xr_vector<CSoundRender_Emitter*>		s_emitters;
+	xr_vector<CSoundRender_Target*>		s_targets;
+	xr_vector<CSoundRender_Target*>		s_targets_defer;
 	SoundEnvironment_LIB*				s_environment;
 	CSoundRender_Environment			s_user_environment;
 public:

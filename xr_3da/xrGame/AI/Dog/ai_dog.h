@@ -74,7 +74,7 @@ class CAI_Dog : public CCustomMonster
 		//////////////////////////
 		
 		// FSM
-		stack<EDogStates>	m_tStateStack;
+		std::stack<EDogStates>	m_tStateStack;
 		EDogStates			m_eCurrentState;
 		EDogStates			m_ePreviousState;
 		bool				m_bStopThinking;

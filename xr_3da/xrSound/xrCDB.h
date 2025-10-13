@@ -130,8 +130,8 @@ namespace CDB
 
 	class XRCDB_API Collector
 	{
-		vector<Fvector>	verts;
-		vector<TRI>		faces;
+		xr_vector<Fvector>	verts;
+		xr_vector<TRI>		faces;
 
 		u32				VPack(Fvector& V, float eps);
 	public:
@@ -157,11 +157,11 @@ namespace CDB
 	const u32 clpMX = 28, clpMY=16, clpMZ=28;
 	class XRCDB_API CollectorPacked
 	{
-		typedef vector<u32>			DWORDList;
+		typedef xr_vector<u32>			DWORDList;
 		typedef DWORDList::iterator	DWORDIt;
 
-		vector<Fvector>	verts;
-		vector<TRI>		faces;
+		xr_vector<Fvector>	verts;
+		xr_vector<TRI>		faces;
 
 		Fvector			VMmin, VMscale;
 		DWORDList		VM	[clpMX+1][clpMY+1][clpMZ+1];
@@ -176,7 +176,7 @@ namespace CDB
 			u32 e01, u32 e12, u32 e20,				// edges
 			WORD material, WORD sector, u32 dummy	// misc
 			);
-		vector<Fvector>& getV_Vec()	{ return verts;	}
+		xr_vector<Fvector>& getV_Vec()	{ return verts;	}
 		Fvector*		getV()	{ return &*verts.begin();	}
 		size_t			getVS()	{ return verts.size();	}
 		TRI*			getT()	{ return &*faces.begin();	}

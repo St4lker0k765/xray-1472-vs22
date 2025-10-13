@@ -132,7 +132,7 @@ SVS*	CShaderManager::_CreateVS		(LPCSTR name)
 	else
 	{
 		SVS*	_vs					= xr_new<SVS>	();
-		m_vs.insert					(make_pair(xr_strdup(name),_vs));
+		m_vs.insert					(std::make_pair(xr_strdup(name),_vs));
 		if (0==stricmp(name,"null"))	{
 			_vs->dwReference	= 1;
 			_vs->vs				= NULL;
@@ -200,7 +200,7 @@ SPS*	CShaderManager::_CreatePS			(LPCSTR name)
 	else
 	{
 		SPS*	_ps					= xr_new<SPS>	();
-		m_ps.insert					(make_pair(xr_strdup(name),_ps));
+		m_ps.insert					(std::make_pair(xr_strdup(name),_ps));
 		if (0==stricmp(name,"null"))	{
 			_ps->dwReference	= 1;
 			_ps->ps				= NULL;
@@ -273,7 +273,7 @@ CRT*	CShaderManager::_CreateRT		(LPCSTR Name, u32 w, u32 h,	D3DFORMAT f)
 	{
 		CRT *RT				=	xr_new<CRT>();
 		RT->dwReference		=	1;
-		m_rtargets.insert		(make_pair(xr_strdup(Name),RT));
+		m_rtargets.insert		(std::make_pair(xr_strdup(Name),RT));
 		if (Device.bReady)	RT->Create	(Name,w,h,f);
 		return				RT;
 	}
@@ -430,7 +430,7 @@ CTexture* CShaderManager::_CreateTexture	(LPCSTR Name)
 	{
 		CTexture *T		= xr_new<CTexture>();
 		T->dwReference	= 1;
-		m_textures.insert	(make_pair(xr_strdup(Name),T));
+		m_textures.insert	(std::make_pair(xr_strdup(Name),T));
 		if (Device.bReady && !bDeferredLoad) T->Load(Name);
 		return		T;
 	}
@@ -444,7 +444,7 @@ void	CShaderManager::_DeleteTexture		(CTexture* &T)
 LPCSTR	CShaderManager::DBG_GetTextureName	(CTexture* T)
 {
 	R_ASSERT(T);
-	for (map<LPSTR,CTexture*,str_pred>::iterator I=m_textures.begin(); I!=m_textures.end(); I++)
+	for (xr_map<LPSTR,CTexture*,str_pred>::iterator I=m_textures.begin(); I!=m_textures.end(); I++)
 		if (I->second == T)	return I->first;
 	return 0;
 }
@@ -455,7 +455,7 @@ CMatrix*	CShaderManager::_CreateMatrix	(LPCSTR Name)
 	if (0==stricmp(Name,"$null"))	return NULL;
 
 	LPSTR N = LPSTR(Name);
-	map<LPSTR,CMatrix*,str_pred>::iterator I = m_matrices.find	(N);
+	xr_map<LPSTR,CMatrix*,str_pred>::iterator I = m_matrices.find	(N);
 	if (I!=m_matrices.end())
 	{
 		CMatrix* M		=	I->second;
@@ -466,7 +466,7 @@ CMatrix*	CShaderManager::_CreateMatrix	(LPCSTR Name)
 	{
 		CMatrix* M		=	xr_new<CMatrix>();
 		M->dwReference	=	1;
-		m_matrices.insert	(make_pair(xr_strdup(Name),M));
+		m_matrices.insert	(std::make_pair(xr_strdup(Name),M));
 		return	M;
 	}
 }
@@ -479,7 +479,7 @@ void	CShaderManager::_DeleteMatrix		(CMatrix* &M)
 LPCSTR	CShaderManager::DBG_GetMatrixName	(CMatrix* T)
 {
 	R_ASSERT(T);
-	for (map<LPSTR,CMatrix*,str_pred>::iterator I=m_matrices.begin(); I!=m_matrices.end(); I++)
+	for (xr_map<LPSTR,CMatrix*,str_pred>::iterator I=m_matrices.begin(); I!=m_matrices.end(); I++)
 		if (I->second == T)	return I->first;
 	return 0;
 }
@@ -497,7 +497,7 @@ CConstant*	CShaderManager::_CreateConstant	(LPCSTR Name)
 	if (0==stricmp(Name,"$null"))	return NULL;
 
 	LPSTR N = LPSTR(Name);
-	map<LPSTR,CConstant*,str_pred>::iterator I = m_constants.find	(N);
+	xr_map<LPSTR,CConstant*,str_pred>::iterator I = m_constants.find	(N);
 	if (I!=m_constants.end())
 	{
 		CConstant* C	=	I->second;
@@ -508,7 +508,7 @@ CConstant*	CShaderManager::_CreateConstant	(LPCSTR Name)
 	{
 		CConstant* C	=	xr_new<CConstant>();
 		C->dwReference	=	1;
-		m_constants.insert	(make_pair(xr_strdup(Name),C));
+		m_constants.insert	(std::make_pair(xr_strdup(Name),C));
 		return	C;
 	}
 }
@@ -521,7 +521,7 @@ void	CShaderManager::_DeleteConstant		(CConstant* &C)
 LPCSTR	CShaderManager::DBG_GetConstantName	(CConstant* T)
 {
 	R_ASSERT(T);
-	for (map<LPSTR,CConstant*,str_pred>::iterator I=m_constants.begin(); I!=m_constants.end(); I++)
+	for (xr_map<LPSTR,CConstant*,str_pred>::iterator I=m_constants.begin(); I!=m_constants.end(); I++)
 		if (I->second == T)	return I->first;
 	return 0;
 }
@@ -538,7 +538,7 @@ CBlender* CShaderManager::_GetBlender		(LPCSTR Name)
 	R_ASSERT(Name && Name[0]);
 
 	LPSTR N = LPSTR(Name);
-	map<LPSTR,CBlender*,str_pred>::iterator I = m_blenders.find	(N);
+	xr_map<LPSTR,CBlender*,str_pred>::iterator I = m_blenders.find	(N);
 #ifdef _EDITOR
 	if (I==m_blenders.end())	return 0;
 #else
@@ -552,7 +552,7 @@ CBlender* CShaderManager::_FindBlender		(LPCSTR Name)
 	if (!(Name && Name[0])) return 0;
 
 	LPSTR N = LPSTR(Name);
-	map<LPSTR,CBlender*,str_pred>::iterator I = m_blenders.find	(N);
+	xr_map<LPSTR,CBlender*,str_pred>::iterator I = m_blenders.find	(N);
 	if (I==m_blenders.end())	return 0;
 	else						return I->second;
 }
@@ -560,13 +560,13 @@ CBlender* CShaderManager::_FindBlender		(LPCSTR Name)
 void	CShaderManager::ED_UpdateBlender	(LPCSTR Name, CBlender* data)
 {
 	LPSTR N = LPSTR(Name);
-	map<LPSTR,CBlender*,str_pred>::iterator I = m_blenders.find	(N);
+	xr_map<LPSTR,CBlender*,str_pred>::iterator I = m_blenders.find	(N);
 	if (I!=m_blenders.end())	{
 		R_ASSERT	(data->getDescription().CLS == I->second->getDescription().CLS);
 		xr_delete	(I->second);
 		I->second	= data;
 	} else {
-		m_blenders.insert	(make_pair(xr_strdup(Name),data));
+		m_blenders.insert	(std::make_pair(xr_strdup(Name),data));
 	}
 }
 
@@ -867,8 +867,8 @@ void	CShaderManager::_GetMemoryUsage(u32& m_base, u32& c_base, u32& m_lmaps, u32
 {
 	m_base=c_base=m_lmaps=c_lmaps=0;
 
-	map<LPSTR,CTexture*,str_pred>::iterator I = m_textures.begin	();
-	map<LPSTR,CTexture*,str_pred>::iterator E = m_textures.end		();
+	xr_map<LPSTR,CTexture*,str_pred>::iterator I = m_textures.begin	();
+	xr_map<LPSTR,CTexture*,str_pred>::iterator E = m_textures.end		();
 	for (; I!=E; I++)
 	{
 		u32 m = I->second->dwMemoryUsage;
@@ -891,7 +891,7 @@ void	CShaderManager::Evict()
 BOOL	CShaderManager::_GetDetailTexture(LPCSTR Name,LPCSTR& T, LPCSTR& M)
 {
 	LPSTR N = LPSTR(Name);
-	map<LPSTR,texture_detail,str_pred>::iterator I = m_td.find	(N);
+	xr_map<LPSTR,texture_detail,str_pred>::iterator I = m_td.find	(N);
 	if (I!=m_td.end())
 	{
 		T = I->second.T;

@@ -81,8 +81,8 @@ void CDemoRecord::MakeCubeMapFace(Fvector &D, Fvector &N)
 	case 0:
 		N.set		(cmNorm[s_idx]);
 		D.set		(cmDir[s_idx]);
-		s_hud_flag.set(psHUD_Flags);
-		psHUD_Flags.set	(0);
+		s_hud_flag.assign(psHUD_Flags);
+		psHUD_Flags.assign(0);
 	break;
 	case 1: 
 	case 2:
@@ -97,7 +97,7 @@ void CDemoRecord::MakeCubeMapFace(Fvector &D, Fvector &N)
 		Render->Screenshot	(TRUE);
 		N.set		(m_Camera.j);
 		D.set		(m_Camera.k);
-		psHUD_Flags.set(s_hud_flag);
+		psHUD_Flags.assign(s_hud_flag);
 		m_bMakeCubeMap = FALSE;
 	break;
 	}

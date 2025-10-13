@@ -61,8 +61,8 @@
 ////
 ////	// Clear q_marks
 ////	{
-////		vector<u32>::iterator it	= q_stack.begin();
-////		vector<u32>::iterator end	= q_stack.end();
+////		xr_vector<u32>::iterator it	= q_stack.begin();
+////		xr_vector<u32>::iterator end	= q_stack.end();
 ////		for ( ; it!=end; it++)	
 ////			q_mark[*it] -= 1;
 ////	}
@@ -128,8 +128,8 @@
 ////
 ////	// Clear q_marks
 ////	{
-////		vector<u32>::iterator it	= q_stack.begin();
-////		vector<u32>::iterator end	= q_stack.end();
+////		xr_vector<u32>::iterator it	= q_stack.begin();
+////		xr_vector<u32>::iterator end	= q_stack.end();
 ////		for ( ; it!=end; it++)	
 ////			q_mark_bit[*it] = false;
 ////	}
@@ -197,8 +197,8 @@
 ////
 ////	// Clear q_marks
 ////	{
-////		vector<u32>::iterator it	= q_stack.begin();
-////		vector<u32>::iterator end	= q_stack.end();
+////		xr_vector<u32>::iterator it	= q_stack.begin();
+////		xr_vector<u32>::iterator end	= q_stack.end();
 ////		for ( ; it!=end; it++)	
 ////			q_mark[*it] -= 1;
 ////	}

@@ -5,6 +5,10 @@
 
 #include "soundrender_core.h"
 #include "soundrender_source.h"
+#include <windows.h>
+#include <mmsystem.h>
+#include <mmreg.h>
+#include <msacm.h>
 
 void* ParseWave		(IReader *data, LPWAVEFORMATEX &wfx, u32 &len)
 {

@@ -14,8 +14,8 @@ void	UpdateRotations();
 void InterpolateRotation(Fmatrix& rot);
 private:
 	dBodyID m_body;
-	deque<Fvector>					qPositions;
-	deque<Fquaternion>				qRotations;
+	std::deque<Fvector>					qPositions;
+	std::deque<Fquaternion>				qRotations;
 	//deque<double>					qTimes;
 	//Fvector vUpdatePositions[PH_INTERPOLATION_POINTS];
 	//float fUpdateTimes[PH_INTERPOLATION_POINTS];

@@ -542,7 +542,7 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
 	bone_instances	= NULL;
 
 	// Load bones
-	vector<LPSTR>	L_parents;
+	xr_vector<LPSTR>	L_parents;
 
 	R_ASSERT(data->find_chunk(OGF_BONE_NAMES));
 	u32 dwCount = data->r_u32();
@@ -556,7 +556,7 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
 		data->r_stringZ(buf);	strlwr(buf);
 		CBoneData*	pBone = xr_new<CBoneData> (ID);
 		bones->push_back(pBone);
-		bone_map->insert(make_pair(xr_strdup(buf),ID));
+		bone_map->insert(std::make_pair(xr_strdup(buf),ID));
 
 		// It's parent
 		data->r_stringZ(buf);	strlwr(buf);
@@ -596,7 +596,7 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
 		R_ASSERT(MS->find_chunk(M+1));
         char mname[128];
 		MS->r_stringZ(mname);
-		motion_map->insert(make_pair(xr_strdup(strlwr(mname)),M));
+		motion_map->insert(std::make_pair(xr_strdup(strlwr(mname)),M));
 
 		u32 dwLen = MS->r_u32();
 		for (u32 i=0; i<bones->size(); i++)
@@ -640,8 +640,8 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
             MP->r_stringZ(buf);
 	        u32 dwFlags		= MP->r_u32();
             CMotionDef	D;		D.Load(this,MP,dwFlags);
-            if (dwFlags&esmFX)	m_fx->insert(make_pair(_strlwr(xr_strdup(buf)),D));
-            else				m_cycle->insert(make_pair(_strlwr(xr_strdup(buf)),D));
+            if (dwFlags&esmFX)	m_fx->insert(std::make_pair(_strlwr(xr_strdup(buf)),D));
+            else				m_cycle->insert(std::make_pair(_strlwr(xr_strdup(buf)),D));
         }
         MP->close();
     }else{
@@ -670,8 +670,8 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
 				CMotionDef	D;		D.Load(this,MP,bCycle?0:esmFX);
 				BYTE bNoLoop		=	MP->r_u8();
 				D.flags				|=	(bNoLoop?esmStopAtEnd:0);
-                if (bCycle)			m_cycle->insert(make_pair(_strlwr(xr_strdup(buf)),D));
-                else				m_fx->insert(make_pair(_strlwr(xr_strdup(buf)),D));
+                if (bCycle)			m_cycle->insert(std::make_pair(_strlwr(xr_strdup(buf)),D));
+                else				m_fx->insert(std::make_pair(_strlwr(xr_strdup(buf)),D));
             }
             MP->close();
         }else{
@@ -689,45 +689,52 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
             CInifile DEF(def_N);
             CInifile::SectIt I;
 
-            // partitions
             CInifile::Sect& S = DEF.r_section("partition");
             int pid = 0;
-            for (I=S.begin(); I!=S.end(); I++,pid++)
-            {
-                if (pid>=MAX_PARTS)	Debug.fatal("Too many partitions in motion description '%s'",def_N);
-                CPartDef&	PART		= (*partition)[pid];
-                LPSTR	N				= _strlwr(xr_strdup(I->first));
-                PART.Name				= N;
-                CInifile::Sect&		P	= DEF.r_section(N);
-                CInifile::SectIt	B	= P.begin();
-                for (; B!=P.end(); B++)
-                {
-                    int bone			= LL_BoneID(B->first);
-                    if (bone<0)			Debug.fatal("Partition '%s' has incorrect bone name ('%s')",N,B->first);
-                    PART.bones.push_back(bone);
-                }
-            }
+			for (I = S.begin(); I != S.end(); ++I, ++pid)
+			{
+				if (pid >= MAX_PARTS)
+					Debug.fatal("Too many partitions in motion description '%s'", def_N);
+
+				CPartDef& PART = (*partition)[pid];
+
+				const char* sect_name = I->first.c_str();
+				LPSTR N = _strlwr(xr_strdup(sect_name));
+				PART.Name = N;
+
+				CInifile::Sect& P = DEF.r_section(sect_name);
+
+				for (CInifile::SectIt B = P.begin(); B != P.end(); ++B)
+				{
+					const char* bone_name = B->first.c_str();
+					int bone = LL_BoneID(bone_name);
+					if (bone < 0)
+						Debug.fatal("Partition '%s' has incorrect bone name ('%s')", N, bone_name);
+					PART.bones.push_back(bone);
+				}
+			}
 
             // cycles
             {
                 CInifile::Sect& S = DEF.r_section("cycle");
-                for (I=S.begin(); I!=S.end(); I++)
-                {
-                    CMotionDef	D;
-                    D.Load(this,&DEF,I->first, true);
-                    m_cycle->insert(make_pair(_strlwr(xr_strdup(I->first)),D));
-                }
+				for (I = S.begin(); I != S.end(); ++I)
+				{
+					const char* sect = I->first.c_str();
+					CMotionDef D; D.Load(this, &DEF, sect, TRUE);
+					m_cycle->insert(std::make_pair(_strlwr(xr_strdup(I->first.c_str())), D));
+				}
+
             }
 
             // FXes
             {
                 CInifile::Sect& F = DEF.r_section("fx");
-                for (I=F.begin(); I!=F.end(); I++)
-                {
-                    CMotionDef	D;
-                    D.Load(this,&DEF,I->first, false);
-                    m_fx->insert(make_pair(_strlwr(xr_strdup(I->first)),D));
-                }
+				for (I = F.begin(); I != F.end(); ++I)
+				{
+					const char* sect = I->first.c_str();
+					CMotionDef D; D.Load(this, &DEF, sect, FALSE); // fx
+					m_fx->insert(std::make_pair(_strlwr(xr_strdup(I->first.c_str())), D));
+				}
             }
         }
     }

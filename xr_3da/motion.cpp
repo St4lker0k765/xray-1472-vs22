@@ -249,7 +249,7 @@ bool CSMotion::Load(IReader& F){
 		}
 	}else{
 		if (vers!=EOBJ_SMOTION_VERSION) return false;
-		m_Flags.set	(F.r_u32());
+		m_Flags.assign(F.r_u32());
 		iBoneOrPart	= F.r_u32();
 		fSpeed		= F.r_float();
 		fAccrue		= F.r_float();

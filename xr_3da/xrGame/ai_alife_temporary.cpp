@@ -84,7 +84,7 @@ const char *cpArtefactModels[] = {
 void CAI_ALife::vfGenerateSpawnPoints(const u32 dwTotalCount, AI::FLOAT_VECTOR &fpFactors)
 {
 	/**
-	vector<bool>				tpMarks;
+	xr_vector<bool>				tpMarks;
 	tpMarks.resize				(Level().AI.GraphHeader().dwVertexCount);
 	tpMarks.assign				(tpMarks.size(),false);
 	AI::SGraphVertex			*tpaGraph = Level().AI.m_tpaGraph;

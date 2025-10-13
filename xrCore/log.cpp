@@ -1,35 +1,43 @@
 #include "stdafx.h"
-#include "errors.h"
-#include "vector.h"
+#pragma hdrstop
+
+#include <time.h>
 #include "resource.h"
 #include "log.h"
 
 extern BOOL					LogExecCB		= TRUE;
 static string64				logFName		= "engine.log";
+static BOOL 				no_log			= TRUE;
 static xrCriticalSection	logCS;
-std::vector <LPCSTR>		LogFile;
+xr_vector <shared_str>			LogFile;
 static LogCallback			LogCB			= 0;
 
 void FlushLog			()
 {
-	FILE	*f = fopen	(logFName, "wt");
-	if (f) {
-		for (u32 it=0; it<LogFile.size(); it++)
-			fprintf			(f, "%s\n", LogFile[it]);
-		fclose			(f);
-	}
+	if (!no_log){
+		logCS.Enter			();
+		IWriter *f			= FS.w_open(logFName);
+        if (f) {
+            for (u32 it=0; it<LogFile.size(); it++)	{
+				LPCSTR		s	= *(LogFile[it]);
+				f->w_string	(s?s:"");
+			}
+            FS.w_close		(f);
+        }
+		logCS.Leave			();
+    }
 }
 
 void AddOne				(const char *split) 
 {
 	logCS.Enter			();
+	if (IsDebuggerPresent())
+	{
+		OutputDebugString(split);
+		OutputDebugString("\n");
+	}
 
-#ifdef _DEBUG
-	OutputDebugString	(split);
-	OutputDebugString	("\n");
-#endif
-
-	LogFile.push_back	(split);
+	LogFile.push_back	(shared_str(split));
 
 	//exec CallBack
 	if (LogExecCB&&LogCB)LogCB(split);
@@ -37,8 +45,9 @@ void AddOne				(const char *split)
 	logCS.Leave			();
 }
 
-void Log(const char *s) 
+void Log				(const char *s) 
 {
+	if 		(no_log) return;
 	int		i,j;
 	char	split[1024];
 
@@ -46,26 +55,27 @@ void Log(const char *s)
 		if (s[i]=='\n') {
 			split[j]=0;	// end of line
 			if (split[0]==0) { split[0]=' '; split[1]=0; }
-			AddOne(xr_strdup(split));
+			AddOne(split);
 			j=0;
 		} else {
 			split[j++]=s[i];
 		}
 	}
 	split[j]=0;
-	AddOne(xr_strdup(split));
+	AddOne(split);
 }
 
-void __cdecl Msg( const char *format, ...)
+void __cdecl Msg		( const char *format, ...)
 {
 	va_list mark;
-	char buf[1024];
-	va_start( mark, format );
-	vsprintf( buf, format, mark );
-	Log		( buf );
+	string1024	buf;
+	va_start	(mark, format );
+	int sz		= _vsnprintf(buf, sizeof(buf)-1, format, mark ); buf[sizeof(buf)-1]=0;
+    va_end		(mark);
+	if (sz)		Log(buf);
 }
 
-void Log(const char *msg, const char *dop) {
+void Log				(const char *msg, const char *dop) {
 	char buf[1024];
 
 	if (dop)	sprintf(buf,"%s %s",msg,dop);
@@ -74,42 +84,46 @@ void Log(const char *msg, const char *dop) {
 	Log		(buf);
 }
 
-void Log(const char *msg, u32 dop) {
+void Log				(const char *msg, u32 dop) {
 	char buf[1024];
 
 	sprintf	(buf,"%s %d",msg,dop);
 	Log		(buf);
 }
 
-void Log(const char *msg, int dop) {
+void Log				(const char *msg, int dop) {
 	char buf[1024];
 
 	sprintf	(buf,"%s %d",msg,dop);
 	Log		(buf);
 }
 
-void Log(const char *msg, float dop) {
+void Log				(const char *msg, float dop) {
 	char buf[1024];
 
 	sprintf	(buf,"%s %f",msg,dop);
 	Log		(buf);
 }
 
-void Log(const char *msg, const Fvector &dop) {
+void Log				(const char *msg, const Fvector &dop) {
 	char buf[1024];
 
 	sprintf	(buf,"%s (%f,%f,%f)",msg,dop.x,dop.y,dop.z);
 	Log		(buf);
 }
 
-void Log(const char *msg, const Fmatrix &dop) {
-	char buf[1024];
+void Log				(const char *msg, const Fmatrix &dop)	{
+	char	buf	[1024];
 
-	sprintf	(buf,"Matrix:\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n"	,dop.i.x,dop.i.y,dop.i.z,dop._14_
+	sprintf	(buf,"%s:\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n%f,%f,%f,%f\n",msg,dop.i.x,dop.i.y,dop.i.z,dop._14_
 																				,dop.j.x,dop.j.y,dop.j.z,dop._24_
 																				,dop.k.x,dop.k.y,dop.k.z,dop._34_
 																				,dop.c.x,dop.c.y,dop.c.z,dop._44_);
 	Log		(buf);
+}
+
+void LogWinErr			(const char *msg, long err_code)	{
+	Msg					("%s: %s",msg,Debug.error2string(err_code)	);
 }
 
 static char *month[12] = {
@@ -117,20 +131,27 @@ static char *month[12] = {
 };
 static int day_in_month[12] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-void CreateLog(LogCallback cb)
+void SetLogCB			(LogCallback cb)
 {
 	LogCB				= cb;
-	strconcat			(logFName,Core.ApplicationName,"_",Core.UserName,".log");
-    FS.update_path		(logFName,"$logs$",logFName);
+}
 
-	FILE *f;
-	f		= fopen		(logFName, "wt");
-	if		(f==NULL) abort();
-	fclose	(f);
+void CreateLog			(BOOL nl)
+{
+    no_log				= nl;
+	strconcat			(logFName,Core.ApplicationName,"_",Core.UserName,".log");
+	if (FS.path_exist("$logs$"))
+		FS.update_path	(logFName,"$logs$",logFName);
+	if (!no_log){
+        IWriter *f		= FS.w_open	(logFName);
+        if (f==NULL)	abort();
+        FS.w_close		(f);
+    }
+	LogFile.reserve		(128);
 
 	// Calculating build
-	long long Time;
-	time(&Time);
+	time_t	Time;
+	time	(&Time);
 	int build=0, mnum=0, dnum, ynum, mcnt;
 	char mon[4];
 	char buf[128];
@@ -147,5 +168,5 @@ void CreateLog(LogCallback cb)
 void CloseLog(void)
 {
 	FlushLog		();
-	LogFile.clear	();
+ 	LogFile.clear	();
 }

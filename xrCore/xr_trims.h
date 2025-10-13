@@ -5,29 +5,41 @@
 struct xr_token;
 
 #ifdef __BORLANDC__
-	XRCORE_API AnsiString&	_Trim					( AnsiString& str );
-	XRCORE_API LPCSTR		_GetItem				( LPCSTR src, int, AnsiString& p, char separator=',', LPCSTR ="" );
-	XRCORE_API LPCSTR		_GetItems 				( LPCSTR src, int idx_start, int idx_end, AnsiString& dst, char separator );
-	XRCORE_API LPCSTR		_CopyVal 				( LPCSTR src, AnsiString& dst, char separator=',' );
-	XRCORE_API AnsiString&	_ListToSequence			( const AStringVec& lst );
-	XRCORE_API AnsiString&	_ListToSequence2		( const AStringVec& lst );
-	XRCORE_API void 		_SequenceToList			( AStringVec& lst, LPCSTR in, char separator=',' );
+	XRCORE_API 	AnsiString&	_Trim					( AnsiString& str );
+	XRCORE_API 	LPCSTR		_GetItem				( LPCSTR src, int, AnsiString& p, char separator=',', LPCSTR ="", bool trim=true);
+	XRCORE_API 	LPCSTR		_GetItems 				( LPCSTR src, int idx_start, int idx_end, AnsiString& dst, char separator );
+	XRCORE_API 	LPCSTR		_CopyVal 				( LPCSTR src, AnsiString& dst, char separator=',' );
+	XRCORE_API 	AnsiString	_ListToSequence			( const AStringVec& lst );
+	XRCORE_API 	AnsiString	_ListToSequence2		( const AStringVec& lst );
+	XRCORE_API 	void 		_SequenceToList			( AStringVec& lst, LPCSTR in, char separator=',' );
+	XRCORE_API 	AnsiString&	_ReplaceItem 			( LPCSTR src, int index, LPCSTR new_item, AnsiString& dst, char separator );
+	XRCORE_API 	AnsiString&	_ReplaceItems 			( LPCSTR src, int idx_start, int idx_end, LPCSTR new_items, AnsiString& dst, char separator );
+	XRCORE_API 	AnsiString 	FloatTimeToStrTime		(float v, bool h=true, bool m=true, bool s=true, bool ms=false);
+	XRCORE_API 	float 		StrTimeToFloatTime		(LPCSTR buf, bool h=true, bool m=true, bool s=true, bool ms=false);
 #endif
 
-XRCORE_API int				_GetItemCount			( LPCSTR , char separator=',');
-XRCORE_API LPSTR			_GetItem				( LPCSTR, int, LPSTR, char separator=',', LPCSTR ="" );
-XRCORE_API LPSTR			_GetItems				( LPCSTR, int, int, LPSTR, char separator=',');
-XRCORE_API LPCSTR			_SetPos					( LPCSTR src, u32 pos, char separator=',' );
-XRCORE_API LPCSTR			_CopyVal				( LPCSTR src, LPSTR dst, char separator=',' );
-XRCORE_API LPSTR			_Trim					( LPSTR str );
-XRCORE_API LPSTR			_TrimLeft				( LPSTR str );
-XRCORE_API LPSTR			_TrimRight				( LPSTR str );
-XRCORE_API LPSTR			_GetFileExt				( LPSTR name );
-XRCORE_API LPSTR			_ChangeSymbol			( LPSTR name, char src, char dest );
-XRCORE_API u32				_ParseItem				( LPSTR src, xr_token* token_list );
-XRCORE_API u32				_ParseItem				( LPSTR src, int ind, xr_token* token_list );
-XRCORE_API LPSTR 			_ReplaceItem 			( LPCSTR src, int index, LPCSTR new_item, LPSTR dst, char separator );
-XRCORE_API LPSTR 			_ReplaceItems 			( LPCSTR src, int idx_start, int idx_end, LPCSTR new_items, LPSTR dst, char separator );
-XRCORE_API void 			_SequenceToList			( LPSTRVec& lst, LPCSTR in, char separator=',' );
+XRCORE_API int		    	_GetItemCount			( LPCSTR , char separator=',');
+XRCORE_API LPSTR	    	_GetItem				( LPCSTR, int, LPSTR, char separator=',', LPCSTR ="", bool trim=true );
+XRCORE_API LPSTR	    	_GetItems				( LPCSTR, int, int, LPSTR, char separator=',');
+XRCORE_API LPCSTR	    	_SetPos					( LPCSTR src, u32 pos, char separator=',' );
+XRCORE_API LPCSTR	    	_CopyVal				( LPCSTR src, LPSTR dst, char separator=',' );
+XRCORE_API LPSTR	    	_Trim					( LPSTR str );
+XRCORE_API LPSTR	    	_TrimLeft				( LPSTR str );
+XRCORE_API LPSTR	    	_TrimRight				( LPSTR str );
+XRCORE_API LPSTR	    	_ChangeSymbol			( LPSTR name, char src, char dest );
+XRCORE_API u32		    	_ParseItem				( LPSTR src, xr_token* token_list );
+XRCORE_API u32		    	_ParseItem				( LPSTR src, int ind, xr_token* token_list );
+XRCORE_API LPSTR 	    	_ReplaceItem 			( LPCSTR src, int index, LPCSTR new_item, LPSTR dst, char separator );
+XRCORE_API LPSTR 	    	_ReplaceItems 			( LPCSTR src, int idx_start, int idx_end, LPCSTR new_items, LPSTR dst, char separator );
+XRCORE_API void 	    	_SequenceToList			( LPSTRVec& lst, LPCSTR in, char separator=',' );
+XRCORE_API void 			_SequenceToList			( RStringVec& lst, LPCSTR in, char separator=',' );
+
+XRCORE_API std::string& 	_Trim					( std::string& src );
+XRCORE_API std::string& 	_TrimLeft				( std::string& src );
+XRCORE_API std::string& 	_TrimRight				( std::string& src );
+XRCORE_API LPCSTR		 	_CopyVal 				( LPCSTR src, std::string& dst, char separator=',' );
+XRCORE_API LPCSTR			_GetItem				( LPCSTR src, int, std::string& p, char separator=',', LPCSTR ="", bool trim=true );
+XRCORE_API xr_string		_ListToSequence			( const SStringVec& lst );
+XRCORE_API shared_str		_ListToSequence			( const RStringVec& lst );
 
 #endif

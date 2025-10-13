@@ -138,8 +138,8 @@ public:
 				if (_max(id1,id2) > (int)getAI().GraphHeader().dwVertexCount - 1)
 					Msg("! there are only %d vertexes!",getAI().GraphHeader().dwVertexCount);
 				else
-					if (min(id1,id2) < 0)
-						Msg("! invalid vertex number (%d)!",min(id1,id2));
+					if (std::min(id1,id2) < 0)
+						Msg("! invalid vertex number (%d)!",std::min(id1,id2));
 					else {
 						Sleep				(1);
 						u64 t1x = CPU::GetCycleCount();

@@ -83,7 +83,7 @@ public:
 			tpALifeDynamicObject->UPDATE_Read(tNetPacket);
 			tpALifeDynamicObject->Init(tpALifeDynamicObject->s_name);
 
-			m_tObjectRegistry.insert(make_pair(tpALifeDynamicObject->m_tObjectID,tpALifeDynamicObject));
+			m_tObjectRegistry.insert(std::make_pair(tpALifeDynamicObject->m_tObjectID,tpALifeDynamicObject));
 		}
 	};
 
@@ -158,7 +158,7 @@ public:
 	
 	virtual	void					Add	(CALifeEvent	*tpEvent)
 	{
-		m_tEventRegistry.insert		(make_pair(tpEvent->m_tEventID = m_tEventID++,tpEvent));
+		m_tEventRegistry.insert		(std::make_pair(tpEvent->m_tEventID = m_tEventID++,tpEvent));
 	};
 };
 
@@ -195,7 +195,7 @@ public:
 	 
 	virtual	void					Add	(CALifeTask	*tpTask)
 	{
-		m_tTaskRegistry.insert		(make_pair(tpTask->m_tTaskID = m_tTaskID++,tpTask));
+		m_tTaskRegistry.insert		(std::make_pair(tpTask->m_tTaskID = m_tTaskID++,tpTask));
 	};
 };
 

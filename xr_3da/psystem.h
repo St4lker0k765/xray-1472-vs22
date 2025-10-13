@@ -209,7 +209,7 @@ namespace PAPI{
 				P.alpha = alpha;
 				P.age = age;
 				P.frame = frame;
-				P.flags.set(flags);
+				P.flags.assign(flags);
 				p_count++;
 				return TRUE;
 			}
@@ -412,9 +412,9 @@ namespace PAPI{
 	struct PAJet : public ParticleAction
 	{
 		pVector	centerL;	// Center of the fan (in local space)
-		pDomain accL;		// Acceleration vector domain  (in local space)
+		pDomain accL;		// Acceleration xr_vector domain  (in local space)
 		pVector	center;		// Center of the fan
-		pDomain acc;		// Acceleration vector domain
+		pDomain acc;		// Acceleration xr_vector domain
 		float magnitude;	// Scales acceleration
 		float epsilon;		// Softening parameter
 		float max_radius;	// Only influence particles within max_radius
@@ -591,7 +591,7 @@ namespace PAPI{
 		Methods
 	};
 
-	// Global state vector
+	// Global state xr_vector
 	struct _ParticleState
 	{
 		float	dt;

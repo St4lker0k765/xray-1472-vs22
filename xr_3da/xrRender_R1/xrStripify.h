@@ -1,4 +1,4 @@
 #pragma once
 
-void	xrStripify	(std::vector<WORD> &indices, std::vector<WORD> &perturb, int iCacheSize, int iMinStripLength);
-int		xrSimulate	(std::vector<WORD> &indices, int iCacheSize);
+void	xrStripify	(xr_vector<u16> &indices, xr_vector<u16> &perturb, int iCacheSize, int iMinStripLength);
+int		xrSimulate	(xr_vector<u16> &indices, int iCacheSize);

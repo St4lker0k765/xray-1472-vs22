@@ -12,7 +12,7 @@ void	CShaderManager::OnDeviceDestroy(BOOL bKeepTextures)
 
 	//************************************************************************************
 	// RTargets
-	for (map<LPSTR,CRT*,str_pred>::iterator r=m_rtargets.begin(); r!=m_rtargets.end(); r++)
+	for (xr_map<LPSTR,CRT*,str_pred>::iterator r=m_rtargets.begin(); r!=m_rtargets.end(); r++)
 	{
 		R_ASSERT	(0==r->second->dwReference);
 		xr_free		((char*)r->first);
@@ -90,7 +90,7 @@ void	CShaderManager::OnDeviceDestroy(BOOL bKeepTextures)
 	//************************************************************************************
 	// Textures
 	if (!bKeepTextures)	{
-		for (map<LPSTR,CTexture*,str_pred>::iterator t=m_textures.begin(); t!=m_textures.end(); t++)
+		for (xr_map<LPSTR,CTexture*,str_pred>::iterator t=m_textures.begin(); t!=m_textures.end(); t++)
 		{
 //			R_ASSERT	(0==t->second->dwReference);
 			xr_free		((char*)t->first);
@@ -100,7 +100,7 @@ void	CShaderManager::OnDeviceDestroy(BOOL bKeepTextures)
 	}
 
 	// Matrices
-	for (map<LPSTR,CMatrix*,str_pred>::iterator m=m_matrices.begin(); m!=m_matrices.end(); m++)
+	for (xr_map<LPSTR,CMatrix*,str_pred>::iterator m=m_matrices.begin(); m!=m_matrices.end(); m++)
 	{
 //		if (m->second->dwMode!=CMatrix::modeDetail)	R_ASSERT(0==m->second->dwReference);
 		xr_free		((char*)m->first);
@@ -109,7 +109,7 @@ void	CShaderManager::OnDeviceDestroy(BOOL bKeepTextures)
 	m_matrices.clear	();
 
 	// Constants
-	for (map<LPSTR,CConstant*,str_pred>::iterator c=m_constants.begin(); c!=m_constants.end(); c++)
+	for (xr_map<LPSTR,CConstant*,str_pred>::iterator c=m_constants.begin(); c!=m_constants.end(); c++)
 	{
 //		R_ASSERT	(0==c->second->dwReference);
 		xr_free		((char*)c->first);
@@ -166,7 +166,7 @@ void	CShaderManager::OnDeviceDestroy(BOOL bKeepTextures)
     v_geoms.clear();
 }
 
-void	CShaderManager::OnDeviceCreate	(IReader* F)
+void	CShaderManager::OnDeviceCreate(IReader* F)
 {
 	if (!Device.bReady) return;
 
@@ -174,106 +174,111 @@ void	CShaderManager::OnDeviceCreate	(IReader* F)
 
 	// Load constants
 	{
-		IReader*	fs		= F->open_chunk	(0);
-		while (fs && !fs->eof())	{
-			fs->r_stringZ	(name);
-			CConstant*		C = xr_new<CConstant>();
-			C->Load			(fs);
-			m_constants.insert(make_pair(xr_strdup(name),C));
+		IReader* fs = F->open_chunk(0);
+		while (fs && !fs->eof()) {
+			fs->r_stringZ(name);
+			CConstant* C = xr_new<CConstant>();
+			C->Load(fs);
+			m_constants.insert(std::make_pair(xr_strdup(name), C));
 		}
 		fs->close();
 	}
 
 	// Load matrices
 	{
-		IReader*	fs		= F->open_chunk(1);
-		while (fs&&!fs->eof())	{
-			fs->r_stringZ	(name);
-			CMatrix*		M	= xr_new<CMatrix>();
-			M->Load				(fs);
-			m_matrices.insert	(make_pair(xr_strdup(name),M));
+		IReader* fs = F->open_chunk(1);
+		while (fs && !fs->eof()) {
+			fs->r_stringZ(name);
+			CMatrix* M = xr_new<CMatrix>();
+			M->Load(fs);
+			m_matrices.insert(std::make_pair(xr_strdup(name), M));
 		}
 		fs->close();
 	}
 
 	// Load blenders
 	{
-		IReader*	fs		= F->open_chunk	(2);
-		IReader*	chunk	= NULL;
-		int			chunk_id= 0;
+		IReader* fs = F->open_chunk(2);
+		IReader* chunk = NULL;
+		int			chunk_id = 0;
 
-		while ((chunk=fs->open_chunk(chunk_id))!=NULL)
+		while ((chunk = fs->open_chunk(chunk_id)) != NULL)
 		{
 			CBlender_DESC	desc;
-			chunk->r		(&desc,sizeof(desc));
-			CBlender*		B = CBlender::Create(desc.CLS);
-			if	(0==B)
+			chunk->r(&desc, sizeof(desc));
+			CBlender* B = CBlender::Create(desc.CLS);
+			if (0 == B)
 			{
-				Msg				("! Renderer doesn't support blender '%s'",desc.cName);
+				Msg("! Renderer doesn't support blender '%s'", desc.cName);
 			}
 			else
 			{
-				if	(B->getDescription().version != desc.version)
+				if (B->getDescription().version != desc.version)
 				{
-					Msg			("! Version conflict in shader '%s'",desc.cName);
+					Msg("! Version conflict in shader '%s'", desc.cName);
 				}
 
-				chunk->seek		(0);
-				B->Load			(*chunk,desc.version);
+				chunk->seek(0);
+				B->Load(*chunk, desc.version);
 
-				pair<map_BlenderIt, bool> I =  m_blenders.insert	(make_pair(xr_strdup(desc.cName),B));
-				R_ASSERT2		(I.second,"shader.xr - found duplicate name!!!");
+				std::pair<map_BlenderIt, bool> I = m_blenders.insert(std::make_pair(xr_strdup(desc.cName), B));
+				R_ASSERT2(I.second, "shader.xr - found duplicate name!!!");
 			}
-			chunk->close	();
-			chunk_id		+= 1;
+			chunk->close();
+			chunk_id += 1;
 		}
 		fs->close();
 	}
 
 	// Load detail textures association
-	string256 fname; strconcat	(fname,"$game_textures","textures.ltx");
-	LPCSTR		Iname		= fname;
+	string256 fname; strconcat(fname, "$game_textures", "textures.ltx");
+	LPCSTR		Iname = fname;
 	if (FS.exist(Iname))
 	{
-		CInifile	ini		(Iname);
-        if (ini.section_exist("association")){
-            CInifile::Sect& 	data = ini.r_section("association");
-            for (CInifile::SectIt I=data.begin(); I!=data.end(); I++)
-            {
-                texture_detail	D;
-                string256		T,M;
-                float			s;
+		CInifile ini(Iname);
+		if (ini.section_exist("association")) {
+			CInifile::Sect& data = ini.r_section("association");
+			for (CInifile::SectIt I = data.begin(); I != data.end(); ++I)
+			{
+				texture_detail D;
+				string256 T, M;
+				float s;
 
-                CInifile::Item& item		= *I;
-                sscanf			(item.second,"%[^,],%f",T,&s);
+				CInifile::Item& item = *I;
 
-                // Search or create matrix
-                M[0]			= 0;
-                for (map_MatrixIt m=m_matrices.begin(); m!=m_matrices.end(); m++)
-                {
-                    if (CMatrix::modeDetail == m->second->dwMode)
-                    {
-                        if (fsimilar(m->second->xform._11,s)) {
-                            // ok
-                            strcpy(M,m->first);
-                            break;
-                        }
-                    }
-                }
-                if (0==M[0])	{
-                    strconcat		(M,"$user$td$",T);
-                    CMatrix* _M		= _CreateMatrix	(M);
-                    _M->dwMode		= CMatrix::modeDetail;
-                    _M->xform.scale	(s,s,s);
-                }
+				const char* value = item.second.c_str();
+				const char* key = item.first.c_str();
 
-                //
-                D.T				= xr_strdup	(T);
-                D.M				= xr_strdup	(M);
-                LPSTR N			= xr_strdup	(item.first);
-                m_td.insert		(make_pair(N,D));
-            }
-        }
+				if (std::sscanf(value, "%255[^,],%f", T, &s) != 2)
+					continue;
+
+				M[0] = 0;
+				for (map_MatrixIt m = m_matrices.begin(); m != m_matrices.end(); ++m)
+				{
+					if (CMatrix::modeDetail == m->second->dwMode)
+					{
+						if (fsimilar(m->second->xform._11, s)) {
+							// ok
+							std::strcpy(M, m->first);
+							break;
+						}
+					}
+				}
+
+				if (M[0] == 0) {
+					strconcat(M, "$user$td$", T);
+					CMatrix* _M = _CreateMatrix(M);
+					_M->dwMode = CMatrix::modeDetail;
+					_M->xform.scale(s, s, s);
+				}
+
+				D.T = xr_strdup(T);
+				D.M = xr_strdup(M);
+
+				LPSTR N = xr_strdup(key);
+				m_td.insert(std::make_pair(N, D));
+			}
+		}
 	}
 }
 

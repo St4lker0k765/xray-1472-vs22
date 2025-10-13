@@ -7,10 +7,10 @@
 #endif
 
 template <class T>
-struct _vector {
+struct _vector3 {
 public:
 	typedef T			TYPE;
-	typedef _vector<T>	Self;
+	typedef _vector3<T>	Self;
 	typedef Self&		SelfRef;
 	typedef const Self&	SelfCRef;
 public:
@@ -20,195 +20,246 @@ public:
 	IC	T&			operator[] (int i)					{ return *((T*)this + i); }
 	IC	T&			operator[] (int i)	const			{ return *((T*)this + i); }
 
-	IC	void	set(T _x, T _y, T _z)					{ x = _x;		y = _y;		z = _z;		};
-	IC  void	set(const _vector<float> &v)			{ x = T(v.x);	y = T(v.y);	z = T(v.z);	};
-	IC  void	set(const _vector<double> &v)			{ x = T(v.x);	y = T(v.y);	z = T(v.z);	};
-	IC	void	set(float* p)							{ x = p[0];	y = p[1];	z = p[2];	};
-	IC	void	set(double* p)							{ x = p[0];	y = p[1];	z = p[2];	};
+	IC	SelfRef	set(T _x, T _y, T _z)					{ x = _x;		y = _y;		z = _z;		return *this;	};
+	IC  SelfRef	set(const _vector3<float> &v)			{ x = T(v.x);	y = T(v.y);	z = T(v.z);	return *this;	};
+	IC  SelfRef	set(const _vector3<double> &v)			{ x = T(v.x);	y = T(v.y);	z = T(v.z);	return *this;	};
+	IC	SelfRef	set(float* p)							{ x = p[0];	y = p[1];	z = p[2];		return *this;	};
+	IC	SelfRef	set(double* p)							{ x = p[0];	y = p[1];	z = p[2];		return *this;	};
 
-	IC	void	add(const Self &v)						{ x+=v.x;	y+=v.y;		z+=v.z;		};
-	IC  void	add(T s)								{ x+=s;		y+=s;		z+=s;		};
-	IC	void	add(const Self &a, const Self &v)		{ x=a.x+v.x;y=a.y+v.y;	z=a.z+v.z;	};
-	IC  void	add(const Self &a, T s)					{ x=a.x+s;  y=a.y+s;	z=a.z+s;	};
+	IC	SelfRef	add(const Self &v)						{ x+=v.x;	y+=v.y;		z+=v.z;			return *this;	};
+	IC  SelfRef	add(T s)								{ x+=s;		y+=s;		z+=s;			return *this;	};
+	IC	SelfRef	add(const Self &a, const Self &v)		{ x=a.x+v.x;y=a.y+v.y;	z=a.z+v.z;		return *this;	};
+	IC  SelfRef	add(const Self &a, T s)					{ x=a.x+s;  y=a.y+s;	z=a.z+s;		return *this;	};
 
-	IC	void	sub(const Self &v)						{ x-=v.x;	y-=v.y;		z-=v.z;		};
-	IC  void	sub(T s)								{ x-=s;		y-=s;		z-=s;		};
-	IC	void	sub(const Self &a, const Self &v)		{ x=a.x-v.x;y=a.y-v.y;	z=a.z-v.z;	};
-	IC  void	sub(const Self &a, T s)					{ x=a.x-s;  y=a.y-s;	z=a.z-s;	};
+	IC	SelfRef	sub(const Self &v)						{ x-=v.x;	y-=v.y;		z-=v.z;			return *this;	};
+	IC  SelfRef	sub(T s)								{ x-=s;		y-=s;		z-=s;			return *this;	};
+	IC	SelfRef	sub(const Self &a, const Self &v)		{ x=a.x-v.x;y=a.y-v.y;	z=a.z-v.z;		return *this;	};
+	IC  SelfRef	sub(const Self &a, T s)					{ x=a.x-s;  y=a.y-s;	z=a.z-s;		return *this;	};
 
-	IC	void	mul(const Self &v)						{ x*=v.x;	y*=v.y;		z*=v.z;		};
-	IC  void	mul(T s)								{ x*=s;		y*=s;		z*=s;		};
-	IC	void	mul(const Self &a, const Self &v)		{ x=a.x*v.x;y=a.y*v.y;	z=a.z*v.z;	};
-	IC  void	mul(const Self &a, T s)					{ x=a.x*s;  y=a.y*s;	z=a.z*s;	};
+	IC	SelfRef	mul(const Self &v)						{ x*=v.x;	y*=v.y;		z*=v.z;			return *this;	};
+	IC  SelfRef	mul(T s)								{ x*=s;		y*=s;		z*=s;			return *this;	};
+	IC	SelfRef	mul(const Self &a, const Self &v)		{ x=a.x*v.x;y=a.y*v.y;	z=a.z*v.z;		return *this;	};
+	IC  SelfRef	mul(const Self &a, T s)					{ x=a.x*s;  y=a.y*s;	z=a.z*s;		return *this;	};
 
-	IC	void	div(const Self &v)						{ x/=v.x;	y/=v.y;  z/=v.z;		};
-	IC  void	div(T s)								{ x/=s;		y/=s;    z/=s;			};
-	IC	void	div(const Self &a, const Self &v)		{ x=a.x/v.x;y=a.y/v.y;	z=a.z/v.z;	};
-	IC  void	div(const Self &a, T s)					{ x=a.x/s;  y=a.y/s;	z=a.z/s;	};
+	IC	SelfRef	div(const Self &v)						{ x/=v.x;	y/=v.y;  z/=v.z;			return *this;	};
+	IC  SelfRef	div(T s)								{ x/=s;		y/=s;    z/=s;				return *this;	};
+	IC	SelfRef	div(const Self &a, const Self &v)		{ x=a.x/v.x;y=a.y/v.y;	z=a.z/v.z;		return *this;	};
+	IC  SelfRef	div(const Self &a, T s)					{ x=a.x/s;  y=a.y/s;	z=a.z/s;		return *this;	};
 
-	IC	void	invert()								{ x=-x; y=-y; z=-z;					}
-	IC	void	invert(const Self &a)					{ x=-a.x; y=-a.y; z=-a.z;			}
+	IC	SelfRef	invert()								{ x=-x; y=-y; z=-z;						return *this;	}
+	IC	SelfRef	invert(const Self &a)					{ x=-a.x; y=-a.y; z=-a.z;				return *this;	}
 
-	IC	void	min(const Self &v1,const Self &v2)		{ x = _min(v1.x,v2.x); y = _min(v1.y,v2.y); z = _min(v1.z,v2.z);	}
-	IC	void	min(const Self &v)						{ x = _min(x,v.x);	y = _min(y,v.y);	z = _min(z,v.z);	}
-	IC	void	max(const Self &v1,const Self &v2)		{ x = _max(v1.x,v2.x); y = _max(v1.y,v2.y);	z = _max(v1.z,v2.v.z);	}
-	IC	void	max(const Self &v)						{ x = _max(x,v.x);	y = _max(y,v.y);	z = _max(z,v.z);	}
+	IC	SelfRef	min(const Self &v1,const Self &v2)		{ x = _min(v1.x,v2.x); y = _min(v1.y,v2.y); z = _min(v1.z,v2.z);	return *this;	}
+	IC	SelfRef	min(const Self &v)						{ x = _min(x,v.x);	y = _min(y,v.y);	z = _min(z,v.z);			return *this;	}
+	IC	SelfRef	max(const Self &v1,const Self &v2)		{ x = _max(v1.x,v2.x); y = _max(v1.y,v2.y);	z = _max(v1.z,v2.z);	return *this;	}
+	IC	SelfRef	max(const Self &v)						{ x = _max(x,v.x);	y = _max(y,v.y);	z = _max(z,v.z);			return *this;	}
 
-	IC	void	abs(const Self &v)						{ x = _abs(v.x); y=_abs(v.y); z=_abs(v.z);	}
+	IC	SelfRef	abs(const Self &v)						{ x = _abs(v.x); y=_abs(v.y); z=_abs(v.z);							return *this;	}
 	IC  BOOL	similar(const Self &v, T E=EPS_L) const	{ return _abs(x-v.x)<E && _abs(y-v.y)<E && _abs(z-v.z)<E;};
 
-	IC	void	set_length(T l){
+	IC	SelfRef	set_length(T l)
+	{
 		mul(l/magnitude());
+		return *this;	
 	} 
 
-	// Align vector by axis (!y)
-	IC	void	align() {
+	// Align vector3 by axis (!y)
+	IC	SelfRef	align() 
+	{
 		y = 0;
 		if (_abs(z)>=_abs(x))	{ z /= _abs(z?z:1);	x = 0; }
 		else					{ x /= _abs(x);		z = 0; }
+		return *this;	
 	}
 
 	// Squeeze
-	IC void		squeeze(T Epsilon){
+	IC SelfRef	squeeze(T Epsilon)
+	{
 		if (_abs(x) < Epsilon) x = 0;
 		if (_abs(y) < Epsilon) y = 0;
 		if (_abs(z) < Epsilon) z = 0;
+		return *this;	
 	}
 
-	// Clamp vector
-	IC	void	clamp(const Self &min, const Self max) {
+	// Clamp vector3
+	IC	SelfRef	clamp(const Self &min, const Self max) 
+	{
 		::clamp(x,min.x,max.x);
 		::clamp(y,min.y,max.y);
 		::clamp(z,min.z,max.z);
+		return *this;	
 	}
 
-	IC	void	clamp(const Self &_v) {
+	IC	SelfRef	clamp(const Self &_v) 
+	{
 		Self v;	v.x = _abs(_v.x);	v.y = _abs(_v.y);	v.z = _abs(_v.z);
 		::clamp(x,-v.x,v.x);
 		::clamp(y,-v.y,v.y);
 		::clamp(z,-v.z,v.z);
+		return *this;	
 	}
 
 	// Interpolate vectors (inertion)
-	IC	void	inertion(const Self &p, T v) {
+	IC	SelfRef	inertion(const Self &p, T v) 
+	{
 		T inv = 1.f-v;
 		x = v*x + inv*p.x;
 		y = v*y + inv*p.y;
 		z = v*z + inv*p.z;
+		return *this;	
 	}
-	IC	void	average(const Self &p) {
+	IC	SelfRef	average(const Self &p) 
+	{
 		x = (x+p.x)*0.5f;
 		y = (y+p.y)*0.5f;
 		z = (z+p.z)*0.5f;
+		return *this;	
 	}
-	IC	void	average(const Self &p1, const Self &p2) {
+	IC	SelfRef	average(const Self &p1, const Self &p2) 
+	{
 		x = (p1.x+p2.x)*0.5f;
 		y = (p1.y+p2.y)*0.5f;
 		z = (p1.z+p2.z)*0.5f;
+		return *this;	
 	}
-	IC	void	lerp(const Self &p1, const Self &p2, T t ){
+	IC	SelfRef	lerp(const Self &p1, const Self &p2, T t )
+	{
 		T invt = 1.f-t;
 		x = p1.x*invt + p2.x*t;
 		y = p1.y*invt + p2.y*t;
 		z = p1.z*invt + p2.z*t;
+		return *this;	
 	}
 
-	// Direct vector from point P by dir D with length M
-	IC	void	mad(const Self &d, T m) {
+	// Direct vector3 from point P by dir D with length M
+	IC	SelfRef	mad(const Self &d, T m) 
+	{
 		x += d.x*m;
 		y += d.y*m;
 		z += d.z*m;
+		return *this;	
 	}
-	IC	void	mad(const Self &p, const Self &d, T m) {
+	IC	SelfRef	mad(const Self &p, const Self &d, T m) 
+	{
 		x = p.x + d.x*m;
 		y = p.y + d.y*m;
 		z = p.z + d.z*m;
+		return *this;	
 	}
-	IC	void	mad(const Self& d, const Self& s) {
+	IC	SelfRef	mad(const Self& d, const Self& s) 
+	{
 		x += d.x*s.x;
 		y += d.y*s.y;
 		z += d.z*s.z;
+		return *this;	
 	}
-	IC	void	mad(const Self &p, const Self &d, const Self &s) {
+	IC	SelfRef	mad(const Self &p, const Self &d, const Self &s) 
+	{
 		x = p.x + d.x*s.x;
 		y = p.y + d.y*s.y;
 		z = p.z + d.z*s.z;
+		return *this;	
 	}
 
 	// SQ magnitude
-	IC	T	square_magnitude(void) const {
+	IC	T	square_magnitude(void) const 
+	{
 		return x*x + y*y + z*z;
 	}
 	// magnitude
-	IC	T	magnitude(void) const {
+	IC	T	magnitude(void) const 
+	{
 		return _sqrt(square_magnitude());
 	}
 
 	// Normalize
-	IC	void	normalize(void) {
+	IC	T	normalize_magn(void) 
+	{
 		VERIFY(square_magnitude() > std::numeric_limits<T>::min());
-		T mag=_sqrt(1/(x*x + y*y + z*z));
+		T len		= magnitude();
+        T inv_len 	= T(1)/len;
+		x *= inv_len;
+		y *= inv_len;
+		z *= inv_len;
+        return len;
+	}
+
+	IC	SelfRef normalize(void) 
+	{
+		VERIFY(square_magnitude() > std::numeric_limits<T>::min());
+		T mag=_sqrt(T(1)/(x*x + y*y + z*z));
 		x *= mag;
 		y *= mag;
 		z *= mag;
+		return *this;	
 	}
 
 	// Safe-Normalize
-	IC	void	normalize_safe(void) {
+	IC	SelfRef	normalize_safe(void) 
+	{
 		T magnitude=x*x + y*y + z*z;
 		if (magnitude> std::numeric_limits<T>::min()) {
-			magnitude=sqrtf(1/magnitude);
+			magnitude=_sqrt(1/magnitude);
 			x *= magnitude;
 			y *= magnitude;
 			z *= magnitude;
 		}
+		return *this;	
 	}
 
 	// Normalize
-	IC	void	normalize(const Self &v) {
+	IC	SelfRef	normalize(const Self &v) 
+	{
 		VERIFY((v.x*v.x+v.y*v.y+v.z*v.z)>flt_zero);
 		T mag=_sqrt(1/(v.x*v.x + v.y*v.y + v.z*v.z));
 		x = v.x*mag;
 		y = v.y*mag;
 		z = v.z*mag;
+		return *this;	
 	}
 
 	// Safe-Normalize
-	IC	void	normalize_safe(const Self &v) {
+	IC	SelfRef	normalize_safe(const Self &v) {
 		T magnitude=v.x*v.x + v.y*v.y + v.z*v.z;
-		if (magnitude>numeric_limits<T>::min()) {
+		if (magnitude>std::numeric_limits<T>::min()) {
 			magnitude=_sqrt(1/magnitude);
 			x = v.x*magnitude;
 			y = v.y*magnitude;
 			z = v.z*magnitude;
 		}
+		return *this;	
 	}
-	IC void		random_dir		(CRandom& R = ::Random)
+	IC SelfRef	random_dir		(CRandom& R = ::Random)
 	{
 		z	= R.randF(-1,1);
 		T a = R.randF(PI_MUL_2);
 		T r = _sqrt(1-z*z);
-		T sa,ca; _sincos(a,sa,ca);
+		T sa= _sin (a);
+		T ca= _cos (a);
 		x	= r * ca;
 		y	= r * sa;
+		return *this;	
 	};
-	IC void		random_dir		(const Self& ConeAxis, float ConeAngle, CRandom& R = ::Random)
+	IC SelfRef	random_dir		(const Self& ConeAxis, float ConeAngle, CRandom& R = ::Random)
 	{
 		Self				rnd;
 		rnd.random_dir		(R);
 		mad					(ConeAxis,rnd,R.randF(tanf(ConeAngle)));
 		normalize			();
-	}
-	IC void		random_point	(const Self& BoxSize, CRandom& R = ::Random)
+		return *this;	
+	}	
+	IC SelfRef	random_point	(const Self& BoxSize, CRandom& R = ::Random)
 	{
 		x					= R.randFs(BoxSize.x);
 		y					= R.randFs(BoxSize.y);
 		z					= R.randFs(BoxSize.z);
+		return *this;	
 	}
-	IC void		random_point	(T r, CRandom& R = ::Random)
+	IC SelfRef	random_point	(T r, CRandom& R = ::Random)
 	{	
 		random_dir			(R);
 		mul					(R.randF(r));
+		return *this;	
 	}
 
 	// DotProduct
@@ -216,16 +267,19 @@ public:
 	{	return x*v.x + y*v.y + z*v.z; }
 
 	// CrossProduct
-	IC	void	crossproduct(const Self &v1, const Self &v2) // (v1,v2) -> this
+	IC	SelfRef	crossproduct(const Self &v1, const Self &v2) // (v1,v2) -> this
 	{
 		x = v1.y  * v2.z  - v1.z  * v2.y ;
 		y = v1.z  * v2.x  - v1.x  * v2.z ;
 		z = v1.x  * v2.y  - v1.y  * v2.x ;
+		return *this;	
 	}
 
 	// Distance calculation
 	IC	T		distance_to_xz(const Self &v) const
 	{	return _sqrt( (x-v.x)*(x-v.x) + (z-v.z)*(z-v.z) );	}
+	IC	T		distance_to_xz_sqr(const Self &v) const
+	{	return (x-v.x)*(x-v.x) + (z-v.z)*(z-v.z);	}
 
 	// Distance calculation
 	IC	T		distance_to_sqr(const Self &v) const
@@ -236,43 +290,48 @@ public:
 	{	return _sqrt(distance_to_sqr(v));	}
 
 	// Barycentric coords
-	IC	void	from_bary			(const Self &V1, const Self &V2, const Self &V3, T u, T v, T w)
+	IC	SelfRef	from_bary			(const Self &V1, const Self &V2, const Self &V3, T u, T v, T w)
 	{
 		x = V1.x*u + V2.x*v + V3.x*w;
 		y = V1.y*u + V2.y*v + V3.y*w;
 		z = V1.z*u + V2.z*v + V3.z*w;
+		return *this;	
 	}
-	IC	void	from_bary			(const Self &V1, const Self &V2, const Self &V3, const Self &B)
-	{	from_bary(V1,V2,V3,B.x,B.y,B.z); }
+	IC	SelfRef	from_bary			(const Self &V1, const Self &V2, const Self &V3, const Self &B)
+	{	
+		from_bary(V1,V2,V3,B.x,B.y,B.z); 
+		return *this;	
+	}
 
-	IC	void	from_bary4			(const Self &V1, const Self &V2, const Self &V3, const Self &V4, T u, T v, T w, T t)
+	IC	SelfRef	from_bary4			(const Self &V1, const Self &V2, const Self &V3, const Self &V4, T u, T v, T w, T t)
 	{
 		x = V1.x*u + V2.x*v + V3.x*w + V4.x*t;
 		y = V1.y*u + V2.y*v + V3.y*w + V4.y*t;
 		z = V1.z*u + V2.z*v + V3.z*w + V4.z*t;
+		return *this;	
 	}
 
-    IC void		mknormal_non_normalized	(const Self &p0, const Self & p1, const Self &p2 )
+    IC SelfRef	mknormal_non_normalized	(const Self &p0, const Self & p1, const Self &p2 )
 	{
-    	_vector v01,v12;
+    	_vector3<T> v01,v12;
     	v01.sub( p1, p0 );
     	v12.sub( p2, p1 );
     	crossproduct( v01, v12 );
+		return *this;	
     };
-    IC void		mknormal( const Self &p0, const Self &p1, const Self &p2 )
+    IC SelfRef	mknormal( const Self &p0, const Self &p1, const Self &p2 )
 	{
 		mknormal_non_normalized(p0,p1,p2);
     	normalize_safe();
+		return *this;	
     };
-	IC	void	setHP	(T h, T p)
+	IC	SelfRef	setHP	(T h, T p)
 	{
-        T _ch, _cp, _sh, _sp;
-        _sincos(h,_sh,_ch);
-        _sincos(p,_sp,_cp);
-
+        T _ch=_cos(h), _cp=_cos(p), _sh=_sin(h), _sp=_sin(p);
         x = -_cp*_sh;
         y = _sp;
         z = _cp*_ch;
+		return *this;	
     }
     IC	void	getHP	(T& h, T& p) const
     {
@@ -291,19 +350,94 @@ public:
             else						p = atanf(y/hyp);
         }
     }
-
-	IC	void	reflect(const Self& dir, const Self& norm){
-		mad(dir,norm,-2*dir.dotproduct(norm));
+	IC float 	getH	()
+	{
+		if (fis_zero(x)&& fis_zero(z)){
+			return	0.0f;
+		}else{
+			if (fis_zero(z))			return (x>0.0f)?-PI_DIV_2:PI_DIV_2;
+			else if (z<0.0f)			return -(atanf(x/z)-PI);
+			else            			return -atanf(x/z);
+		}
 	}
-	IC	void	slide(const Self& dir, const Self& norm){	// non normalized
-		mad(dir,norm,-dir.dotproduct(norm));
+	IC float 	getP	()
+	{
+		if (fis_zero(x)&& fis_zero(z)){
+			if (!fis_zero(float(y)))	return (y>0.0f)?PI_DIV_2:-PI_DIV_2;
+			else            			return 0.0f;
+		}else{
+			float hyp	= _sqrt(x*x+z*z);
+			if (fis_zero(float(hyp)))	return (y>0.0f)?PI_DIV_2:-PI_DIV_2;
+			else						return atanf(y/hyp);
+		}
+	}
+	IC	SelfRef	reflect(const Self& dir, const Self& norm)
+	{
+		return mad(dir,norm,-2*dir.dotproduct(norm));
+	}
+	IC	SelfRef	slide(const Self& dir, const Self& norm)
+	{	// non normalized
+		return mad(dir,norm,-dir.dotproduct(norm));
+	}
+    IC static void generate_orthonormal_basis(const _vector3<T>& dir, _vector3<T>& up, _vector3<T>& right)
+    {
+        T fInvLength;
+
+        if ( _abs(dir.x) >= _abs(dir.y) ){
+            // W.x or W.z is the largest magnitude component, swap them
+            fInvLength = 1.f/_sqrt(dir.x*dir.x+dir.z*dir.z);
+            up.x = -dir.z*fInvLength;
+            up.y = 0.0f;
+            up.z = +dir.x*fInvLength;
+        }
+        else
+        {
+            // W.y or W.z is the largest magnitude component, swap them
+            fInvLength = 1.f/_sqrt(dir.y*dir.y+dir.z*dir.z);
+            up.x = 0.0f;
+            up.y = +dir.z*fInvLength;
+            up.z = -dir.y*fInvLength;
+        }
+
+        right.crossproduct(up,dir); //. <->
+    }
+	IC static void generate_orthonormal_basis_normalized(_vector3<T>& dir, _vector3<T>& up, _vector3<T>& right)
+	{
+		T fInvLength;
+		dir.normalize();
+		if (fsimilar(dir.y,1.f,EPS)){	
+			up.set		(0.f,0.f,1.f);
+			fInvLength	= 1.f/_sqrt(dir.x*dir.x+dir.y*dir.y);
+			// cross (up,dir) and normalize (right)
+			right.x		= -dir.y * fInvLength;					
+			right.y		= dir.x	 * fInvLength;					
+			right.z		= 0.f;
+			// cross (dir,right)
+			up.x		= -dir.z * right.y;
+			up.y		= dir.z  * right.x;
+			up.z		= dir.x  * right.y  - dir.y  * right.x ;
+		}else{
+			up.set		(0.f,1.f,0.f);
+			fInvLength	= 1.f/_sqrt(dir.x*dir.x+dir.z*dir.z);
+			// cross (up,dir) and normalize (right)
+			right.x		= dir.z  * fInvLength;
+			right.y		= 0.f;
+			right.z		= -dir.x * fInvLength;
+			// cross (dir,right)
+			up.x		= dir.y  * right.z;
+			up.y		= dir.z  * right.x  - dir.x  * right.z ;
+			up.z		= -dir.y * right.x ;
+		}
 	}
 };
-typedef _vector<float>	Fvector;
-typedef _vector<float>	Fvector3;
-typedef _vector<double> Dvector;
-typedef _vector<double> Dvector3;
-typedef _vector<s32>	Ivector;
-typedef _vector<s32>	Ivector3;
+typedef _vector3<float>		Fvector;
+typedef _vector3<float>		Fvector3;
+typedef _vector3<double>	Dvector;
+typedef _vector3<double>	Dvector3;
+typedef _vector3<s32>		Ivector;
+typedef _vector3<s32>		Ivector3;
+
+template <class T>
+BOOL	_valid			(const _vector3<T>& v)	{ return _valid((T)v.x) && _valid((T)v.y) && _valid((T)v.z);	}
 
 #endif

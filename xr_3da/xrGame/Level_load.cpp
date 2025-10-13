@@ -7,11 +7,11 @@
 
 void CLevel::vfCreateAllPossiblePaths(string64 sName, SPath &tpPatrolPath)
 {
-    std::vector<BYTE>    tpaFrom;
-    std::vector<BYTE>    tpaTo;
-    std::vector<Fvector> tpaPoints;
-    std::vector<Fvector> tpaDeviations;
-    std::vector<u32>     tpaNodes;
+    xr_vector<BYTE>    tpaFrom;
+    xr_vector<BYTE>    tpaTo;
+    xr_vector<Fvector> tpaPoints;
+    xr_vector<Fvector> tpaDeviations;
+    xr_vector<u32>     tpaNodes;
 
     int  iStartPoint = -1, iFinishPoint = -1;
     int  iCurPoint = 0, iPrevPoint = -1;
@@ -153,11 +153,11 @@ void CLevel::vfCreateAllPossiblePaths(string64 sName, SPath &tpPatrolPath)
 
     const float fHalfSubnodeSize = getAI().Header().size * 0.5f;
 
-    std::vector<Fvector> &tpaVector0 = tpPatrolPath.tpaVectors[0];
+    xr_vector<Fvector> &tpaVector0 = tpPatrolPath.tpaVectors[0];
     const u32 M = static_cast<u32>(tpaVector0.size());
 
     for (int I = 1; I < 3; ++I) {
-        std::vector<Fvector> &tpaVector1 = (I == 1) ? tpPatrolPath.tpaVectors[1] : tpPatrolPath.tpaVectors[2];
+        xr_vector<Fvector> &tpaVector1 = (I == 1) ? tpPatrolPath.tpaVectors[1] : tpPatrolPath.tpaVectors[2];
 
         int j = 0;
         int k = 0;
@@ -344,19 +344,19 @@ void CLevel::Load_GameSpecific_CFORM	( CDB::TRI* tris, u32 count )
 	u16		default_id	= (u16)GMLib.GetMaterialIdx("default");
 
 	// 2. Build mapping
-	map<u32,u16>		translator;
-	translator.insert	(make_pair(u32(-1),default_id));
+	std::map<u32,u16>		translator;
+	translator.insert	(std::make_pair(u32(-1),default_id));
 	u16 idx				= 0;
 	for (GameMtlIt I=GMLib.FirstMaterial(); I!=GMLib.LastMaterial(); I++)
 	{
-		translator.insert(make_pair((*I)->GetID(),idx++));
+		translator.insert(std::make_pair((*I)->GetID(),idx++));
 	}
 
 	// 3.
 	for (u32 it=0; it<count; it++)
 	{
 		CDB::TRI* T						= tris + it;
-		map<u32,u16>::iterator index	= translator.find(T->dummy);
+		std::map<u32, u16>::iterator index = translator.find(T->dummy);
 		if (index==translator.end())	Debug.fatal	("Game material '%d' not found",T->dummy);
 		T->material						= index->second;
 	}

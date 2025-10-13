@@ -47,13 +47,13 @@ private:
 	bool					m_bIfSearchFailed;
 	bool					_A,_B,_C,_D,_E,_F,_G,_H,_I,_J,_K,_L,_M;
 
-	vector<Fvector>			m_tpaPoints;
-	vector<Fvector>			m_tpaDeviations;
-	vector<Fvector>			m_tpaTravelPath;
-	vector<u32>				m_tpaPointNodes;
-	vector<Fvector>			m_tpaLine;
-	vector<u32>				m_tpaNodes;
-	vector<Fvector>			m_tpaTempPath;
+	xr_vector<Fvector>			m_tpaPoints;
+	xr_vector<Fvector>			m_tpaDeviations;
+	xr_vector<Fvector>			m_tpaTravelPath;
+	xr_vector<u32>				m_tpaPointNodes;
+	xr_vector<Fvector>			m_tpaLine;
+	xr_vector<u32>				m_tpaNodes;
+	xr_vector<Fvector>			m_tpaTempPath;
 
 	typedef svector<Fvector,MAX_SUSPICIOUS_NODE_COUNT>	SuspiciousPoints;
 	typedef svector<Fvector,MAX_SUSPICIOUS_NODE_COUNT>	SuspiciousForces;
@@ -107,7 +107,7 @@ private:
 	int						m_iCurrentSuspiciousNodeIndex;
 	SuspiciousPoints		m_tpaSuspiciousPoints;
 	SuspiciousForces		m_tpaSuspiciousForces;
-	vector<u32>				m_tpaNodeStack;
+	xr_vector<u32>				m_tpaNodeStack;
 	bool					m_bActionStarted;
 	u32						m_dwSoundTime;
 
@@ -138,7 +138,7 @@ private:
 	Fvector					m_tNextGraphPoint;
 	
 	// FSM
-	stack<EStalkerStates>	m_tStateStack;
+	std::stack<EStalkerStates>	m_tStateStack;
 	svector<SStalkerStates,MAX_STATE_LIST_SIZE>	m_tStateList;
 	u32						m_dwLastUpdate;
 	u32						m_dwCurrentUpdate;

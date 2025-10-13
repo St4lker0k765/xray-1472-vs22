@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "uicustomitem.h"
 #include "hudmanager.h"
+#include <cmath>
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -51,36 +52,37 @@ void CUICustomItem::Render(FVF::TL*& Pointer, const Ivector2& pos, u32 color)
 
 void CUICustomItem::Render(FVF::TL*& Pointer, const Ivector2& pos, u32 color, float angle)
 {
-	CTexture* T		= RCache.get_ActiveTexture(0);
-	Ivector2		ts;
-	Fvector2		hp;
-	ts.set			((int)T->get_Width(),(int)T->get_Height());
-	hp.set			(0.5f/float(ts.x),0.5f/float(ts.y));
-	if (!(uFlags&flValidRect))	SetRect		(0,0,ts.x,ts.y);
+    CTexture* T = RCache.get_ActiveTexture(0);
+    Ivector2 ts;
+    Fvector2 hp;
+    ts.set((int)T->get_Width(), (int)T->get_Height());
+    hp.set(0.5f / float(ts.x), 0.5f / float(ts.y));
+    if (!(uFlags & flValidRect)) SetRect(0, 0, ts.x, ts.y);
 
-	float			_sin1,_cos1,_sin2,_cos2;
-	angle			-=PI_DIV_4;
-    _sincos			(angle,_sin1,_cos1); 
-	angle			+=PI_DIV_2;
-	_sincos			(angle,_sin2,_cos2);
+    angle -= PI_DIV_4;
+    const float s1 = std::sinf(angle);
+    const float c1 = std::cosf(angle);
+    angle += PI_DIV_2;
+    const float s2 = std::sinf(angle);
+    const float c2 = std::cosf(angle);
 
-	Fvector2 C;
-	Ivector2 RS;
-	iVisRect.getsize(RS);
-	float sc		= HUD().GetScale();
-	float sz		= sc*((RS.x>RS.y)?RS.x:RS.y)*0.7071f;
+    Fvector2 C;
+    Ivector2 RS;
+    iVisRect.getsize(RS);
+    float sc = HUD().GetScale();
+    float sz = sc * ((RS.x > RS.y) ? RS.x : RS.y) * 0.7071f;
 
-	Fvector2 LTt,RBt;
-	LTt.set			(float(iVisRect.x1)/float(ts.x)+hp.x,float(iVisRect.y1)/float(ts.y)+hp.y);
-	RBt.set			(float(iVisRect.x2)/float(ts.x)+hp.x,float(iVisRect.y2)/float(ts.y)+hp.y);
+    Fvector2 LTt, RBt;
+    LTt.set(float(iVisRect.x1) / float(ts.x) + hp.x, float(iVisRect.y1) / float(ts.y) + hp.y);
+    RBt.set(float(iVisRect.x2) / float(ts.x) + hp.x, float(iVisRect.y2) / float(ts.y) + hp.y);
 
-	// Rotation
-	iVisRect.getcenter(RS); 
-	C.set			(RS.x*sc+pos.x,RS.y*sc+pos.y);
+    // Rotation
+    iVisRect.getcenter(RS);
+    C.set(RS.x * sc + pos.x, RS.y * sc + pos.y);
 
-	Pointer->set	(C.x+_sin1*sz,	C.y+_cos1*sz,	color, LTt.x, RBt.y); Pointer++;
-	Pointer->set	(C.x-_sin2*sz,	C.y-_cos2*sz,	color, LTt.x, LTt.y); Pointer++;
-	Pointer->set	(C.x+_sin2*sz,	C.y+_cos2*sz,	color, RBt.x, RBt.y); Pointer++;
-	Pointer->set	(C.x-_sin1*sz,	C.y-_cos1*sz,	color, RBt.x, LTt.y); Pointer++;
+    Pointer->set(C.x + s1 * sz, C.y + c1 * sz, color, LTt.x, RBt.y); Pointer++;
+    Pointer->set(C.x - s2 * sz, C.y - c2 * sz, color, LTt.x, LTt.y); Pointer++;
+    Pointer->set(C.x + s2 * sz, C.y + c2 * sz, color, RBt.x, RBt.y); Pointer++;
+    Pointer->set(C.x - s1 * sz, C.y - c1 * sz, color, RBt.x, LTt.y); Pointer++;
 }
 //--------------------------------------------------------------------

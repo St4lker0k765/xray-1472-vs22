@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "detailmodel.h"
-#include "xrstripify.h"
 
 CDetail::~CDetail()
 {
@@ -45,9 +44,11 @@ void CDetail::Load		(IReader* S)
 	Optimize	();
 }
 
+#include "xrstripify.h"
+
 void CDetail::Optimize	()
 {
-	vector<WORD>		vec_indices, vec_permute;
+	xr_vector<u16>		vec_indices, vec_permute;
 	const int			cache	= HW.Caps.vertex.dwVertexCache;
 
 	// Stripify
@@ -64,9 +65,10 @@ void CDetail::Optimize	()
 		Memory.mem_copy		(indices,&*vec_indices.begin(),vec_indices.size()*sizeof(WORD));
 
 		// Permute vertices
-		vector<fvfVertexIn>	verts	(vertices,vertices+number_vertices);
-		for(u32 i=0; i<verts.size(); i++)
-			vertices[i]=verts[vec_permute[i]];
+		xr_vector<fvfVertexIn>	verts;
+		verts.assign(vertices, vertices + number_vertices);
+		for (u32 i = 0; i < verts.size(); i++)
+			vertices[i] = verts[vec_permute[i]];
 	}
 }
 

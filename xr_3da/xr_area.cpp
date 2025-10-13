@@ -92,7 +92,7 @@ IC void CObjectSpace::Object_Move			( CObject *O )
 	for (ix=r0.x1; ix<=r0.x2; ix++)		// remove from slots
 		for (iz=r0.y1; iz<=r0.y2; iz++)
 			if (!r1.in(ix,iz))	{
-				vector<CObject*>&	lst = Dynamic(ix,iz).lst;
+				xr_vector<CObject*>&	lst = Dynamic(ix,iz).lst;
 				lst.erase(remove(lst.begin(),lst.end(),O),lst.end());
 			}
 			
@@ -113,7 +113,7 @@ IC void CObjectSpace::Object_Unregister		( CObject *O )
 		int 	ix, iz;
 		for (ix=r0.x1; ix<=r0.x2; ix++){
 			for (iz=r0.y1; iz<=r0.y2; iz++){
-				vector<CObject*>&	lst = Dynamic(ix,iz).lst;
+				xr_vector<CObject*>&	lst = Dynamic(ix,iz).lst;
 				lst.erase(remove(lst.begin(),lst.end(),O),lst.end());
 			}
 		}
@@ -238,7 +238,7 @@ void CObjectSpace::dbgRender()
 
 	for (u32 i=0; i<dbg_S.size(); i++)
 	{
-		pair<Fsphere,u32>& P = dbg_S[i];
+		std::pair<Fsphere,u32>& P = dbg_S[i];
 		Fsphere&	S = P.first;
 		Fmatrix		M;
 		M.scale		(S.R,S.R,S.R);

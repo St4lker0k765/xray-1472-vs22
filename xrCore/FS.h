@@ -6,7 +6,6 @@
 #define fsH
 
 #define CFS_CompressMark	(1ul << 31ul)
-#define CFS_AlignMark		(1ul << 30ul)
 
 XRCORE_API void VerifyPath	(LPCSTR path);
 //------------------------------------------------------------------------------------
@@ -15,27 +14,16 @@ XRCORE_API void VerifyPath	(LPCSTR path);
 class XRCORE_API IWriter
 {
 private:
-	std::stack<int>	chunk_pos;
-	int				align_correction;
-
-	IC u32		correction	(u32 p)
-	{
-		if (p%16) {
-			return ((p%16)+1)*16 - p;
-		} return 0;
-	}
+	xr_stack<u32>	chunk_pos;
 public:
-	LPSTR			fName;
+	shared_str			fName;
 public:
 	IWriter	()
 	{
-		fName		= 0;
 	}
 	virtual	~IWriter	()
 	{
-		xr_free		(fName);
-		while (!chunk_pos.empty())
-			close_chunk();
+        R_ASSERT3	(chunk_pos.empty(),"Opened chunk not closed.",*fName);
 	}
 
 	// kernel
@@ -45,24 +33,44 @@ public:
 	virtual void	w		(const void* ptr, u32 count)	= 0;
 
 	// generalized writing functions
-	IC void			w_u64	(u64 d)			{	w(&d,sizeof(u64));	}
-	IC void			w_u32	(u32 d)			{	w(&d,sizeof(u32));	}
-	IC void			w_u16	(u16 d)			{	w(&d,sizeof(u16));	}
-	IC void			w_u8	(u8 d)			{	w(&d,sizeof(u8));	}
-	IC void			w_s64	(s64 d)			{	w(&d,sizeof(s64));	}
-	IC void			w_s32	(s32 d)			{	w(&d,sizeof(s32));	}
-	IC void			w_s16	(s16 d)			{	w(&d,sizeof(s16));	}
-	IC void			w_s8	(s8 d)			{	w(&d,sizeof(s8));	}
-	IC void			w_float	(float d)		{	w(&d,sizeof(float));}
-	IC void			w_string(const char *p)	{	w(p,(u32)strlen(p)); w_u8(13); w_u8(10);}
-	IC void			w_stringZ(const char *p){	w(p,(u32)strlen(p)+1);	}
-	IC void			w_fcolor(const Fcolor &v){	w(&v,sizeof(Fcolor));	}
+	IC void			w_u64	(u64 d)					{	w(&d,sizeof(u64));	}
+	IC void			w_u32	(u32 d)					{	w(&d,sizeof(u32));	}
+	IC void			w_u16	(u16 d)					{	w(&d,sizeof(u16));	}
+	IC void			w_u8	(u8 d)					{	w(&d,sizeof(u8));	}
+	IC void			w_s64	(s64 d)					{	w(&d,sizeof(s64));	}
+	IC void			w_s32	(s32 d)					{	w(&d,sizeof(s32));	}
+	IC void			w_s16	(s16 d)					{	w(&d,sizeof(s16));	}
+	IC void			w_s8	(s8 d)					{	w(&d,sizeof(s8));	}
+	IC void			w_float	(float d)				{	w(&d,sizeof(float));}
+	IC void			w_string(const char *p)			{	w(p,(u32)xr_strlen(p));w_u8(13);w_u8(10);	}
+	IC void			w_stringZ(const char *p)		{	w(p,(u32)xr_strlen(p)+1);					}
+	IC void			w_stringZ(shared_str& p)			{	w(*p?*p:"",(u32)xr_strlen(p));w_u8(0);		}
+	IC void			w_fcolor(const Fcolor &v)		{	w(&v,sizeof(Fcolor));	}
 	IC void			w_fvector4(const Fvector4 &v)	{	w(&v,sizeof(Fvector4));	}
 	IC void			w_fvector3(const Fvector3 &v)	{	w(&v,sizeof(Fvector3));	}
 	IC void			w_fvector2(const Fvector2 &v)	{	w(&v,sizeof(Fvector2));	}
 	IC void			w_ivector4(const Ivector4 &v)	{	w(&v,sizeof(Ivector4));	}
 	IC void			w_ivector3(const Ivector3 &v)	{	w(&v,sizeof(Ivector3));	}
 	IC void			w_ivector2(const Ivector2 &v)	{	w(&v,sizeof(Ivector2));	}
+
+    // quant writing functions
+	IC void 		w_float_q16	(float a, float min, float max)
+	{
+		VERIFY		(a>=min && a<=max);
+		float q		= (a-min)/(max-min);
+		w_u16		(u16(iFloor(q*65535.f+.5f)));
+	}
+	IC void 		w_float_q8	(float a, float min, float max)
+	{
+		VERIFY		(a>=min && a<=max);
+		float q		= (a-min)/(max-min);
+		w_u8		(u8(iFloor(q*255.f+.5f)));
+	}
+	IC void 		w_angle16	(float a)		    {	w_float_q16	(angle_normalize(a),0,PI_MUL_2);}
+	IC void 		w_angle8	(float a)		    {	w_float_q8	(angle_normalize(a),0,PI_MUL_2);}
+	IC void 		w_dir		(const Fvector& D) 	{	w_u16(pvCompress(D));	}
+	void 			w_sdir		(const Fvector& D);
+	void	__cdecl	w_printf	(const char* format, ...);
 
 	// generalized chunking
 	u32				align		();
@@ -75,7 +83,7 @@ public:
 
 class XRCORE_API CMemoryWriter : public IWriter
 {
-	BYTE*			data;
+	u8*				data;
 	u32				position;
 	u32				mem_size;
 	u32				file_size;
@@ -91,13 +99,13 @@ public:
 	// kernel
 	virtual void	w			(const void* ptr, u32 count);
 
-	virtual void	seek		(u32 pos)	{	position = pos;		}
-	virtual u32		tell		() 			{	return position;	}
+	virtual void	seek		(u32 pos)	{	position = pos;				}
+	virtual u32		tell		() 			{	return position;			}
 
 	// specific
-	IC u8*			pointer		()	{ return data; }
-	IC u32			size		()	{ return file_size;	}
-	IC void			clear		()  { file_size=0; position=0;	}
+	IC u8*			pointer		()			{	return data;				}
+	IC u32			size		() const 	{	return file_size;			}
+	IC void			clear		()			{	file_size=0; position=0;	}
 	void			save_to		(const char* fn);
 };
 
@@ -143,15 +151,9 @@ public:
 	void			r_stringZ	(char *dest);
 	void			skip_stringZ();
 
-#ifdef _EDITOR
-	IC void			r_stringZ	(AnsiString& dest)
-	{
-    	dest 		= "";
-		char *src = (char *) data;
-		while ((src[Pos]!=0) && (!eof())) dest += src[Pos++];
-		Pos		++;
-	};
-#endif
+	void			r_stringZ	(shared_str& dest);
+	void			r_stringZ	(std::string& dest);
+
 	IC u64			r_u64		()			{	u64 tmp;	r(&tmp,sizeof(tmp)); return tmp;	};
 	IC u32			r_u32		()			{	u32 tmp;	r(&tmp,sizeof(tmp)); return tmp;	};
 	IC u16			r_u16		()			{	u16 tmp;	r(&tmp,sizeof(tmp)); return tmp;	};
@@ -169,6 +171,30 @@ public:
 	IC void			r_ivector4	(Ivector2 &v){	r(&v,sizeof(Ivector2));	}
 	IC void			r_fcolor	(Fcolor &v)	{	r(&v,sizeof(Fcolor));	}
 	
+	IC float		r_float_q16	(float min, float max)
+	{
+		u16	val 	= r_u16();
+		float A		= (float(val)*(max-min))/65535.f + min;		// floating-point-error possible
+		VERIFY		((A >= min-EPS_S) && (A <= max+EPS_S));
+        return A;
+	}
+	IC float		r_float_q8	(float min, float max)
+	{
+		u8 val		= r_u8();
+		float	A	= (float(val)/255.0001f) *(max-min) + min;	// floating-point-error possible
+		VERIFY		((A >= min) && (A <= max));
+        return	A;
+	}
+	IC float		r_angle16	()			{ return r_float_q16(0,PI_MUL_2);	}
+	IC float		r_angle8	()			{ return r_float_q8	(0,PI_MUL_2);	}
+	IC void			r_dir		(Fvector& A){ u16 t=r_u16(); pvDecompress(A,t); }
+	IC void			r_sdir		(Fvector& A)
+	{
+		u16	t		= r_u16();
+		float s		= r_float();
+		pvDecompress(A,t);
+		A.mul		(s);
+	}
 	// Set file pointer to start of chunk data (0 for root chunk)
 	IC void			rewind		()			{	seek(0); }
 	
@@ -183,26 +209,10 @@ public:
 class XRCORE_API CVirtualFileRW : public IReader
 {
 private:
-	HANDLE	hSrcFile,hSrcMap;
+	void	*hSrcFile, *hSrcMap;
 public:
-	CVirtualFileRW(const char *cFileName) {
-		// Open the file
-		hSrcFile = CreateFile(cFileName, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, 0, OPEN_EXISTING, 0, 0);
-		R_ASSERT(hSrcFile!=INVALID_HANDLE_VALUE);
-		Size = (int)GetFileSize(hSrcFile, NULL);
-		R_ASSERT(Size);
-		
-		hSrcMap = CreateFileMapping (hSrcFile, 0, PAGE_READWRITE, 0, 0, 0);
-		R_ASSERT(hSrcMap!=INVALID_HANDLE_VALUE);
-		
-		data = (char*)MapViewOfFile (hSrcMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
-		R_ASSERT(data);
-	}
-	virtual ~CVirtualFileRW() 
-	{
-        UnmapViewOfFile ((void*)data);
-		CloseHandle		(hSrcMap);
-		CloseHandle		(hSrcFile);
-	}
+			CVirtualFileRW		(const char *cFileName);
+	virtual ~CVirtualFileRW		();
 };
+
 #endif // fsH

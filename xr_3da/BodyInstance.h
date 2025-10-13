@@ -27,7 +27,7 @@ class   ENGINE_API CBoneInstance;
 class   ENGINE_API CBlend;
 
 // t-defs
-typedef vector<CBoneData*>	vecBones;
+typedef xr_vector<CBoneData*>	vecBones;
 typedef vecBones::iterator	vecBonesIt;
 
 typedef void (__stdcall * BoneCallback) (CBoneInstance* B);
@@ -53,7 +53,7 @@ IC void	KEY_Interp(CKey& D, CKey& K1, CKey& K2, float delta)
 	D.T.lerp	(K1.T,K2.T,delta);
 }
 #pragma pack(pop)
-typedef vector<CKeyQ>	vecKeys;
+typedef xr_vector<CKeyQ>	vecKeys;
 
 //*** Run-time Blend definition *******************************************************************
 class ENGINE_API CBlend {
@@ -122,7 +122,7 @@ public:
 	}
 	IC	void		blend_remove(CBlend* H)
 	{
-		CBlend** I = find(Blend.begin(),Blend.end(),H);
+		CBlend** I = std::find(Blend.begin(),Blend.end(),H);
 		if (I!=Blend.end())	Blend.erase(I);
 	}
 	IC	void		set_callback(BoneCallback C, void* Param)
@@ -151,7 +151,7 @@ public:
 public:
 	int				SelfID;
 	vecBones		children;	// bones which are slaves to this
-	vector<CMotion>	Motions;	// all known motions
+	xr_vector<CMotion>	Motions;	// all known motions
 	Fobb			obb;
 
 	// Motion control
@@ -206,7 +206,7 @@ class ENGINE_API CPartDef
 {
 public:
 	LPSTR		Name;
-	vector<int>	bones;
+	xr_vector<int>	bones;
 	CPartDef()	: Name(0) {};
 };
 class ENGINE_API CPartition
@@ -230,8 +230,8 @@ private:
 	};
 
 	typedef FHierrarhyVisual				inherited;
-	typedef map<LPSTR,int,str_pred>			accel;
-	typedef map<LPSTR,CMotionDef,str_pred>	mdef;
+	typedef xr_map<LPSTR,int,str_pred>			accel;
+	typedef xr_map<LPSTR,CMotionDef,str_pred>	mdef;
 private:
 	// Globals
 	vecBones*								bones;			// all bones+motions	(shared)

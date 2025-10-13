@@ -19,7 +19,7 @@ namespace Feel {
 	}
 	void	Vision::o_delete	(CObject* O)
 	{
-		vector<feel_visible_Item>::iterator I=feel_visible.begin(),TE=feel_visible.end();
+		xr_vector<feel_visible_Item>::iterator I=feel_visible.begin(),TE=feel_visible.end();
 		for (; I!=TE; I++)
 			if (I->O==O) {
 				feel_visible.erase(I);
@@ -39,11 +39,11 @@ namespace Feel {
 		// B-A = objects, that become visible
 		if (!seen.empty()) 
 		{
-			objSET::iterator E = remove(seen.begin(),seen.end(),parent);
+			objSET::iterator E = std::remove(seen.begin(),seen.end(),parent);
 			seen.resize(E-seen.begin());
 
 			{
-				objSET::iterator	E = set_difference(
+				objSET::iterator	E = std::set_difference(
 					seen.begin(), seen.end(),
 					query.begin(),query.end(),
 					diff.begin() );
@@ -56,7 +56,7 @@ namespace Feel {
 		// A-B = objects, that are invisible
 		if (!query.empty()) 
 		{
-			objSET::iterator	E = set_difference(
+			objSET::iterator	E = std::set_difference(
 				query.begin(),query.end(),
 				seen.begin(), seen.end(),
 				diff.begin() );
@@ -71,7 +71,7 @@ namespace Feel {
 	}
 	void Vision::o_trace(Fvector& P, float dt)
 	{
-		vector<feel_visible_Item>::iterator I=feel_visible.begin(),E=feel_visible.end();
+		xr_vector<feel_visible_Item>::iterator I=feel_visible.begin(),E=feel_visible.end();
 		for (; I!=E; I++)
 		{
 			if (0==I->O->CFORM())	{ I->fuzzy = -1; continue; }

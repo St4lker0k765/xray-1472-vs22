@@ -344,7 +344,7 @@ BOOL CActor::net_Spawn		(LPVOID DC)
 		D->ID				=	0xfffd - i;
 		D->ID_Parent		=	E->ID;
 		D->ID_Phantom		=	0xffff;
-		D->s_flags.set		(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
+		D->s_flags.assign	(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
 		D->RespawnTime		=	0;
 		// Send
 		NET_Packet			P;
@@ -370,20 +370,26 @@ BOOL CActor::net_Spawn		(LPVOID DC)
 	//Weapons->Init		("bip01_r_hand","bip01_l_finger1");
 
 	// load damage params
-	if (pSettings->line_exist(cNameSect(),"damage"))
+	if (pSettings->line_exist(cNameSect(), "damage"))
 	{
-		CInifile::Sect& dam_sect	= pSettings->r_section(pSettings->r_string(cNameSect(),"damage"));
-		for (CInifile::SectIt it=dam_sect.begin(); it!=dam_sect.end(); it++)
+		const char* damage_sect = pSettings->r_string(cNameSect(), "damage");
+		CInifile::Sect& dam_sect = pSettings->r_section(damage_sect);
+
+		for (CInifile::SectIt it = dam_sect.begin(); it != dam_sect.end(); ++it)
 		{
-			if (0==strcmp(it->first,"default")){
-				hit_factor	= (float)atof(it->second);
-			}else{
-				int bone	= V->LL_BoneID(it->first); 
-				R_ASSERT2(bone!=BONE_NONE,it->first);
-				V->LL_GetInstance(bone).set_param(0,(float)atof(it->second));
+			const char* key = it->first.c_str();
+			const char* val = it->second.c_str();
+
+			if (0 == _stricmp(key, "default")) {
+				hit_factor = (float)std::atof(val);
+			} else {
+				int bone = V->LL_BoneID(key);
+				R_ASSERT2(bone != BONE_NONE, key);
+				V->LL_GetInstance(bone).set_param(0, (float)std::atof(val));
 			}
 		}
 	}
+
 
 	return					TRUE;
 }

@@ -11,5 +11,5 @@ public:
 	virtual void Load			(LPCSTR section);
 	virtual void OnVisible		();
 
-	list<CTargetCS*> m_targets;
+	std::list<CTargetCS*> m_targets;
 };

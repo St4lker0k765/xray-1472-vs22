@@ -47,7 +47,7 @@ void SGameMtl::Load(IReader& fs)
 	fs.r_stringZ				(name);
 
 	R_ASSERT(fs.find_chunk(GAMEMTL_CHUNK_FLAGS));
-    Flags.set				(fs.r_u32());
+    Flags.assign                    (fs.r_u32());
 
 	R_ASSERT(fs.find_chunk(GAMEMTL_CHUNK_PHYSICS));
     fPHFriction				= fs.r_float();

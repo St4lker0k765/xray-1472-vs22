@@ -1,4 +1,6 @@
 #include "stdafx.h"
+#pragma hdrstop
+
 #include <errno.h>
 #include <malloc.h>
 
@@ -97,10 +99,7 @@ void * __stdcall xr_aligned_offset_malloc(
 		return NULL;
 	}
 	if ( offset >= size && offset != 0)
-	{
-		errno = EINVAL;
-		return NULL;
-	}
+		size	= offset+1;
 
 	align = (align > PTR_SZ ? align : PTR_SZ) -1;
 
@@ -279,7 +278,7 @@ void * __stdcall xr_aligned_offset_realloc(
 *       _aligned_offset_memory
 *
 * Purpose:
-*       Frees the algned memory block which was allocated using _aligned_malloc
+*       Frees the aligned memory block which was allocated using _aligned_malloc
 *       or _aligned_memory.
 *
 * Entry:
@@ -302,4 +301,21 @@ void __stdcall xr_aligned_free(void *memblock)
 	/* ptr is the pointer to the start of memory block*/
 	ptr = *((uintptr_t *)ptr);
 	free((void *)ptr);
+}
+
+u32 __stdcall xr_aligned_msize(void *memblock)
+{
+	uintptr_t ptr;
+
+	if (memblock == NULL)
+		return	0;
+
+	ptr = (uintptr_t)memblock;
+
+	/* ptr points to the pointer to starting of the memory block */
+	ptr = (ptr & ~(PTR_SZ -1)) - PTR_SZ;
+
+	/* ptr is the pointer to the start of memory block*/
+	ptr = *((uintptr_t *)ptr);
+	return	(u32)	_msize	((void *)ptr);
 }

@@ -1237,7 +1237,7 @@ void NvStripifier::FindAllStrips(NvStripInfoVec &allStrips,
 		//
 		// PHASE 1: Set up numSamples * numEdges experiments
 		//
-		vector<NvStripInfoVec>	experiments;
+		xr_vector<NvStripInfoVec>	experiments;
 		experiments.resize		(numSamples * 6);
 		int						experimentIndex = 0;
 		std::set   <NvFaceInfo*>  resetPoints;

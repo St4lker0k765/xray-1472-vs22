@@ -8,8 +8,8 @@
 class CInventory;
 class CInventoryItem;
 typedef CInventoryItem* PIItem;
-typedef set<PIItem> TIItemSet;
-typedef list<PIItem> TIItemList;
+typedef std::set<PIItem> TIItemSet;
+typedef std::list<PIItem> TIItemList;
 typedef TIItemSet::iterator PSPIItem;
 typedef TIItemList::iterator PPIItem;
 
@@ -59,7 +59,7 @@ public:
 	PIItem m_pIItem;
 	LPCSTR m_name;
 };
-typedef vector<CInventorySlot> TISlotArr;
+typedef xr_vector<CInventorySlot> TISlotArr;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 class CInventoryOwner;

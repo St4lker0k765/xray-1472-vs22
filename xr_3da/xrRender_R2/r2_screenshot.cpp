@@ -2,6 +2,7 @@
 #include "r2.h"
 #include "..\tga.h"
 #include "..\xrImage_Resampler.h"
+#include <mmsystem.h>
 
 #define RGBA_GETALPHA(rgb)      u32((rgb) >> 24)
 #define RGBA_GETRED(rgb)        u32(((rgb) >> 16) & 0xff)

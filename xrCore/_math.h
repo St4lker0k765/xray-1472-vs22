@@ -4,19 +4,12 @@
 #include "cpuid.h"
 
 namespace FPU {
-	XRCORE_API extern	u16		_24;
-	XRCORE_API extern	u16		_24r;
-	XRCORE_API extern	u16		_53;
-	XRCORE_API extern 	u16		_53r;
-	XRCORE_API extern 	u16		_64;
-	XRCORE_API extern 	u16		_64r;
-	
-	XRCORE_API void	__stdcall	m24		(u16 p=_24);
-	XRCORE_API void	__stdcall	m24r	(u16 p=_24r);	
-	XRCORE_API void	__stdcall	m53		(u16 p=_53);	
-	XRCORE_API void	__stdcall	m53r	(u16 p=_53r);	
-	XRCORE_API void	__stdcall	m64		(u16 p=_64);	
-	XRCORE_API void	__stdcall	m64r	(u16 p=_64r);	
+	XRCORE_API void	 m24	(void);
+	XRCORE_API void	 m24r	(void);	
+	XRCORE_API void	 m53	(void);	
+	XRCORE_API void	 m53r	(void);	
+	XRCORE_API void	 m64	(void);	
+	XRCORE_API void	 m64r	(void);	
 };
 namespace CPU {
 	XRCORE_API extern u64				cycles_per_second;
@@ -29,13 +22,18 @@ namespace CPU {
 	XRCORE_API extern _processor_info	ID;
 
 #ifdef M_VISUAL
-	#pragma warning(disable:4035)
-	IC u64	GetCycleCount(void)
-	{
-		_asm    _emit 0x0F;
-		_asm    _emit 0x31;
-	}
-	#pragma warning(default:4035)
+	#ifndef _M_AMD64
+		#pragma warning(disable:4035)
+		IC u64	GetCycleCount(void)	{
+			_asm    _emit 0x0F;
+			_asm    _emit 0x31;
+		}
+		#pragma warning(default:4035)
+	#else
+		IC u64	GetCycleCount(void)	{
+			return __rdtsc();
+		}
+	#endif
 #endif
 
 #ifdef M_BORLAND

@@ -228,7 +228,7 @@ IC	bool		__aabb_tri		(Point center,Point extents,Point* mLeafVerts)
 			// - edges lazy evaluated to take advantage of early exits
 			// - fabs precomputed (half less work, possible since extents are always >0)
 			// - customized macros to take advantage of the null component
-			// - axis vector discarded, possibly saves useless movs
+			// - axis xr_vector discarded, possibly saves useless movs
 			
 			const float fey0 = _abs(e0.y);
 			const float fez0 = _abs(e0.z);

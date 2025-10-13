@@ -41,7 +41,7 @@ protected:
 	CSpawn_DESC				description;
 public:
 	static		CSpawn*		Create			(CLASS_ID cls);
-	static		void		CreatePalette	(vector<CSpawn*> & palette);
+	static		void		CreatePalette	(xr_vector<CSpawn*> & palette);
 
 	CSpawn_DESC&			getDescription	()	{return description;}
 	virtual 	LPCSTR		getName			()	{return description.cName;}

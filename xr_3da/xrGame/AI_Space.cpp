@@ -236,8 +236,8 @@ void CAI_Space::Render()
 
 #ifdef DEBUG
 	if (psAI_Flags.test(aiMotion)) {
-		vector<CObject*>::iterator	I = Level().Objects.objects.begin();
-		vector<CObject*>::iterator	E = Level().Objects.objects.end();
+		xr_vector<CObject*>::iterator	I = Level().Objects.objects.begin();
+		xr_vector<CObject*>::iterator	E = Level().Objects.objects.end();
 		for ( ; I != E; I++) {
 			CCustomMonster *tpCustomMonster = dynamic_cast<CCustomMonster*>(*I);
 			if (tpCustomMonster) {
@@ -353,8 +353,8 @@ void CAI_Space::Render()
 	}
 	
 #ifdef DEBUG
-	vector<CObject*>::iterator	I = Level().Objects.objects.begin();
-	vector<CObject*>::iterator	E = Level().Objects.objects.end();
+	xr_vector<CObject*>::iterator	I = Level().Objects.objects.begin();
+	xr_vector<CObject*>::iterator	E = Level().Objects.objects.end();
 	for ( ; I != E; I++) {
 		CCustomMonster *tpCustomMonster = dynamic_cast<CCustomMonster*>(*I);
 		if (tpCustomMonster) {

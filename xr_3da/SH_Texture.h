@@ -14,7 +14,7 @@ public:
 
 	// Sequence data
 	u32								seqMSPF;	// milliseconds per frame
-	vector<IDirect3DBaseTexture9*>	seqDATA;
+	xr_vector<IDirect3DBaseTexture9*>	seqDATA;
 	BOOL							seqCycles;
 
 	// User-data

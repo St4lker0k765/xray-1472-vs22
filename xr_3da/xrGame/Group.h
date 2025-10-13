@@ -20,8 +20,8 @@ typedef struct tagSSearchPlace {
 //typedef svector<u32,MAX_GROUP_SIZE>							MemberNodes;
 //typedef svector<SSearchPlace,MAX_SUSPICIOUS_NODE_COUNT>		SuspiciousNodes;
 //typedef svector<bool,MAX_SUSPICIOUS_NODE_COUNT>				SuspiciousGroups;
-typedef vector<Fvector>										MemberPlacement;
-typedef vector<u32>											MemberNodes;
+typedef xr_vector<Fvector>										MemberPlacement;
+typedef xr_vector<u32>											MemberNodes;
 typedef svector<SSearchPlace,MAX_SUSPICIOUS_NODE_COUNT>		SuspiciousNodes;
 typedef svector<bool,MAX_SUSPICIOUS_NODE_COUNT>				SuspiciousGroups;
 typedef FixedSET<CObject*>									objVisible;
@@ -50,7 +50,7 @@ public:
 	u32							m_dwLastViewChange;
 	SuspiciousNodes				m_tpaSuspiciousNodes;
 	SuspiciousGroups			m_tpaSuspiciousGroups;
-	vector<u32>					m_tpaPatrolPath;
+	xr_vector<u32>					m_tpaPatrolPath;
 
 	// for DDD
 	u32							m_dwLastActionTime;

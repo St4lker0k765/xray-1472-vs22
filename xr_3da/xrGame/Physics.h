@@ -138,7 +138,7 @@ class CPHWorld {
 	dSpaceID Space;
 	
 	CPHMesh Mesh;
-	list<CPHObject*> m_objects;
+	std::list<CPHObject*> m_objects;
 public:
 	double m_frame_sum;
 	dReal frame_time;
@@ -146,7 +146,7 @@ public:
 	//CPHGun Gun;
 	//CPHJeep Jeep;
 	unsigned int disable_count;
-	//vector<CPHElement*> elements;
+	//xr_vector<CPHElement*> elements;
 	CPHWorld(){disable_count=0;frame_time=0.f;m_steps_num=0;m_frame_sum=0.f;
 	m_delay=0; m_previous_delay=0;m_reduce_delay=0;m_update_delay_count=0;}
 	~CPHWorld(){};
@@ -154,12 +154,12 @@ public:
 	dSpaceID GetSpace(){return Space;};
 	//	dWorldID GetWorld(){return phWorld;};
 	void Create();
-	list <CPHObject*> ::iterator AddObject(CPHObject* object){
+	std::list <CPHObject*> ::iterator AddObject(CPHObject* object){
 		m_objects.push_back(object);
 		//list <CPHObject*> ::iterator i= m_objects.end();
 		return --(m_objects.end());
 	};
-	void RemoveObject(list<CPHObject*> :: iterator i){
+	void RemoveObject(std::list<CPHObject*> :: iterator i){
 		m_objects.erase((i));
 	};
 	//CPHElement* AddElement(){
@@ -195,11 +195,11 @@ void __stdcall			ContactShotMark(CDB::TRI* T,dContactGeom* c)   ;
 
 class CPHElement:  public CPhysicsElement {
 
-	vector <dGeomID>		m_geoms;
-	vector <dGeomID>		m_trans;
-	vector <Fsphere>		m_spheras_data;
-	vector <Fobb>			m_boxes_data;
-	vector <Fcylinder>		m_cylinders_data;
+	xr_vector <dGeomID>		m_geoms;
+	xr_vector <dGeomID>		m_trans;
+	xr_vector <Fsphere>		m_spheras_data;
+	xr_vector <Fobb>			m_boxes_data;
+	xr_vector <Fcylinder>		m_cylinders_data;
 	bool					bActive;
 	bool					bActivating;
 	float					m_start_time;
@@ -211,7 +211,7 @@ class CPHElement:  public CPhysicsElement {
 	dBodyID					m_body;
 	dSpaceID					m_group;
 ///////////////////////////////
-	vector<CPHElement*>		m_attached_elements;
+	xr_vector<CPHElement*>		m_attached_elements;
 	CPHElement				*m_parent_element;
 	CPHShell				*m_shell;
 	CPHInterpolation		m_body_interpolation;
@@ -366,7 +366,7 @@ SPHAxis(){
 	velocity=0.f;
 	}
 };
-vector<SPHAxis> axes;
+xr_vector<SPHAxis> axes;
 Fvector anchor;
 eVs vs_anchor;
 
@@ -419,12 +419,12 @@ public:
 
 ///////////////////////////////////////////////////////////////////////
 class CPHShell: public CPhysicsShell,public CPHObject {
-	vector<CPHElement*> elements;
-	vector<CPHJoint*>	joints;
+	xr_vector<CPHElement*> elements;
+	xr_vector<CPHJoint*>	joints;
 	dSpaceID			m_space;
 	bool bActivating;
 
-list<CPHObject*>::iterator m_ident;
+std::list<CPHObject*>::iterator m_ident;
 				
 public:
 
@@ -437,12 +437,12 @@ public:
 																		};
 	~CPHShell				()							{if(bActive) Deactivate();
 
-															vector<CPHElement*>::iterator i;
+															xr_vector<CPHElement*>::iterator i;
 														for(i=elements.begin();i!=elements.end();i++)
 																							xr_delete(*i);
 														elements.clear();
 
-														vector<CPHJoint*>::iterator j;
+														xr_vector<CPHJoint*>::iterator j;
 														for(j=joints.begin();j!=joints.end();j++)
 																							xr_delete(*j);
 														joints.clear();
@@ -461,7 +461,7 @@ public:
 	}
 
 	virtual void			SetAirResistance		(dReal linear=0.0002f, dReal angular=0.05f){
-														vector<CPHElement*>::iterator i;
+														xr_vector<CPHElement*>::iterator i;
 														for(i=elements.begin();i!=elements.end();i++)
 																						(*i)->SetAirResistance(linear,angular);
 								}
@@ -491,7 +491,7 @@ public:
 																								};
 	virtual void			set_JointResistance		(float force)
 														{
-														vector<CPHJoint*>::iterator i;
+														xr_vector<CPHJoint*>::iterator i;
 														for(i=joints.begin();i!=joints.end();i++) 
 															(*i)->SetForceAndVelocity(force);
 														}

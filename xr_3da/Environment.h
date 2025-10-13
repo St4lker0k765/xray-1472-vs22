@@ -27,8 +27,8 @@ struct ENGINE_API	SEnvDef
 class ENGINE_API CEnvironment
 {
 public:
-	vector<CSun*>			Suns;
-	vector<CSoundStream*>	Music;
+	xr_vector<CSun*>			Suns;
+	xr_vector<CSoundStream*>	Music;
 	int						Music_Active;
 	int						Music_Fade;
 public:

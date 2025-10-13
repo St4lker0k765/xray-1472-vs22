@@ -13,7 +13,7 @@
 // Optimal paths
 //////////////////////////////////////////////////////////////////////////
 
-float CAI_Space::ffFindMinimalPath(u32 dwStartNode, u32 dwGoalNode, vector<u32> &tpaNodes)
+float CAI_Space::ffFindMinimalPath(u32 dwStartNode, u32 dwGoalNode, xr_vector<u32> &tpaNodes)
 {
 	SAIMapData			tData;
 	float				fDistance;

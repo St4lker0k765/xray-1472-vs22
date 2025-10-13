@@ -36,7 +36,7 @@ void	game_cl_GameState::net_import_state	(NET_Packet& P)
 	u16	p_count;
 	P.r_u16			(p_count);
 	players.clear	();
-	pair <map<u32,Player>::iterator, bool> I;
+	std::pair <std::map<u32,Player>::iterator, bool> I;
 	for (u16 p_it=0; p_it<p_count; p_it++)
 	{
 		u32				ID;
@@ -44,7 +44,7 @@ void	game_cl_GameState::net_import_state	(NET_Packet& P)
 		P.r_u32			(ID);
 		P.r_string		(IP.name);
 		P.r				(&IP,sizeof(game_PlayerState));
-		I				= players.insert(make_pair(ID,IP));
+		I				= players.insert(std::make_pair(ID,IP));
 		if (IP.flags&GAME_PLAYER_FLAG_LOCAL) local_player = &I.first->second;
 	}
 	R_ASSERT(local_player);
@@ -59,7 +59,7 @@ void	game_cl_GameState::net_import_update(NET_Packet& P)
 	P.r					(&PS,sizeof(game_PlayerState));
 
 	// Update
-	map<u32,Player>::iterator I	= players.find(ID);
+	std::map<u32,Player>::iterator I	= players.find(ID);
 	if (I!=players.end())
 	{
 		Player& IP		= I->second;

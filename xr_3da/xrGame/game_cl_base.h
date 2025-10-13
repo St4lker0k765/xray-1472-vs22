@@ -11,9 +11,9 @@ public:
 	{
 		string64	name;
 	};
-	map<u32,Player>			players;
+	std::map<u32, Player>			players;
 	Player*					local_player;
-	vector<CGameObject*>	targets;
+	xr_vector<CGameObject*>	targets;
 public:
 	virtual		void				Create					(LPCSTR options);
 	virtual		void				net_import_state		(NET_Packet& P);

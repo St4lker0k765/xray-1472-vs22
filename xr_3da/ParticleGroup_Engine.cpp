@@ -5,6 +5,7 @@
 #include "ParticleGroup.h"
 #include "render.h"
 #include "psystem.h"
+#include <cmath>
 
 using namespace PAPI;
 using namespace PS;
@@ -38,9 +39,17 @@ IC void FillSprite	(FVF::TL*& pv, const Fmatrix& M, const Fvector& pos, const Fv
 	c.x				= (PT.p.x+1)*w_2;
 	c.y				= (PT.p.y+1)*h_2;
 	// Rotation
-	float	_sin1,_cos1,_sin2,_cos2,da;
-	da = angle;		 _sincos	(da,_sin1,_cos1);
-	da += PI_DIV_2;  _sincos	(da,_sin2,_cos2);
+	float _sin1, _cos1, _sin2, _cos2;
+	{
+		const float s = std::sinf(angle);
+		const float c = std::cosf(angle);
+
+		_sin1 = s;
+		_cos1 = c;
+
+		_sin2 = c;
+		_cos2 = -s;
+	}
 
 	pv->set	(c.x+sz*_sin1,	c.y+sz*_cos1,	PT.p.z, PT.p.w, clr, lt.x,rb.y);	pv++;
 	pv->set	(c.x-sz*_sin2,	c.y-sz*_cos2,	PT.p.z, PT.p.w, clr, lt.x,lt.y);	pv++;

@@ -9,7 +9,7 @@
 static bkPhysicEnvironment	ENV;
 
 static class myTriList : public bkRBShapeTriList {
-	vector<bkVector3*>		tris;
+	xr_vector<bkVector3*>		tris;
 public:
 	virtual bkU16 GetTris	(bkVector3 **&ppVerts, const bkVector3 &p, const bkVector3 &s, const bkMatrix3 &r)
 	{

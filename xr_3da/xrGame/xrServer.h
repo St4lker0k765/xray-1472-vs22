@@ -37,14 +37,14 @@ struct	svs_respawn
 	u32		timestamp;
 	u16		phantom;
 };
-IC bool operator < (const svs_respawn& A, const svs_respawn& B)	{ return A.timestamp<B.timestamp; }
+IC bool operator < (const svs_respawn& A, const svs_respawn& B) { return A.timestamp < B.timestamp; }
 
 class xrServer	: public IPureServer  
 {
 private:
 	xrS_entities			entities;
-	deque<u16>				id_free;
-	multiset<svs_respawn>	q_respawn;
+	xr_deque<u16>				id_free;
+	xr_multiset<svs_respawn>	q_respawn;
 
 public:
 	game_sv_GameState*		game;
@@ -96,8 +96,8 @@ public:
 	void					Update				();
 	void					SLS_Default			();
 	void					SLS_Clear			();
-	void					SLS_Save			(IWriter& FS);
-	void					SLS_Load			(IReader&  FS);
+	void					SLS_Save			(IWriter& fs);
+	void					SLS_Load			(IReader&  fs);
 };
 
 #endif // !defined(AFX_XRSERVER_H__65728A25_16FC_4A7B_8CCE_D798CA5EC64E__INCLUDED_)

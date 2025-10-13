@@ -20,7 +20,7 @@ public:
 	u16								ID_Parent;		// internal ParentID, 0xffff means no parent
 	u16								ID_Phantom;		// internal PhantomID, 0xffff means no phantom
 	xrClientData*					owner;
-	vector<u16>						children;
+	xr_vector<u16>						children;
 
 	// spawn data
 	string64						s_name;
@@ -46,7 +46,7 @@ public:
 		owner						= 0;
 		s_gameid					= 0;
 		s_RP						= 0xFE;			// Use supplied coords
-        s_flags.set					(M_SPAWN_OBJECT_ACTIVE);
+        s_flags.assign				(M_SPAWN_OBJECT_ACTIVE);
 		Memory.mem_copy				(s_name,caSection,(strlen(caSection) + 1)*sizeof(char));
 		ZeroMemory					(s_name_replace,sizeof(string64));
         o_Angle.set					(0.f,0.f,0.f);

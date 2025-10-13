@@ -11,7 +11,7 @@ class ENGINE_API CEvent
 	friend class CEventAPI;
 private:
 	char*					Name;
-	vector<CEventBase*>		Handlers;
+	xr_vector<CEventBase*>		Handlers;
 	u32					dwRefCount;
 public:
 	CEvent	(const char* S);
@@ -32,7 +32,7 @@ public:
 	}
 	void	Detach(CEventBase* H)
 	{
-		vector<CEventBase*>::iterator I = find(Handlers.begin(),Handlers.end(),H);
+		xr_vector<CEventBase*>::iterator I = find(Handlers.begin(),Handlers.end(),H);
 		if (I!=Handlers.end())
 			Handlers.erase(I);
 	}
@@ -67,7 +67,7 @@ EVENT	CEventAPI::Create(const char* N)
 {
 	CS.Enter	();
 	CEvent	E	(N);
-	for (vector<CEvent*>::iterator I=Events.begin(); I!=Events.end(); I++)
+	for (xr_vector<CEvent*>::iterator I=Events.begin(); I!=Events.end(); I++)
 	{
 		if ((*I)->Equal(E)) {
 			EVENT F		= *I;
@@ -88,7 +88,7 @@ void	CEventAPI::Destroy(EVENT& E)
 	E->dwRefCount--;
 	if (E->dwRefCount == 0) 
 	{
-		vector<CEvent*>::iterator I = find(Events.begin(),Events.end(),E);
+		xr_vector<CEvent*>::iterator I = find(Events.begin(),Events.end(),E);
 		R_ASSERT(I!=Events.end());
 		Events.erase(I);
 		xr_delete	(E);

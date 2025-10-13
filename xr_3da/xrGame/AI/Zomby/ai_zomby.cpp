@@ -200,7 +200,7 @@ IC bool CAI_Zomby::bfCheckForMember(Fvector &tFireVector, Fvector &tMyPoint, Fve
 }
 
 bool CAI_Zomby::bfCheckPath(AI::Path &Path) {
-	const vector<BYTE> &q_mark = Level().AI.tpfGetNodeMarks();
+	const xr_vector<BYTE> &q_mark = Level().AI.tpfGetNodeMarks();
 	for (int i=1; i<Path.Nodes.size(); i++) 
 		if (q_mark[Path.Nodes[i]])
 			return(false);
@@ -384,7 +384,7 @@ IC bool CAI_Zomby::bfNeighbourNode(const SSubNode &tCurrentSubNode, const SSubNo
 #define MAX_NEIGHBOUR_COUNT 9
 //#define MAX_NEIGHBOUR_COUNT 5
 
-int CAI_Zomby::ifDivideNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, vector<SSubNode> &tpSubNodes)
+int CAI_Zomby::ifDivideNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, xr_vector<SSubNode> &tpSubNodes)
 {
 	CAI_Space &AI = Level().AI;
 	float fSubNodeSize = AI.GetHeader().size;
@@ -472,7 +472,7 @@ int CAI_Zomby::ifDivideNode(NodeCompressed *tpStartNode, Fvector tCurrentPositio
 	return(iResult);
 }
 
-int CAI_Zomby::ifDivideNearestNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, vector<SSubNode> &tpSubNodes)
+int CAI_Zomby::ifDivideNearestNode(NodeCompressed *tpStartNode, Fvector tCurrentPosition, xr_vector<SSubNode> &tpSubNodes)
 {
 	CAI_Space &AI = Level().AI;
 	float fSubNodeSize = AI.GetHeader().size;

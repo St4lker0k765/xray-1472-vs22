@@ -7,69 +7,34 @@
 
 #ifndef xrCoreH
 #define xrCoreH
-
 #pragma once
-#define WIN32_LEAN_AND_MEAN			// Exclude rarely-used stuff from Windows headers
-#define STRICT						// Enable strict syntax
-#define IDIRECTPLAY2_OR_GREATER
 
-// windows.h
-#define _WIN32_WINNT 0x0500        
+//#ifdef _EDITOR
+#	include "xrCore_platform.h"
+//#endif
 
+// stl-config
+// *** disable exceptions for both STLport and VC7.1 STL
+#define _STLP_NO_EXCEPTIONS	1
+// #define _HAS_EXCEPTIONS		0	/* predefine as 0 to disable exceptions */
+
+// *** try to minimize code bloat of STLport
 #ifdef __BORLANDC__
-	#include <vcl.h>
-	#include <mmsystem.h>
-	#include <stdint.h>
+#else
+#ifdef XRCORE_EXPORTS				// no exceptions, export allocator and common stuff
+#define _STLP_DESIGNATED_DLL	1
+#define _STLP_USE_DECLSPEC		1
+#else
+#define _STLP_USE_DECLSPEC		1	// no exceptions, import allocator and common stuff
 #endif
-
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NODRAWTEXT
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOSERVICE
-#define NOCOMM
-#define NOHELP
-#define NOPROFILER
-#define NOMCX
-#define NOMINMAX
-#define DOSWIN32
-#define _WIN32_DCOM
-
-#include <windows.h>
-
-#ifndef __BORLANDC__
-	#include <windowsx.h>
 #endif
-
-// mmsystem.h
-#define MMNOSOUND
-#define MMNOMIDI
-#define MMNOAUX
-#define MMNOMIXER
-#define MMNOJOY
-
-#include <mmsystem.h>
-
-// mmreg.h
-#define NOMMIDS
-#define NONEWRIFF
-#define NOJPEGDIB
-#define NONEWIC
-#define NOBITMAP
-
-#include <mmreg.h>
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <math.h>
-#include <time.h>
 #include <string.h>
 #include <process.h>
-#include <assert.h>
 #include <typeinfo>
 
 #ifndef DEBUG
@@ -81,23 +46,33 @@
     #endif
 #endif
 
+// inline control - redefine to use compiler's heuristics ONLY
+// it seems "IC" is misused in many places which cause code-bloat
+// ...and VC7.1 really don't miss opportunities for inline :)
+#define _inline			inline
+#define __inline		inline
+#define __forceinline	inline
+#define IC				inline
+
+#ifndef DEBUG
+	#pragma inline_depth	( 254 )
+	#pragma inline_recursion( on )
+	#ifndef __BORLANDC__
+		#pragma intrinsic	(abs, fabs, fmod, sin, cos, tan, asin, acos, atan, sqrt, exp, log, log10, strcpy, strcat)
+	#endif
+#endif
+
+#include <time.h>
+// work-around dumb borland compiler
 #ifdef __BORLANDC__
+	#define ALIGN(a)
+
+	#include <assert.h>
 	#include <utime.h>
 	#define _utimbuf utimbuf
 	#define MODULE_NAME 		"xrCoreB.dll"
-    #ifndef DEBUG
-    	#pragma inline_depth	( 254 )
-	    #pragma inline_recursion( on )
-	    #pragma intrinsic		(abs, fabs, fmod, sin, cos, tan, asin, acos, atan, sqrt, exp, log, log10, strcpy, strcat)
-	    #define __forceinline	inline
-	    #define _inline			inline
-	    #define __inline		inline
-	    #define IC				inline
-    #else
-	    #define __forceinline	inline
-	    #define IC				inline
-    #endif
-    // function redefinition
+
+	// function redefinition
     #define fabsf(a) fabs(a)
     #define sinf(a) sin(a)
     #define asinf(a) asin(a)
@@ -117,31 +92,26 @@
 	#define _RC_CHOP RC_CHOP
 	#define _RC_NEAR RC_NEAR
 #else
+	#define ALIGN(a)		__declspec(align(a))
 	#include <sys\utime.h>
 	#define MODULE_NAME 	"xrCore.dll"
-    #ifndef DEBUG
-    #pragma inline_depth	( 254 )
-    #pragma inline_recursion( on )
-    #pragma intrinsic		(abs, fabs, fmod, sin, cos, tan, asin, acos, atan, sqrt, exp, log, log10, strcpy, strcat)
-    #define inline			__forceinline
-    #define _inline			__forceinline
-    #define __inline		__forceinline
-    #define IC				__forceinline
-    #else
-    #define IC				__forceinline
-    #endif
 #endif
 
-// stl-config
-#define _STLP_NO_EXCEPTIONS			
-#ifdef __BORLANDC__
-#else
-	#ifdef XRCORE_EXPORTS				// no exceptions, export allocator and common stuff
-		#define _STLP_DESIGNATED_DLL 
-		#define _STLP_USE_DECLSPEC 
-	#else
-		#define _STLP_USE_DECLSPEC		// no exceptions, import allocator and common stuff
-	#endif
+// Warnings
+#pragma warning (disable : 4251 )		// object needs DLL interface
+#pragma warning (disable : 4201 )		// nonstandard extension used : nameless struct/union
+#pragma warning (disable : 4100 )		// unreferenced formal parameter
+#pragma warning (disable : 4127 )		// conditional expression is constant
+#pragma warning (disable : 4530 )		// C++ exception handler used, but unwind semantics are not enabled
+#pragma warning (disable : 4345 )
+#pragma warning (disable : 4714 )		// __forceinline not inlined
+#ifndef DEBUG
+#pragma warning (disable : 4189 )		//  local variable is initialized but not refenced
+#endif									//	frequently in release code due to large amount of VERIFY
+
+
+#ifdef _M_AMD64
+#pragma warning (disable : 4512 )
 #endif
 
 // stl
@@ -152,18 +122,8 @@
 #include <list>
 #include <set>
 #include <map>
-using namespace std;
-
-// Warnings
-#pragma warning (disable : 4786 )		// too long names
-#pragma warning (disable : 4503 )		// decorated name length exceeded
-#pragma warning (disable : 4251 )		// object needs DLL interface
-#pragma warning (disable : 4201 )		// nonstandard extension used : nameless struct/union
+#include <string>
 #pragma warning (disable : 4100 )		// unreferenced formal parameter
-#pragma warning (disable : 4127 )		// conditional expression is constant
-#pragma warning (disable : 4324 )		// structure was padded due to __declspec(align())
-#pragma warning (disable : 4714 )		// 'function' marked as __forceinline not inlined
-#pragma warning (disable : 4530 )		// C++ exception handler used, but unwind semantics are not enabled
 
 // Our headers
 #ifdef XRCORE_EXPORTS
@@ -172,22 +132,44 @@ using namespace std;
 #define XRCORE_API __declspec(dllimport)
 #endif
 
-
-#define VERIFY assert
-
+#include "xrDebug.h"
 #include "vector.h"
-#undef  VERIFY
+
 #include "clsid.h"
 #include "xrSyncronize.h"
 #include "xrMemory.h"
 #include "xrDebug.h"
+
+#include "_stl_extensions.h"
+#include "xrsharedmem.h"
+#include "xrstring.h"
+#include "rt_compressor.h"
+#include "xr_resource.h"
+
+// stl ext
+struct XRCORE_API xr_rtoken{
+    shared_str	name;
+    int	   	id;
+           	xr_rtoken	(LPCSTR _nm, int _id){name=_nm;id=_id;}
+public:
+    void	rename		(LPCSTR _nm)		{name=_nm;}
+    bool	equal		(LPCSTR _nm)		{return (0==xr_strcmp(*name,_nm));}
+};
+
+DEFINE_VECTOR	(shared_str,RStringVec,RStringVecIt);
+DEFINE_SET		(shared_str,RStringSet,RStringSetIt);
+DEFINE_VECTOR	(xr_rtoken,RTokenVec,RTokenVecIt);
+
 #include "FS.h"
 #include "log.h"
 #include "xr_trims.h"
 #include "xr_ini.h"
 #include "LocatorAPI.h"
+#include "FileSystem.h"
 #include "FTimer.h"
+#include "fastdelegate.h"
 
+// destructor
 template <class T>
 class destructor
 {
@@ -200,7 +182,6 @@ public:
 };
 
 // ********************************************** The Core definition
-
 class XRCORE_API xrCore 
 {
 public:
@@ -209,7 +190,7 @@ public:
 	string64	CompName;
 	string512	Params;
 public:
-	void		_initialize	(LPCSTR ApplicationName, LogCallback cb=0);
+	void		_initialize	(LPCSTR ApplicationName, LogCallback cb=0, BOOL init_fs=TRUE);
 	void		_destroy	();
 };
 extern XRCORE_API xrCore Core;

@@ -40,7 +40,7 @@ private:
 	sound			sndServo;
 	sound			sndRicochet[SND_RIC_COUNT];
 
-	vector<Shader*>	hFlames;
+	xr_vector<Shader*>	hFlames;
 
 	int				iWpnRotBone;
 	int				iHUDRotBone;

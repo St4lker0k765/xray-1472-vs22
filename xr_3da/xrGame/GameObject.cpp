@@ -130,7 +130,7 @@ BOOL CGameObject::net_Spawn		(LPVOID	DC)
 			getAI().ref_add  (AI_NodeID);
 		}
 	}
-	Msg			("--spawn--ai-node: %f ms",1000.f*T.GetAsync());
+	Msg			("--spawn--ai-node: %f ms",1000.f*T.GetElapsed_sec());
 
 	// Phantom
 	// respawnPhantom			= E->ID_Phantom;
@@ -211,7 +211,7 @@ void CGameObject::Hit(float P, Fvector &dir,	CObject* who, s16 element,Fvector p
 	if(m_pPhysicsShell) m_pPhysicsShell->applyImpulseTrace(p_in_object_space,dir,impulse);
 }
 
-f32 CGameObject::ExplosionEffect(const Fvector &expl_centre, const f32 expl_radius, list<s16> &elements, list<Fvector> &bs_positions) {
+f32 CGameObject::ExplosionEffect(const Fvector &expl_centre, const f32 expl_radius, std::list<s16> &elements, std::list<Fvector> &bs_positions) {
 	Collide::ray_query RQ;
 	Fvector l_dir; l_dir.sub(vPosition, expl_centre); l_dir.normalize();
 	if(!Level().ObjectSpace.RayPick(expl_centre, l_dir, expl_radius, RQ)) return 0;

@@ -9,6 +9,7 @@
 #include "..\xr_object.h"
 #include "..\CustomHUD.h"
 #include "lighttrack.h"
+#include <cmath>
 
 CRender										RImplementation;
 
@@ -60,7 +61,7 @@ IRender_Target*			CRender::getTarget				()					{ return &Target;										}
 
 IRender_Light*			CRender::light_create			()					{ return L_Dynamic.Create();							}
 void					CRender::light_destroy			(IRender_Light* &L)	{ if (L) { L_Dynamic.Destroy((CLightPPA*)L); L=0; }		}
-void					CRender::L_select				(Fvector &pos, float fRadius, vector<xrLIGHT*>& dest)
+void					CRender::L_select				(Fvector &pos, float fRadius, xr_vector<xrLIGHT*>& dest)
 {	L_DB.Select	(pos,fRadius,dest);		}
 
 void					CRender::flush					()					{ flush_Models();									}
@@ -71,8 +72,8 @@ BOOL					CRender::occ_visible			(Fbox& P)			{ return HOM.visible(P);							}
 			
 void					CRender::add_Visual				(IVisual*		V )	{ add_leafs_Dynamic(V);								}
 void					CRender::add_Geometry			(IVisual*		V )	{ add_Static(V,View->getMask());					}
-void					CRender::add_Lights				(vector<WORD> &	V )	{ L_DB.add_sector_lights(V);						}
-void					CRender::add_Glows				(vector<WORD> &	V )	{ Glows.add(V);										}
+void					CRender::add_Lights				(xr_vector<WORD> &	V )	{ L_DB.add_sector_lights(V);						}
+void					CRender::add_Glows				(xr_vector<WORD> &	V )	{ Glows.add(V);										}
 void					CRender::add_Patch				(Shader* S, const Fvector& P1, float s, float a, BOOL bNearer)
 {
 	vecPatches.push_back(SceneGraph::_PatchItem());
@@ -277,7 +278,7 @@ void __fastcall normal_L2(FixedMAP<float,IVisual*>::TNode *N)
 	V->Render(calcLOD(N->key,V->vis.sphere.R));
 }
 
-extern void __fastcall render_Cached(vector<FCached*>& cache);
+extern void __fastcall render_Cached(xr_vector<FCached*>& cache);
 void __fastcall mapNormal_Render	(SceneGraph::mapNormalItems& N)
 {
 	// *** DIRECT ***
@@ -287,7 +288,7 @@ void __fastcall mapNormal_Render	(SceneGraph::mapNormalItems& N)
 		N.sorted.clear			();
 		
 		// DIRECT:UNSORTED
-		vector<IVisual*>&	L			= N.unsorted;
+		std::vector<IVisual*>&	L			= N.unsorted;
 		IVisual **I=&*L.begin(), **E = &*L.end();
 		for (; I!=E; I++)
 		{
@@ -363,11 +364,14 @@ void CRender::flush_Patches	()
 		float cy        = (TL.p.y+1)*h_2;
 
 		// Rotation
-		float			_sin1,_cos1,_sin2,_cos2;
-		float			da	= P.angle;
-		_sincos			(da,_sin1,_cos1);
-		da				+= PI_DIV_2;
-		_sincos			(da,_sin2,_cos2);
+		float _sin1, _cos1, _sin2, _cos2;
+		{
+			const float s = std::sinf(P.angle);
+			const float c = std::cosf(P.angle);
+			_sin1 = s;  _cos1 = c;
+			_sin2 = c;  _cos2 = -s;
+		}
+
 
 		V->set			(	cx + size * _sin1,	// sx
 							cy + size * _cos1,	// sy
@@ -462,7 +466,7 @@ IC	bool	cmp_textures_lexN	(SceneGraph::mapNormalTextures::TNode* N1, SceneGraph:
 {	
 	STextureList*	t1			= N1->key;
 	STextureList*	t2			= N2->key;
-	return lexicographical_compare(t1->begin(),t1->end(),t2->begin(),t2->end());
+	return std::lexicographical_compare(t1->begin(), t1->end(), t2->begin(), t2->end());
 }
 IC	bool	cmp_textures_ssa	(SceneGraph::mapNormalTextures::TNode* N1, SceneGraph::mapNormalTextures::TNode* N2)
 {	
@@ -471,8 +475,8 @@ IC	bool	cmp_textures_ssa	(SceneGraph::mapNormalTextures::TNode* N1, SceneGraph::
 
 void		sort_tlist			
 	(
-	vector<SceneGraph::mapNormalTextures::TNode*>& lst, 
-	vector<SceneGraph::mapNormalTextures::TNode*>& temp, 
+	xr_vector<SceneGraph::mapNormalTextures::TNode*>& lst, 
+	xr_vector<SceneGraph::mapNormalTextures::TNode*>& temp, 
 	SceneGraph::mapNormalTextures& textures, 
 	BOOL	bSSA
 	)

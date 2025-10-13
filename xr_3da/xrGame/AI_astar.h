@@ -188,14 +188,14 @@ public: // methods
 			// The user helps us to do this, and we keep the new nodes in
 			// m_Successors ...
 
-			m_Successors.clear(); // empty vector of successor nodes to n
+			m_Successors.clear(); // empty xr_vector of successor nodes to n
 
 			// User provides this functions and uses AddSuccessor to add each successor of
 			// node 'n' to m_Successors
 			n->m_UserState.GetSuccessors( this, n->parent ? &n->parent->m_UserState : NULL ); 
 			
 			// Now handle each successor to the current node ...
-			for( vector< Node * >::iterator successor = m_Successors.begin(); successor != m_Successors.end(); successor ++ )
+			for( xr_vector< Node * >::iterator successor = m_Successors.begin(); successor != m_Successors.end(); successor ++ )
 			{
 
 				// 	The g value for this successor ...
@@ -207,7 +207,7 @@ public: // methods
 
 				// First linear search of open list to find node
 
-				vector< Node * >::iterator openlist_result;
+				xr_vector< Node * >::iterator openlist_result;
 
 				for( openlist_result = m_OpenList.begin(); openlist_result != m_OpenList.end(); openlist_result ++ )
 				{
@@ -231,7 +231,7 @@ public: // methods
 					}
 				}
 
-				vector< Node * >::iterator closedlist_result;
+				xr_vector< Node * >::iterator closedlist_result;
 
 				for( closedlist_result = m_ClosedList.begin(); closedlist_result != m_ClosedList.end(); closedlist_result ++ )
 				{
@@ -511,7 +511,7 @@ private: // methods
 	void DeleteUnusedNodes()
 	{
 		// iterate open list and delete unused nodes
-		vector< Node * >::iterator iterOpen = m_OpenList.begin();
+		xr_vector< Node * >::iterator iterOpen = m_OpenList.begin();
 
 		while( iterOpen != m_OpenList.end() )
 		{
@@ -530,7 +530,7 @@ private: // methods
 		m_OpenList.clear();
 
 		// iterate closed list and delete unused nodes
-		vector< Node * >::iterator iterClosed;
+		xr_vector< Node * >::iterator iterClosed;
 
 		for( iterClosed = m_ClosedList.begin(); iterClosed != m_ClosedList.end(); iterClosed ++ )
 		{
@@ -583,15 +583,15 @@ private: // methods
 
 private: // data
 
-	// Heap (simple vector but used as a heap, cf. Steve Rabin's game gems article)
-	vector< Node *> m_OpenList;
+	// Heap (simple xr_vector but used as a heap, cf. Steve Rabin's game gems article)
+	xr_vector< Node *> m_OpenList;
 
-	// Closed list is a vector.
-	vector< Node * > m_ClosedList; 
+	// Closed list is a xr_vector.
+	xr_vector< Node * > m_ClosedList; 
 
-	// Successors is a vector filled out by the user each type successors to a node
+	// Successors is a xr_vector filled out by the user each type successors to a node
 	// are generated
-	vector< Node * > m_Successors;
+	xr_vector< Node * > m_Successors;
 
 	// State
 	unsigned int m_State;
@@ -610,8 +610,8 @@ private: // data
 	
 	//Debug : need to keep these two iterators around
 	// for the user Dbg functions
-	vector< Node * >::iterator iterDbgOpen;
-	vector< Node * >::iterator iterDbgClosed;
+	xr_vector< Node * >::iterator iterDbgOpen;
+	xr_vector< Node * >::iterator iterDbgClosed;
 
 	// debugging : count memory allocation and free's
 	int m_AllocateNodeCount;

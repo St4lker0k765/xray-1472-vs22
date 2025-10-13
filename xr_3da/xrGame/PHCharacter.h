@@ -17,7 +17,7 @@ class CPHCharacter : public CPHObject
 {
 protected:
 ////////////////////////// dynamic
-list<CPHObject*>::iterator m_ident;
+std::list<CPHObject*>::iterator m_ident;
 CPHInterpolation m_body_interpolation;
 dBodyID m_body;
 ////////////////////////// geometry

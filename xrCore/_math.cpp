@@ -1,16 +1,57 @@
 #include "stdafx.h"
 #pragma hdrstop
 
-// Initialized on startup
-XRCORE_API Fmatrix			Fidentity;
-XRCORE_API Dmatrix			Didentity;
-XRCORE_API CRandom			Random;
+// mmsystem.h
+#define MMNOSOUND
+#define MMNOMIDI
+#define MMNOAUX
+#define MMNOMIXER
+#define MMNOJOY
+#include <mmsystem.h>
 
-WORD getFPUsw() 
+// Initialized on startup
+XRCORE_API	Fmatrix			Fidentity;
+XRCORE_API	Dmatrix			Didentity;
+XRCORE_API	CRandom			Random;
+
+#ifdef _M_AMD64
+u16			getFPUsw()		{ return 0;	}
+
+namespace FPU 
 {
-	WORD SW;
-	__asm fstcw SW;
-	return SW;
+	XRCORE_API void 	m24		(void)	{
+		_control87	( _PC_24,   MCW_PC );
+		_control87	( _RC_CHOP, MCW_RC );
+	}
+	XRCORE_API void 	m24r	(void)	{
+		_control87	( _PC_24,   MCW_PC );
+		_control87	( _RC_NEAR, MCW_RC );
+	}
+	XRCORE_API void 	m53		(void)	{
+		_control87	( _PC_53,   MCW_PC );
+		_control87	( _RC_CHOP, MCW_RC );
+	}
+	XRCORE_API void 	m53r	(void)	{
+		_control87	( _PC_53,   MCW_PC );
+		_control87	( _RC_NEAR, MCW_RC );
+	}
+	XRCORE_API void 	m64		(void)	{
+		_control87	( _PC_64,   MCW_PC );
+		_control87	( _RC_CHOP, MCW_RC );
+	}
+	XRCORE_API void 	m64r	(void)	{
+		_control87	( _PC_64,   MCW_PC );
+		_control87	( _RC_NEAR, MCW_RC );
+	}
+
+	void		initialize		()				{}
+};
+#else
+u16 getFPUsw() 
+{
+	u16		SW;
+	__asm	fstcw SW;
+	return	SW;
 }
 
 namespace FPU 
@@ -22,25 +63,57 @@ namespace FPU
 	u16			_64	=0;
 	u16			_64r=0;
 
-	XRCORE_API void __stdcall	m24		(u16 p)	{
+	XRCORE_API void 	m24		()	{
+		u16		p	= _24;
 		__asm fldcw p;	
 	}
-	XRCORE_API void __stdcall	m24r	(u16 p)	{
+	XRCORE_API void 	m24r	()	{
+		u16		p	= _24r;
 		__asm fldcw p;  
 	}
-	XRCORE_API void __stdcall	m53		(u16 p)	{
+	XRCORE_API void 	m53		()	{
+		u16		p	= _53;
 		__asm fldcw p;	
 	}
-	XRCORE_API void __stdcall	m53r	(u16 p)	{
+	XRCORE_API void 	m53r	()	{
+		u16		p	= _53r;
 		__asm fldcw p;	
 	}
-	XRCORE_API void __stdcall	m64		(u16 p)	{ 
+	XRCORE_API void 	m64		()	{ 
+		u16		p	= _64;
 		__asm fldcw p;	
 	}
-	XRCORE_API void __stdcall	m64r	(u16 p)	{
+	XRCORE_API void 	m64r	()	{
+		u16		p	= _64r;
 		__asm fldcw p;  
+	}
+
+	void		initialize		()
+	{
+		_clear87	();
+
+		_control87	( _PC_24,   MCW_PC );
+		_control87	( _RC_CHOP, MCW_RC );
+		_24			= getFPUsw();	// 24, chop
+		_control87	( _RC_NEAR, MCW_RC );
+		_24r		= getFPUsw();	// 24, rounding
+
+		_control87	( _PC_53,   MCW_PC );
+		_control87	( _RC_CHOP, MCW_RC );
+		_53			= getFPUsw();	// 53, chop
+		_control87	( _RC_NEAR, MCW_RC );
+		_53r		= getFPUsw();	// 53, rounding
+
+		_control87	( _PC_64,   MCW_PC );
+		_control87	( _RC_CHOP, MCW_RC );
+		_64			= getFPUsw();	// 64, chop
+		_control87	( _RC_NEAR, MCW_RC );
+		_64r		= getFPUsw();	// 64, rounding
+
+		m24r		();
 	}
 };
+#endif
 
 namespace CPU 
 {
@@ -114,48 +187,23 @@ namespace CPU
 //------------------------------------------------------------------------------------
 void InitMath(void) 
 {
-
-	// Msg("Initializing geometry pipeline and mathematic routines...");
-	CPU::Detect();
-	/*
-	Msg("* Detected CPU: %s %s, F%d/M%d/S%d, %d mhz, %d-clk 'rdtsc'",
+	Msg("* Detected CPU: %s %s, F%d/M%d/S%d, %.2f mhz, %d-clk 'rdtsc'",
 		CPU::ID.v_name,CPU::ID.model_name,
 		CPU::ID.family,CPU::ID.model,CPU::ID.stepping,
-		u32(CPU::cycles_per_second/__int64(1000000)),
+		float(CPU::cycles_per_second/u64(1000000)),
 		u32(CPU::cycles_overhead)
 		);
+	string128	features;	strcpy(features,"RDTSC");
     if (CPU::ID.feature&_CPU_FEATURE_MMX)	strcat(features,", MMX");
     if (CPU::ID.feature&_CPU_FEATURE_3DNOW)	strcat(features,", 3DNow!");
     if (CPU::ID.feature&_CPU_FEATURE_SSE)	strcat(features,", SSE");
     if (CPU::ID.feature&_CPU_FEATURE_SSE2)	strcat(features,", SSE2");
 	Msg("* CPU Features: %s\n",features);
-	*/
 
 	Fidentity.identity		();	// Identity matrix
 	Didentity.identity		();	// Identity matrix
 	pvInitializeStatics		();	// Lookup table for compressed normals
-
-	_clear87	();
-
-	_control87	( _PC_24,   MCW_PC );
-	_control87	( _RC_CHOP, MCW_RC );
-	FPU::_24	= getFPUsw();	// 24, chop
-	_control87	( _RC_NEAR, MCW_RC );
-	FPU::_24r	= getFPUsw();	// 24, rounding
-
-	_control87	( _PC_53,   MCW_PC );
-	_control87	( _RC_CHOP, MCW_RC );
-	FPU::_53	= getFPUsw();	// 53, chop
-	_control87	( _RC_NEAR, MCW_RC );
-	FPU::_53r	= getFPUsw();	// 53, rounding
-
-	_control87	( _PC_64,   MCW_PC );
-	_control87	( _RC_CHOP, MCW_RC );
-	FPU::_64	= getFPUsw();	// 64, chop
-	_control87	( _RC_NEAR, MCW_RC );
-	FPU::_64r	= getFPUsw();	// 64, rounding
-
-	FPU::m24r	();
+	FPU::initialize			();
 }
 
 

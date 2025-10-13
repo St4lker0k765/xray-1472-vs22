@@ -198,7 +198,7 @@ void CAI_Soldier::SelectEnemy(SEnemySelected& S)
 				// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 			// Calculate local visibility
-			CObject**	ins	 = lower_bound(tpaVisibleObjects.begin(),tpaVisibleObjects.end(),(CObject*)E);
+			CObject**	ins	 = std::lower_bound(tpaVisibleObjects.begin(),tpaVisibleObjects.end(),(CObject*)E);
 			bool	bVisible = ((ins==tpaVisibleObjects.end())?FALSE:((E==*ins)?TRUE:FALSE)) && (bfCheckForVisibility(E));
 			float	cost	 = H*(bVisible?1:_FB_invisible_hscale);
 			if (cost<S.fCost)	{
@@ -1057,8 +1057,8 @@ void CAI_Soldier::vfFindAllSuspiciousNodes(u32 StartNode, Fvector tPointPosition
 	}
 
 	{
-		vector<u32>::iterator it	= AI.q_stack.begin();
-		vector<u32>::iterator end	= AI.q_stack.end();
+		xr_vector<u32>::iterator it	= AI.q_stack.begin();
+		xr_vector<u32>::iterator end	= AI.q_stack.end();
 		for ( ; it!=end; it++)	
 			AI.q_mark_bit[*it] = false;
 		

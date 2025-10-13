@@ -136,7 +136,7 @@ void		CModelPool::Instance_Register(LPCSTR N, IVisual* V)
 //////////////////////////////////////////////////////////////////////
 void CModelPool::Destroy()
 {
-	vector<ModelDef>::iterator	I;
+	xr_vector<ModelDef>::iterator	I;
 	for (I=Models.begin(); I!=Models.end(); I++) 
 	{
 		I->model->Release();
@@ -157,7 +157,7 @@ CModelPool::~CModelPool()
 IVisual* CModelPool::Instance_Find(LPCSTR N)
 {
 	IVisual*				Model=0;
-	vector<ModelDef>::iterator	I;
+	xr_vector<ModelDef>::iterator	I;
 	for (I=Models.begin(); I!=Models.end(); I++)
 	{
 		if (I->name[0]&&(0==strcmp(I->name,N))) {

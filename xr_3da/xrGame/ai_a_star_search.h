@@ -89,7 +89,7 @@ public:
 			u32			dwGoalNode, 
 			float		fMaxValue, 
 			float		&fValue, 
-			vector<u32> &tpaNodes,
+			xr_vector<u32> &tpaNodes,
 			bool		bUseMarks)
 	{
 		Device.Statistic.AI_Path.Begin();

@@ -6,13 +6,13 @@
 CBlender_fat_flat::CBlender_fat_flat	()	{	description.CLS		= B_DEFAULT;	}
 CBlender_fat_flat::~CBlender_fat_flat	()	{	}
 
-void	CBlender_fat_flat::Save	(	IWriter& FS )
+void	CBlender_fat_flat::Save	(	IWriter& fs )
 {
-	CBlender::Save	(FS);
+	CBlender::Save	(fs);
 }
-void	CBlender_fat_flat::Load	(	IReader& FS, WORD version )
+void	CBlender_fat_flat::Load	(	IReader& fs, WORD version )
 {
-	CBlender::Load	(FS,version);
+	CBlender::Load	(fs,version);
 }
 void	CBlender_fat_flat::Compile(CBlender_Compile& C)
 {

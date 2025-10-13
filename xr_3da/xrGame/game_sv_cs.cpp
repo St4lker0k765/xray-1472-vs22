@@ -40,7 +40,7 @@ void game_sv_CS::SavePlayerWeapon(u32 it, CMemoryWriter &store) {
 	CMemoryWriter &l_mem = store;
 	xrSE_Actor *l_pActor = dynamic_cast<xrSE_Actor*>(l_pServer->ID_to_entity(get_id_2_eid(get_it_2_id(it))));
 	if(!l_pActor) return;
-	vector<u16>* l_pCilds = get_children(get_it_2_id(it));
+	xr_vector<u16>* l_pCilds = get_children(get_it_2_id(it));
 	for(u32 cit = 0; cit < l_pCilds->size(); cit++) {
 		xrSE_Weapon *l_pWeapon = dynamic_cast<xrSE_Weapon*>(l_pServer->ID_to_entity((*l_pCilds)[cit]));
 		if(!l_pWeapon) continue;
@@ -67,7 +67,7 @@ void game_sv_CS::SaveDefaultWeapon(CMemoryWriter &store) {		//@@@ WT: Это надо п
 			W_prim = dynamic_cast<xrSE_Weapon*>(spawn_begin(prim));
 			if(W_prim) {
 				strcpy(W_prim->s_name_replace,prim);
-				W_prim->s_flags.set(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL);
+				W_prim->s_flags.assign(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL);
 				W_prim->ID_Parent = 0;
 				W_prim->ID = 0xffff;
 				W_prim->a_elapsed = W_prim->get_ammo_magsize();
@@ -79,7 +79,7 @@ void game_sv_CS::SaveDefaultWeapon(CMemoryWriter &store) {		//@@@ WT: Это надо п
 			W_pistol = dynamic_cast<xrSE_Weapon*>(spawn_begin(pistol));
 			if(W_pistol) {
 				strcpy(W_pistol->s_name_replace,pistol);
-				W_pistol->s_flags.set(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL);
+				W_pistol->s_flags.assign(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL);
 				W_pistol->ID_Parent = 0;
 				W_pistol->ID = 0xffff;
 				W_pistol->a_elapsed = W_pistol->get_ammo_magsize();
@@ -114,13 +114,13 @@ void game_sv_CS::SaveDefaultWeapon(CMemoryWriter &store) {		//@@@ WT: Это надо п
 }
 
 void game_sv_CS::SpawnArtifacts() {
-	vector<RPoint>&		rp	= rpoints[2];
+	xr_vector<RPoint>&		rp	= rpoints[2];
 	srand				( (unsigned)time( NULL ) );
 	random_shuffle		( rp.begin( ), rp.end( ) );
 	for(s32 i = 0; i < 3; i++) {
 		xrServerEntity*		E	=	spawn_begin	("m_target_cs");								// create SE
 		xrSE_Target_CS*	A		=	(xrSE_Target_CS*) E;					
-		A->s_flags.set			(M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL);				// flags
+		A->s_flags.assign (M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL);				// flags
 		RPoint&				r	= rp[i];
 		A->o_Position.set	(r.P);
 		A->o_Angle.set		(r.A);
@@ -142,8 +142,8 @@ void game_sv_CS::SpawnPlayer(u32 it, CMemoryWriter &weapon) {
 		A->s_team = u8(l_pPS->team);
 	}
 	strcpy(E->s_name_replace,get_option_s(options,"name","Player"));
-	E->s_flags.set(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL|M_SPAWN_OBJECT_ASPLAYER);
-	vector<RPoint> &rp = rpoints[l_pPS->team];
+	E->s_flags.assign(M_SPAWN_OBJECT_ACTIVE|M_SPAWN_OBJECT_LOCAL|M_SPAWN_OBJECT_ASPLAYER);
+	xr_vector<RPoint> &rp = rpoints[l_pPS->team];
 	RPoint &r = rp[it%rp.size()];
 	E->o_Position.set(r.P);
 	E->o_Angle.set(r.A);
@@ -170,7 +170,7 @@ void game_sv_CS::OnRoundStart() {
 
 	// Сохраняем оружие для следующего раунда
 	// Для живых - то что у них есть, для мертвых - дефолтное.
-	vector<CMemoryWriter> l_memAr; l_memAr.resize(l_cnt);
+	xr_vector<CMemoryWriter> l_memAr; l_memAr.resize(l_cnt);
 	for(u32 i = 0; i < l_cnt; i++) {
 		game_PlayerState *l_pPS = get_it(i);
 		if(l_pPS->flags&GAME_PLAYER_FLAG_CS_SPECTATOR) continue;		// Наблюдателей это не касается
@@ -204,9 +204,9 @@ void game_sv_CS::OnRoundStart() {
 	teams[0].num_targets = teams[1].num_targets = 0;
 	SpawnArtifacts();
 	srand((unsigned)time(NULL));
-	vector<RPoint> &rp1 = rpoints[0];
+	xr_vector<RPoint> &rp1 = rpoints[0];
 	random_shuffle(rp1.begin(), rp1.end());
-	vector<RPoint> &rp2 = rpoints[0];
+	xr_vector<RPoint> &rp2 = rpoints[0];
 	random_shuffle(rp2.begin(), rp2.end());
 	for(u32 i = 0; i < l_cnt; i++) SpawnPlayer(i, l_memAr[i]);
 }
@@ -216,7 +216,7 @@ void game_sv_CS::OnRoundStart() {
 //{
 //	m_delayedRoundEnd = false;
 //	NET_Packet l_packet;
-//	vector<CMemoryWriter> l_memAr;
+//	xr_vector<CMemoryWriter> l_memAr;
 //	if(round!=-1) {							// Если раунд не первый сохраняем игроков и их оружие
 //		xrServer *l_pServer = Level().Server;
 //		u32 cnt = get_count();
@@ -225,7 +225,7 @@ void game_sv_CS::OnRoundStart() {
 //			if(get_it(it)->flags&GAME_PLAYER_FLAG_VERY_VERY_DEAD) continue;
 //			u32 l_chunk = 0;
 //			CMemoryWriter &l_mem = l_memAr[it];
-//			vector<u16>* l_pCilds = get_children(get_it_2_id(it));
+//			xr_vector<u16>* l_pCilds = get_children(get_it_2_id(it));
 //			for(u32 cit = 0; cit < l_pCilds->size(); cit++) {
 //				xrSE_Weapon *l_pWeapon = dynamic_cast<xrSE_Weapon*>(l_pServer->ID_to_entity((*l_pCilds)[cit]));
 //				if(!l_pWeapon) continue;
@@ -318,7 +318,7 @@ void game_sv_CS::OnRoundStart() {
 //	teams[0].num_targets = teams[1].num_targets = 0;
 //
 //	// Spawn "artifacts"
-//	vector<RPoint>&		rp	= rpoints[2];
+//	xr_vector<RPoint>&		rp	= rpoints[2];
 //	srand				( (unsigned)time( NULL ) );
 //	random_shuffle		( rp.begin( ), rp.end( ) );
 //	for(s32 i = 0; i < 3; i++) {
@@ -436,7 +436,7 @@ void	game_sv_CS::OnPlayerKillPlayer	(u32 id_killer, u32 id_killed)
 	xrServer*	S					=	Level().Server;
 
 	// Drop everything
-	vector<u16>*	C				=	get_children(id_killed);
+	xr_vector<u16>*	C				=	get_children(id_killed);
 	if (0==C)						return;
 	while(C->size())
 	{
@@ -450,7 +450,7 @@ void	game_sv_CS::OnPlayerKillPlayer	(u32 id_killer, u32 id_killed)
 	// spectator
 	xrSE_Spectator*		A			=	(xrSE_Spectator*)spawn_begin	("spectator");															// create SE
 	strcpy							(A->s_name_replace,get_option_s(get_name_id(id_killed),"name","Player"));					// name
-	A->s_flags.set					(M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL | M_SPAWN_OBJECT_ASPLAYER);					// flags
+	A->s_flags.assign				(M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL | M_SPAWN_OBJECT_ASPLAYER);					// flags
 	A->o_Position					=	S->ID_to_entity(get_id_2_eid(id_killed))->o_Position;
 	spawn_end						(A,id_killed);
 }
@@ -462,7 +462,7 @@ void	game_sv_CS::OnPlayerDisconnect	(u32 id_who)
 	xrServer*	S					=	Level().Server;
 
 	// Drop everything
-	vector<u16>*	C				=	get_children(id_who);
+	xr_vector<u16>*	C				=	get_children(id_who);
 	if (0==C)						return;
 	while(C->size())
 	{
@@ -503,7 +503,7 @@ BOOL	game_sv_CS::OnTouch			(u16 eid_who, u16 eid_what)
 		if (W) 
 		{
 			// Weapon
-			vector<u16>&	C			=	A->children;
+			xr_vector<u16>&	C			=	A->children;
 			u8 slot						=	W->get_slot	();
 			for (u32 it=0; it<C.size(); it++)
 			{
@@ -546,7 +546,7 @@ BOOL	game_sv_CS::OnTouch			(u16 eid_who, u16 eid_what)
 			// Если игрок на своей базе и у него есть мяч
 			if((ps_who->flags&GAME_PLAYER_FLAG_CS_HAS_ARTEFACT) && (ps_who->flags&GAME_PLAYER_FLAG_CS_ON_BASE))		{
 				l_pMBall = NULL;									// Отбираем у игрока мяч
-				vector<u16>&	C			=	A->children;
+				xr_vector<u16>&	C			=	A->children;
 				for (u32 it=0; it<C.size(); it++) {
 					l_pMBall = dynamic_cast<xrSE_Target_CS*>(S->ID_to_entity(C[it]));
 					if (l_pMBall) break;
@@ -570,7 +570,7 @@ BOOL	game_sv_CS::OnTouch			(u16 eid_who, u16 eid_what)
 			// Если игрок на чужой базе и у него нет мяча
 			if(!(ps_who->flags&GAME_PLAYER_FLAG_CS_HAS_ARTEFACT) && (ps_who->flags&GAME_PLAYER_FLAG_CS_ON_ENEMY_BASE))		{
 				l_pMBall = NULL;									// Достаем мяч из бочки
-				vector<u16>&	C			=	l_pCSCask->children;
+				xr_vector<u16>&	C			=	l_pCSCask->children;
 				for (u32 it=0; it<C.size(); it++) {
 					l_pMBall = dynamic_cast<xrSE_Target_CS*>(S->ID_to_entity(C[it]));
 					if(l_pMBall) break;
@@ -702,7 +702,7 @@ void game_sv_CS::OnPlayerConnect	(u32 id_who)
 	// Spawn "actor"
 	xrSE_Spectator*		A	=	(xrSE_Spectator*)spawn_begin	("spectator");															// create SE
 	strcpy					(A->s_name_replace,get_option_s(options,"name","Player"));					// name
-	A->s_flags.set			(M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL | M_SPAWN_OBJECT_ASPLAYER);	// flags
+	A->s_flags.assign		(M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL | M_SPAWN_OBJECT_ASPLAYER);	// flags
 	assign_RP				(A);
 	spawn_end				(A,id_who);
 
@@ -765,7 +765,7 @@ void game_sv_CS::OnPlayerBuy		(u32 id_who, u16 eid_who, LPCSTR what)
 
 		// Search weapon slot
 		xrServer*		S		=	Level().Server;
-		vector<u16>*	C		=	get_children(id_who);
+		xr_vector<u16>*	C		=	get_children(id_who);
 		if (0==C)				return;
 		for (u32 it=0; it<C->size(); it++)
 		{
@@ -811,7 +811,7 @@ void game_sv_CS::OnPlayerBuy		(u32 id_who, u16 eid_who, LPCSTR what)
 		// initialize spawn
 		xrServerEntity*		E	=	spawn_begin	(name);														// create SE
 		strcpy					(E->s_name_replace,name);													// name
-		E->s_flags.set			(M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL);							// flags
+		E->s_flags.assign		(M_SPAWN_OBJECT_ACTIVE  | M_SPAWN_OBJECT_LOCAL);							// flags
 		E->ID_Parent			=	u16(eid_who);
 
 		// check if has same-slot-weapon(s)
@@ -820,7 +820,7 @@ void game_sv_CS::OnPlayerBuy		(u32 id_who, u16 eid_who, LPCSTR what)
 		if (W)
 		{
 			xrServer*		S		=	Level().Server;
-			vector<u16>*	C		=	get_children(id_who);
+			xr_vector<u16>*	C		=	get_children(id_who);
 			if (0==C)				
 			{
 				F_entity_Destroy	(E);
