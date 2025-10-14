@@ -365,12 +365,18 @@ void CRender::flush_Patches	()
 		float cx        = (TL.p.x+1)*w_2;
 		float cy        = (TL.p.y+1)*h_2;
 
-		// Rotation
 		float _sin1, _cos1, _sin2, _cos2;
-		float			da	= P.angle;
-		_sincos			(da,_sin1,_cos1);
-		da				+= PI_DIV_2;
-		_sincos			(da,_sin2,_cos2);
+		{
+			const float s = std::sinf(P.angle);
+			const float c = std::cosf(P.angle);
+
+			_sin1 = s;
+			_cos1 = c;
+
+			_sin2 = c;
+			_cos2 = -s;
+		}
+
 
 		V->set			(	cx + size * _sin1,	// sx
 							cy + size * _cos1,	// sy
