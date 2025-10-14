@@ -6,13 +6,13 @@
 CBlender_deffer_model::CBlender_deffer_model	()	{	description.CLS		= B_MODEL;	}
 CBlender_deffer_model::~CBlender_deffer_model	()	{	}
 
-void	CBlender_deffer_model::Save	(	IWriter& FS )
+void	CBlender_deffer_model::Save	(	IWriter& FS_)
 {
-	CBlender::Save	(FS);
+	CBlender::Save	(FS_);
 }
-void	CBlender_deffer_model::Load	(	IReader& FS, WORD version )
+void	CBlender_deffer_model::Load	(	IReader& FS_, WORD version )
 {
-	CBlender::Load	(FS,version);
+	CBlender::Load	(FS_, version);
 }
 
 void	CBlender_deffer_model::Compile(CBlender_Compile& C)

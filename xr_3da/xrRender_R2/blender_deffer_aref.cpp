@@ -6,13 +6,13 @@
 CBlender_deffer_aref::CBlender_deffer_aref	()	{	description.CLS		= B_DEFAULT_AREF;	}
 CBlender_deffer_aref::~CBlender_deffer_aref	()	{	}
 
-void	CBlender_deffer_aref::Save	(	IWriter& FS )
+void	CBlender_deffer_aref::Save	(	IWriter& FS_)
 {
-	CBlender::Save	(FS);
+	CBlender::Save	(FS_);
 }
-void	CBlender_deffer_aref::Load	(	IReader& FS, WORD version )
+void	CBlender_deffer_aref::Load	(	IReader& FS_, WORD version )
 {
-	CBlender::Load	(FS,version);
+	CBlender::Load	(FS_,version);
 }
 
 void	CBlender_deffer_aref::Compile(CBlender_Compile& C)

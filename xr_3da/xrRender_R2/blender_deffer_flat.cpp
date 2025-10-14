@@ -6,13 +6,13 @@
 CBlender_deffer_flat::CBlender_deffer_flat	()	{	description.CLS		= B_DEFAULT;	}
 CBlender_deffer_flat::~CBlender_deffer_flat	()	{	}
 
-void	CBlender_deffer_flat::Save	(	IWriter& FS )
+void	CBlender_deffer_flat::Save	(	IWriter& FS_ )
 {
-	CBlender::Save	(FS);
+	CBlender::Save	(FS_);
 }
-void	CBlender_deffer_flat::Load	(	IReader& FS, WORD version )
+void	CBlender_deffer_flat::Load	(	IReader& FS_, WORD version )
 {
-	CBlender::Load	(FS,version);
+	CBlender::Load	(FS_,version);
 }
 
 void	CBlender_deffer_flat::Compile(CBlender_Compile& C)

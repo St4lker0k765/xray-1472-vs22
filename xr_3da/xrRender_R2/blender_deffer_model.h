@@ -7,8 +7,8 @@ public:
 	virtual		BOOL		canBeDetailed()	{ return FALSE;	}
 	virtual		BOOL		canBeLMAPped()	{ return FALSE;	}
 
-	virtual		void		Save			(IWriter&	FS);
-	virtual		void		Load			(IReader&	FS, WORD version);
+	virtual		void		Save			(IWriter&	FS_);
+	virtual		void		Load			(IReader&	FS_, WORD version);
 	virtual		void		Compile			(CBlender_Compile& C);
 
 	CBlender_deffer_model();

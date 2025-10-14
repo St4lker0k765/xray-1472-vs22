@@ -105,21 +105,25 @@ void CAI_Soldier::HitSignal	(float amount, Fvector& vLocalDir, CObject* who, s16
 		}
 	}
 	
-	if (fHealth > 0) {
-		CEntity *tpEntity = dynamic_cast<CEntity *>(who);
-		if (tpEntity)
+	if (fHealth > 0.f)
+	{
+		if (CEntity* tpEntity = dynamic_cast<CEntity*>(who))
 			vfAddHurtToList(tpEntity);
-		if (::Random.randI(0,2))
-			PKinematics(pVisual)->PlayFX(tSoldierAnimations.tNormal.tTorso.tpDamageLeft);
-		else
-			PKinematics(pVisual)->PlayFX(tSoldierAnimations.tNormal.tTorso.tpDamageRight);
-		
-		// Play hit-sound
-		sound& S	= sndHit[Random.randI(SND_HIT_COUNT)];
-		
-		if (S.feedback)			
-			return;
-		::Sound->play_at_pos(S,this,vPosition);
+
+		CKinematics* kin = PKinematics(pVisual);
+		if (kin)
+		{
+			CMotionDef* md = (::Random.randI(0, 2) == 0)
+				? tSoldierAnimations.tNormal.tTorso.tpDamageLeft
+				: tSoldierAnimations.tNormal.tTorso.tpDamageRight;
+
+			float power = 1.f;
+			kin->PlayFX(md, power);
+		}
+
+		sound& S = sndHit[Random.randI(SND_HIT_COUNT)];
+		if (!S.feedback)
+			::Sound->play_at_pos(S, this, vPosition);
 	}
 }
 
