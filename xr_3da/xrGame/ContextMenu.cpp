@@ -11,22 +11,16 @@ CContextMenu::~CContextMenu(){
 	}
 	xr_free(Name);
 }
-void CContextMenu::Load(CInifile* INI, LPCSTR SECT)
-{
+void CContextMenu::Load(CInifile* INI, LPCSTR SECT){
 	CInifile::Sect& S = INI->r_section(SECT);
-	for (CInifile::SectIt I = S.begin(); I != S.end(); ++I)
-	{
-		char Event[128], Param[128];
-		Event[0] = 0; Param[0] = 0;
-
-		const char* value = I->second.c_str();
-		std::sscanf(value, "%127[^,],%127s", Event, Param);
-
-		MenuItem Item;
-		Item.Name = xr_strdup(I->first.c_str());
-		Item.Event = Engine.Event.Create(Event);
-		Item.Param = xr_strdup(Param);
-
+	for (CInifile::SectIt I=S.begin(); I!=S.end(); I++){
+		char	Event[128],Param[128];
+		Event[0]=0; Param[0]=0;
+		sscanf	(I->second.c_str(),"%[^,],%s",Event,Param);
+		MenuItem	Item;
+		Item.Name	= xr_strdup(I->first.c_str());
+		Item.Event	= Engine.Event.Create(Event);
+		Item.Param	= xr_strdup(Param);
 		Items.push_back(Item);
 	}
 }

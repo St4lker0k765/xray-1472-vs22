@@ -49,6 +49,7 @@ void CAI_ALife::Update(u32 dt)
 				ProcessOnlineOfflineSwitches(*I);
 				if ((CPU::GetCycleCount() - qwStartTime)*(i + 1)/i >= m_qwMaxProcessTime) {
 					m_dwObjectsBeingSwitched = I - B + 1;
+//.					Msg("Not enough time (0)[%d : %d] !",E - B, I - M);
 					return;
 				}
 			}
@@ -56,23 +57,29 @@ void CAI_ALife::Update(u32 dt)
 				ProcessOnlineOfflineSwitches(*I);
 				if ((CPU::GetCycleCount() - qwStartTime)*(i + 1)/i >= m_qwMaxProcessTime) {
 					m_dwObjectsBeingSwitched = I - B + 1;
+//.					Msg("Not enough time (1)[%d : %d] !",E - B, E - M + I - B);
 					return;
 				}
 			}
 			
-			if (CPU::GetCycleCount() - qwStartTime >= m_qwMaxProcessTime)
+			if (CPU::GetCycleCount() - qwStartTime >= m_qwMaxProcessTime) {
+//.				Msg("Not enough time (2)[%d : %d] !",E - B,E - B);
 				return;
+			}
 			
 			u64								qwMaxProcessTime = m_qwMaxProcessTime - qwStartTime;
 			qwStartTime						= CPU::GetCycleCount();
 			
 			// updating objects being scheduled
+//.			Msg("Enough time (0) !");
 			if (m_tpScheduledObjects.size()) {
 				ALIFE_MONSTER_P_IT			B = m_tpScheduledObjects.begin();
 				ALIFE_MONSTER_P_IT			M = B + m_dwObjectsBeingProcessed, I;
 				ALIFE_MONSTER_P_IT			E = m_tpScheduledObjects.end();
 				int i=1;
 				for (I = M ; I != E; I++, i++) {
+					if ((*I)->m_bOnline)
+						continue;
 					vfProcessNPC			(*I);
 					if ((CPU::GetCycleCount() - qwStartTime)*(i + 1)/i >= qwMaxProcessTime) {
 						m_dwObjectsBeingProcessed = I - B + 1;
@@ -80,6 +87,8 @@ void CAI_ALife::Update(u32 dt)
 					}
 				}
 				for (I = B; I != M; I++, i++) {
+					if ((*I)->m_bOnline)
+						continue;
 					vfProcessNPC			(*I);
 					if ((CPU::GetCycleCount() - qwStartTime)*(i + 1)/i >= qwMaxProcessTime) {
 						m_dwObjectsBeingProcessed = I - B + 1;
@@ -95,11 +104,19 @@ void CAI_ALife::Update(u32 dt)
 
 void CAI_ALife::vfProcessNPC(CALifeMonsterAbstract	*tpALifeMonsterAbstract)
 {
-	CALifeHumanAbstract *tpALifeHumanAbstract = dynamic_cast<CALifeHumanAbstract *>(tpALifeMonsterAbstract);
-	if (tpALifeHumanAbstract) {
-		CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>(tpALifeMonsterAbstract);
-		if (tpALifeHuman)
-			vfUpdateHuman(tpALifeHuman);
+//	CALifeHumanAbstract *tpALifeHumanAbstract = dynamic_cast<CALifeHumanAbstract *>(tpALifeMonsterAbstract);
+//	if (tpALifeHumanAbstract) {
+//		CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>(tpALifeMonsterAbstract);
+//		if (tpALifeHuman)
+//			vfUpdateHuman(tpALifeHuman);
+//		//else
+//		//	vfUpdateHumanGroup(dynamic_cast<CALifeHumanGroup *>(tpALifeMonsterAbstract));
+//	}
+//	else
+//		vfUpdateMonster(tpALifeMonsterAbstract);
+	xrSE_Human *tpHuman = dynamic_cast<xrSE_Human *>(tpALifeMonsterAbstract);
+	if (tpHuman) {
+		vfUpdateHuman(tpHuman);
 		//else
 		//	vfUpdateHumanGroup(dynamic_cast<CALifeHumanGroup *>(tpALifeMonsterAbstract));
 	}
@@ -114,135 +131,137 @@ void CAI_ALife::vfUpdateMonster(CALifeMonsterAbstract *tpALifeMonsterAbstract)
 	vfCheckForTheBattle		(tpALifeMonsterAbstract);
 }
 
-void CAI_ALife::vfUpdateHuman(CALifeHuman *tpALifeHuman)
+void CAI_ALife::vfUpdateHuman(xrSE_Human *tpALifeHuman)
 {
-	switch (tpALifeHuman->m_tTaskState) {
-		case eTaskStateNoTask : {
-			if (!tpALifeHuman->m_tpTaskIDs.size()) {
-				CALifeTrader *tpTrader = tpfGetNearestSuitableTrader(tpALifeHuman);
-				ffFindMinimalPath(tpALifeHuman->m_tGraphID,tpTrader->m_tGraphID,tpALifeHuman->m_tpaVertices);
-				tpALifeHuman->m_dwCurNode = 0;
-				tpALifeHuman->m_tTaskState = eTaskStateGoToTrader;
-				tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID = _OBJECT_ID(-1);
-			}
-			else
-				tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
-			break;
-		}
-		case eTaskStateGoToTrader : {
-			if ((tpALifeHuman->m_dwCurNode >= (tpALifeHuman->m_tpaVertices.size() - 1)) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID)) {
-				tpALifeHuman->m_tpaVertices.clear();
-				tpALifeHuman->m_dwCurNode = u32(-1);
-				if (tpALifeHuman->m_tpTaskIDs.size()) {
-					OBJECT_PAIR_IT I = m_tObjectRegistry.find(tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID);
-					CALifeTrader *tpTrader = 0;
-					if (I != m_tObjectRegistry.end())
-						tpTrader = dynamic_cast<CALifeTrader *>(I->second);
-					if (tpTrader)
-						vfCommunicateWithTrader(tpALifeHuman,tpTrader);
-					else
-						vfCommunicateWithTrader(tpALifeHuman,tpfGetNearestSuitableTrader(tpALifeHuman));
-				}
-				else
-					vfCommunicateWithTrader(tpALifeHuman,tpfGetNearestSuitableTrader(tpALifeHuman));
-				tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
-			}
-			break;
-		}
-		case eTaskStateChooseTask : {
-			tpALifeHuman->m_dwCurTask = 0;
-			_GRAPH_ID tGraphID = _GRAPH_ID(-1);
-			switch (tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tTaskType) {
-				case eTaskTypeSearchForItemCG :
-				case eTaskTypeSearchForItemOG : {
-					tGraphID = tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tGraphID;
-					break;
-				}
-				case eTaskTypeSearchForItemCL :
-				case eTaskTypeSearchForItemOL : {
-					//VERIFY(m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size());
-//					tpALifeHuman->m_baVisitedVertices.resize(m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size());
-//					tpALifeHuman->m_baVisitedVertices.assign(m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size(),false);
-//					tGraphID = m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID][tpALifeHuman->m_dwCurTaskLocation = 0];
-//					tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation] = true;
-					break;
-				}
-				default : NODEFAULT;
-			};
-			tpALifeHuman->m_tTaskState = eTaskStateGoing;
-			ffFindMinimalPath(tpALifeHuman->m_tGraphID,tGraphID,tpALifeHuman->m_tpaVertices);
-			tpALifeHuman->m_dwCurNode = 0;
-			break;
-		}
-		case eTaskStateGoing : {
-			if ((tpALifeHuman->m_dwCurNode + 1 >= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID)) {
-				if (bfCheckIfTaskCompleted(tpALifeHuman)) {
-					ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tObjectRegistry[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID]->m_tGraphID,tpALifeHuman->m_tpaVertices);
-					tpALifeHuman->m_dwCurNode = 0;
-					tpALifeHuman->m_tTaskState = eTaskStateGoToTrader;
-				}
-				else {
-					switch (tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tTaskType) {
-						case eTaskTypeSearchForItemCG :
-						case eTaskTypeSearchForItemOG : {
-							if ((tpALifeHuman->m_dwCurNode + 1>= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID))
-								tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
-							break;
-						}
-						case eTaskTypeSearchForItemCL :
-						case eTaskTypeSearchForItemOL : {
-//							for (tpALifeHuman->m_dwCurTaskLocation++; (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) && (tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation]); tpALifeHuman->m_dwCurTaskLocation++);
-//							if (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) {
-//								tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation] = true;
-//								ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID][tpALifeHuman->m_dwCurTaskLocation],tpALifeHuman->m_tpaVertices);
-//								tpALifeHuman->m_dwCurNode = 0;
-//							}
-//							else
+//	switch (tpALifeHuman->m_tTaskState) {
+//		case eTaskStateNoTask : {
+//			if (!tpALifeHuman->m_tpTaskIDs.size()) {
+//				CALifeTrader *tpTrader = tpfGetNearestSuitableTrader(tpALifeHuman);
+//				ffFindMinimalPath(tpALifeHuman->m_tGraphID,tpTrader->m_tGraphID,tpALifeHuman->m_tpaVertices);
+//				tpALifeHuman->m_dwCurNode = 0;
+//				tpALifeHuman->m_tTaskState = eTaskStateGoToTrader;
+//				tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID = _OBJECT_ID(-1);
+//			}
+//			else
+//				tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
+//			break;
+//		}
+//		case eTaskStateGoToTrader : {
+//			if ((tpALifeHuman->m_dwCurNode >= (tpALifeHuman->m_tpaVertices.size() - 1)) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID)) {
+//				tpALifeHuman->m_tpaVertices.clear();
+//				tpALifeHuman->m_dwCurNode = u32(-1);
+//				if (tpALifeHuman->m_tpTaskIDs.size()) {
+//					OBJECT_PAIR_IT I = m_tObjectRegistry.find(tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID);
+//					CALifeTrader *tpTrader = 0;
+//					if (I != m_tObjectRegistry.end())
+//						tpTrader = dynamic_cast<CALifeTrader *>(I->second);
+//					if (tpTrader)
+//						vfCommunicateWithTrader(tpALifeHuman,tpTrader);
+//					else
+//						vfCommunicateWithTrader(tpALifeHuman,tpfGetNearestSuitableTrader(tpALifeHuman));
+//				}
+//				else
+//					vfCommunicateWithTrader(tpALifeHuman,tpfGetNearestSuitableTrader(tpALifeHuman));
+//				tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
+//			}
+//			break;
+//		}
+//		case eTaskStateChooseTask : {
+//			tpALifeHuman->m_dwCurTask = 0;
+//			_GRAPH_ID tGraphID = _GRAPH_ID(-1);
+//			switch (tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tTaskType) {
+//				case eTaskTypeSearchForItemCG :
+//				case eTaskTypeSearchForItemOG : {
+//					tGraphID = tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tGraphID;
+//					break;
+//				}
+//				case eTaskTypeSearchForItemCL :
+//				case eTaskTypeSearchForItemOL : {
+//					//VERIFY(m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size());
+////					tpALifeHuman->m_baVisitedVertices.resize(m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size());
+////					tpALifeHuman->m_baVisitedVertices.assign(m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size(),false);
+////					tGraphID = m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID][tpALifeHuman->m_dwCurTaskLocation = 0];
+////					tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation] = true;
+//					break;
+//				}
+//				default : NODEFAULT;
+//			};
+//			tpALifeHuman->m_tTaskState = eTaskStateGoing;
+//			ffFindMinimalPath(tpALifeHuman->m_tGraphID,tGraphID,tpALifeHuman->m_tpaVertices);
+//			tpALifeHuman->m_dwCurNode = 0;
+//			break;
+//		}
+//		case eTaskStateGoing : {
+//			if ((tpALifeHuman->m_dwCurNode + 1 >= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID)) {
+//				if (bfCheckIfTaskCompleted(tpALifeHuman)) {
+//					ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tObjectRegistry[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID]->m_tGraphID,tpALifeHuman->m_tpaVertices);
+//					tpALifeHuman->m_dwCurNode = 0;
+//					tpALifeHuman->m_tTaskState = eTaskStateGoToTrader;
+//				}
+//				else {
+//					switch (tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tTaskType) {
+//						case eTaskTypeSearchForItemCG :
+//						case eTaskTypeSearchForItemOG : {
+//							if ((tpALifeHuman->m_dwCurNode + 1>= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID))
 //								tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
-							break;
-						}
-					};
-					break;
-				}
-			}
-			break;
-		}
-		case eTaskStateSearching : {
-			if ((tpALifeHuman->m_dwCurNode + 1 >= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID)) {
-				if (bfCheckIfTaskCompleted(tpALifeHuman)) {
-					ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tObjectRegistry[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID]->m_tGraphID,tpALifeHuman->m_tpaVertices);
-					tpALifeHuman->m_dwCurNode = 0;
-					tpALifeHuman->m_tTaskState = eTaskStateGoToTrader;
-				}
-				else {
-					switch (tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tTaskType) {
-						case eTaskTypeSearchForItemCG :
-						case eTaskTypeSearchForItemOG : {
-							if ((tpALifeHuman->m_dwCurNode + 1>= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID))
-								tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
-							break;
-						}
-						case eTaskTypeSearchForItemCL :
-						case eTaskTypeSearchForItemOL : {
-//							for (tpALifeHuman->m_dwCurTaskLocation++; (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) && (tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation]); tpALifeHuman->m_dwCurTaskLocation++);
-//							if (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) {
-//								tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation] = true;
-//								ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID][tpALifeHuman->m_dwCurTaskLocation],tpALifeHuman->m_tpaVertices);
-//								tpALifeHuman->m_dwCurNode = 0;
-//							}
-//							else
+//							break;
+//						}
+//						case eTaskTypeSearchForItemCL :
+//						case eTaskTypeSearchForItemOL : {
+////							for (tpALifeHuman->m_dwCurTaskLocation++; (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) && (tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation]); tpALifeHuman->m_dwCurTaskLocation++);
+////							if (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) {
+////								tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation] = true;
+////								ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID][tpALifeHuman->m_dwCurTaskLocation],tpALifeHuman->m_tpaVertices);
+////								tpALifeHuman->m_dwCurNode = 0;
+////							}
+////							else
+////								tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
+//							break;
+//						}
+//					};
+//					break;
+//				}
+//			}
+//			break;
+//		}
+//		case eTaskStateSearching : {
+//			if ((tpALifeHuman->m_dwCurNode + 1 >= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID)) {
+//				if (bfCheckIfTaskCompleted(tpALifeHuman)) {
+//					ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tObjectRegistry[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tCustomerID]->m_tGraphID,tpALifeHuman->m_tpaVertices);
+//					tpALifeHuman->m_dwCurNode = 0;
+//					tpALifeHuman->m_tTaskState = eTaskStateGoToTrader;
+//				}
+//				else {
+//					switch (tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tTaskType) {
+//						case eTaskTypeSearchForItemCG :
+//						case eTaskTypeSearchForItemOG : {
+//							if ((tpALifeHuman->m_dwCurNode + 1>= (tpALifeHuman->m_tpaVertices.size())) && (tpALifeHuman->m_tGraphID == tpALifeHuman->m_tNextGraphID))
 //								tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
-							break;
-						}
-					};
-					break;
-				}
-			}
-			break;
-		}
-		default : NODEFAULT;
-	};
+//							break;
+//						}
+//						case eTaskTypeSearchForItemCL :
+//						case eTaskTypeSearchForItemOL : {
+////							for (tpALifeHuman->m_dwCurTaskLocation++; (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) && (tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation]); tpALifeHuman->m_dwCurTaskLocation++);
+////							if (tpALifeHuman->m_dwCurTaskLocation < m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID].size()) {
+////								tpALifeHuman->m_baVisitedVertices[tpALifeHuman->m_dwCurTaskLocation] = true;
+////								ffFindMinimalPath(tpALifeHuman->m_tGraphID,m_tpTerrain[tpALifeHuman->m_tpTasks[tpALifeHuman->m_dwCurTask]->m_tLocationID][tpALifeHuman->m_dwCurTaskLocation],tpALifeHuman->m_tpaVertices);
+////								tpALifeHuman->m_dwCurNode = 0;
+////							}
+////							else
+////								tpALifeHuman->m_tTaskState = eTaskStateChooseTask;
+//							break;
+//						}
+//					};
+//					break;
+//				}
+//			}
+//			break;
+//		}
+//		default : NODEFAULT;
+//	};
+	VERIFY(!tpALifeHuman->m_bOnline);
 	vfChooseNextRoutePoint	(tpALifeHuman);
 	vfCheckForTheBattle		(tpALifeHuman);
-	vfCheckForDeletedEvents	(tpALifeHuman);
+	bfCheckForItems			(tpALifeHuman);
+//	vfCheckForDeletedEvents	(tpALifeHuman);
 }

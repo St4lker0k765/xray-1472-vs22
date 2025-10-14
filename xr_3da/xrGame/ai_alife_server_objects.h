@@ -51,72 +51,45 @@ public:
 #endif
 };
 
-class CALifeMonsterParams : public IPureServerObject {
-public:
-	s32								m_iHealth;
-	u16								ID;
-	
-									CALifeMonsterParams(LPCSTR caSection)
-	{
-		ID	= u16(-1);
-		m_iHealth					= pSettings->r_s32(caSection, "health");
-	};
-
-	virtual void					STATE_Write(NET_Packet &tNetPacket);
-	virtual void					STATE_Read(NET_Packet &tNetPacket, u16 size);
-	virtual void					UPDATE_Write(NET_Packet &tNetPacket);
-	virtual void					UPDATE_Read(NET_Packet &tNetPacket);
-};
-
 class CALifeTraderParams : public IPureServerObject {
 public:
 	float							m_fCumulativeItemMass;
 	u32								m_dwMoney;
 	EStalkerRank					m_tRank;
-	OBJECT_VECTOR					m_tpItemIDs;
+	float							m_fMaxItemMass;
 	
 									CALifeTraderParams(LPCSTR caSection)
 	{
 		m_fCumulativeItemMass		= 0.0f;
 		m_dwMoney					= 0;
-		m_tpItemIDs.clear			();
 		if (pSettings->line_exist(caSection, "money"))
 			m_dwMoney 				= pSettings->r_u32(caSection, "money");
 		m_tRank						= EStalkerRank(pSettings->r_u32(caSection, "rank"));
-	};
-
-	virtual void					STATE_Write(NET_Packet &tNetPacket);
-	virtual void					STATE_Read(NET_Packet &tNetPacket, u16 size);
-	virtual void					UPDATE_Write(NET_Packet &tNetPacket);
-	virtual void					UPDATE_Read(NET_Packet &tNetPacket);
-};
-
-class CALifeHumanParams : public CALifeMonsterParams, public CALifeTraderParams {
-public:
-									CALifeHumanParams(LPCSTR caSection) : CALifeMonsterParams(caSection), CALifeTraderParams(caSection)
-	{
-	};
-
-	virtual void					STATE_Write(NET_Packet &tNetPacket);
-	virtual void					STATE_Read(NET_Packet &tNetPacket, u16 size);
-	virtual void					UPDATE_Write(NET_Packet &tNetPacket);
-	virtual void					UPDATE_Read(NET_Packet &tNetPacket);
-};
-
-class CALifeTraderAbstract : public IPureServerObject {
-public:
-	PERSONAL_EVENT_P_VECTOR			m_tpEvents;
-	TASK_VECTOR						m_tpTaskIDs;
-	float							m_fMaxItemMass;
-
-									CALifeTraderAbstract(LPCSTR caSection)
-	{
-		m_tpEvents.clear			();
-		m_tpTaskIDs.clear			();
 		m_fMaxItemMass				= pSettings->r_float(caSection, "max_item_mass");
 	};
 
-									~CALifeTraderAbstract()
+	virtual void					STATE_Write(NET_Packet &tNetPacket);
+	virtual void					STATE_Read(NET_Packet &tNetPacket, u16 size);
+	virtual void					UPDATE_Write(NET_Packet &tNetPacket);
+	virtual void					UPDATE_Read(NET_Packet &tNetPacket);
+#ifdef _EDITOR
+	virtual void					FillProp(LPCSTR pref, PropItemVec& items);
+#endif
+};
+
+class CALifeTraderAbstract : public CALifeTraderParams {
+public:
+	typedef CALifeTraderParams inherited;
+	PERSONAL_EVENT_P_VECTOR			m_tpEvents;
+	TASK_VECTOR						m_tpTaskIDs;
+
+									CALifeTraderAbstract(LPCSTR caSection) : CALifeTraderParams(caSection)
+	{
+		m_tpEvents.clear			();
+		m_tpTaskIDs.clear			();
+	};
+
+	virtual							~CALifeTraderAbstract()
 	{
 		free_vector					(m_tpEvents);
 	};
@@ -264,7 +237,7 @@ public:
 	
 									CALifeItem(LPCSTR caSection) : CALifeDynamicObject(caSection)
 	{
-		m_fMass						= pSettings->r_float(caSection, "ph_mass");
+		m_fMass						= pSettings->r_float(caSection, "inv_weight");
 		m_dwCost					= pSettings->r_u32(caSection, "cost");
 		if (pSettings->line_exist	(caSection, "health_value"))
 			m_iHealthValue			= pSettings->r_s32(caSection, "health_value");
@@ -294,9 +267,9 @@ public:
 	virtual void					UPDATE_Read(NET_Packet &tNetPacket);
 };
 
-class CALifeTrader : public CALifeDynamicObject, public CALifeTraderParams, public CALifeTraderAbstract {
+class CALifeTrader : public CALifeDynamicObject, public CALifeTraderAbstract {
 public:
-									CALifeTrader(LPCSTR caSection) : CALifeDynamicObject(caSection), CALifeTraderParams(caSection), CALifeTraderAbstract(caSection)
+									CALifeTrader(LPCSTR caSection) : CALifeDynamicObject(caSection), CALifeTraderAbstract(caSection)
 	{
 	};
 

@@ -2,6 +2,7 @@
 #include "weaponpistol.h"
 #include "WeaponHUD.h"
 #include "effectorshot.h"
+#include "..\PGObject.h"
 
 CWeaponPistol::CWeaponPistol(LPCSTR name) : CWeaponCustomPistol(name)
 {
@@ -36,6 +37,8 @@ void CWeaponPistol::switch2_Hiding()
 {
 	if(m_opened) {
 		Sound->play_at_pos		(sndClose,H_Root(),vLastFP);
+		if (sndClose.feedback)
+			sndClose.feedback->set_volume(.2f);
 		m_pHUD->animPlay		(mhud_close[Random.randI(mhud_close.size())],FALSE,this);
 	} else inherited::switch2_Hiding	();
 }
@@ -86,4 +89,11 @@ void CWeaponPistol::OnShot		()
 	
 	// Shell Drop
 	OnShellDrop					();
+
+	CPGObject* pStaticPG;/* s32 l_c = m_effects.size();*/
+	pStaticPG = xr_new<CPGObject>("weapons\\generic_shoot",Sector());
+	Fmatrix l_pos; l_pos.set(svTransform); l_pos.c.set(vLastFP);
+	Fvector l_vel; l_vel.sub(vPosition,ps_Element(0).vPosition); l_vel.div((Device.dwTimeGlobal-ps_Element(0).dwTime)/1000.f);
+	pStaticPG->UpdateParent(l_pos, l_vel); pStaticPG->Play();
+	//pStaticPG->SetTransform(l_pos); pStaticPG->Play();
 }

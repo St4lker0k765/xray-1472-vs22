@@ -267,7 +267,8 @@ extern "C" int dSortTriBoxCollide (
 				}
 		};
 
-		if(include)	{	
+		if(include)	
+		{	
 			ret+=dSortedTriBox(b_neg_tri->side0,b_neg_tri->side1,b_neg_tri->norm,
 				//b_neg_tri->v0,b_neg_tri->v1,b_neg_tri->v2,
 				b_neg_tri->T,
@@ -883,7 +884,7 @@ int dcTriListCollider::CollideSphere(dxGeom* Sphere, int Flags, dContactGeom* Co
 	XRC.box_query                  (Level().ObjectSpace.GetStaticModel(),SphereCenterF,AABB);
 
 	// 
-	//int count                                       =XRC.r_count   ();
+	int count                                       =XRC.r_count   ();
 	CDB::RESULT*    R_begin                         = XRC.r_begin();
 	CDB::RESULT*    R_end                           = XRC.r_end();
 	CDB::TRI*       T_array                         = Level().ObjectSpace.GetStaticTris();

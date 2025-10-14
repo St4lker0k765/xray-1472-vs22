@@ -20,6 +20,31 @@ private:
 	CActor*					m_owner;
 	Fmatrix					fmPosDriver;
 	Fvector					m_vCamDeltaHP;
+////////////////////////////////////////////////////
+bool  Breaks;
+int   DriveDirection;
+float DriveVelocity;
+float DriveForce;
+float VelocityRate;
+CPhysicsJoint* weels[4];
+int	  m_doors_ids[2];
+int	  m_exhaust_ids[2];
+CPGObject* m_pExhaustPG1;
+CPGObject* m_pExhaustPG2;
+////////////////////////////////////////////////////
+void Steer(const char& steering);
+float GetSteerAngle();
+void LimitWeels();
+void Drive(const char& velocity,dReal force=500.f);
+void Drive();
+void NeutralDrive();
+void JointTune(dReal step);
+void Revert();
+void SetStartPosition(Fvector pos){}
+void SetPosition(Fvector pos){}
+void SetRotation(dReal* R){}
+
+////////////////////////////////////////////////////
 
 	void					OnCameraChange		(int type);
 	
@@ -30,7 +55,7 @@ private:
 	bool					HUDview				( ) { return IsFocused(); }
 	
 	void					ActivateJeep		();
-	void					ActivateShell		();
+	void					CreateShell			();
 
 	static void __stdcall	cb_WheelFL			(CBoneInstance* B);
 	static void __stdcall	cb_WheelFR			(CBoneInstance* B);
@@ -44,10 +69,11 @@ private:
 	virtual void StepFrameUpdate(dReal step){};
 
 public:
-
+	void					GetVelocity			(Fvector& vel)	{vel.set(m_jeep.GetVelocity());}
 	void					cam_Update			(float dt);
 	void					detach_Actor		();
 	bool					attach_Actor		(CActor* actor);
+	bool					is_Door				(int id);
 	// Core events
 	virtual void			Load				( LPCSTR section );
 	virtual BOOL			net_Spawn			( LPVOID DC );

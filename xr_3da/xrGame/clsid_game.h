@@ -36,6 +36,8 @@
 #define CLSID_AI_DOG_BLACK			MK_CLSID('A','I','_','D','O','G','_','B')
 #define CLSID_AI_TRADER				MK_CLSID('A','I','_','T','R','A','D','E')
 
+#define CLSID_AI_IDOL				MK_CLSID('A','I','_','I','D','O','L',' ')
+
 #define CLSID_CAR_NIVA				MK_CLSID('C','_','N','I','V','A',' ',' ')
 
 #define CLSID_EVENT					MK_CLSID('E','V','E','N','T',' ',' ',' ')
@@ -59,6 +61,11 @@
 #define CLSID_OBJECT_W_SVD			MK_CLSID('W','_','S','V','D',' ',' ',' ')
 #define CLSID_OBJECT_W_SVU			MK_CLSID('W','_','S','V','U',' ',' ',' ')
 #define CLSID_OBJECT_W_RPG7			MK_CLSID('W','_','R','P','G','7',' ',' ')
+#define CLSID_OBJECT_W_VAL			MK_CLSID('W','_','V','A','L',' ',' ',' ')
+#define CLSID_OBJECT_W_VINTOREZ		MK_CLSID('W','_','V','I','N','T',' ',' ')
+#define CLSID_OBJECT_W_WALTHER		MK_CLSID('W','_','W','A','L','T','H','R')
+#define CLSID_OBJECT_W_USP45		MK_CLSID('W','_','U','S','P','4','5',' ')
+#define CLSID_OBJECT_W_GROZA		MK_CLSID('W','_','G','R','O','Z','A',' ')
 
 // Weapons Ammo
 #define CLSID_OBJECT_A_M134			MK_CLSID('A','_','M','1','3','4',' ',' ')
@@ -86,6 +93,7 @@
 
 // Standart level object
 #define CLSID_OBJECT_ITEM_STD		MK_CLSID('O','_','I','T','E','M',' ',' ')
+#define CLSID_OBJECT_PHYSIC			MK_CLSID('O','_','P','H','Y','S','I','C')
 
 // Zones
 #define CLSID_ZONE					MK_CLSID('Z','_','Z','O','N','E',' ',' ')
@@ -95,9 +103,13 @@
 // Detectors
 #define CLSID_DETECTOR_SIMPLE		MK_CLSID('D','_','S','I','M','D','E','T')
 
+// Devices
+#define CLSID_DEVICE_TORCH		MK_CLSID('D','_','T','O','R','C','H',' ')
+
 // Inventory items
 #define CLSID_IITEM_BOLT			MK_CLSID('I','I','_','B','O','L','T',' ')
 
 // Grenades
 #define CLSID_GRENADE_F1			MK_CLSID('G','_','F','1',' ',' ',' ',' ')
 #define CLSID_OBJECT_G_RPG7			MK_CLSID('G','_','R','P','G','7',' ',' ')
+#define CLSID_GRENADE_RGD5			MK_CLSID('G','_','R','G','D','5',' ',' ')

@@ -8,7 +8,7 @@ public:
 	u16					destination;
 	xr_vector<u8>			data;
 public:
-	void				import		(NET_Packet& P)
+	void				_import		(NET_Packet& P)
 	{
 		data.clear		();
 		u16				ID;	
@@ -20,8 +20,8 @@ public:
 		u32 size		= P.r_elapsed();
 		if (size)	
 		{
-			data.resize(size);
-			P.r(data.data(), size);
+			data.resize		(size);
+			P.r				(data.data(),size);
 		}
 	}
 	void				_export		(NET_Packet& P)
@@ -31,14 +31,11 @@ public:
 		P.w_u32			(timestamp	);
 		P.w_u16			(type		);
 		P.w_u16			(destination);
-		if (!data.empty())
-		{
-			P.w(data.data(), static_cast<u32>(data.size()));
-		}
+		if (data.size())	P.w(data.data(),data.size());
 	}
 	void				implication	(NET_Packet& P) const
 	{
-		Memory.mem_copy(P.B.data, data.data(), static_cast<u32>(data.size()));
+		Memory.mem_copy	(P.B.data,data.data(),data.size());
 		P.B.count		= data.size();
 		P.r_pos			= 0;
 	}
@@ -54,7 +51,7 @@ public:
 	IC void				insert		(NET_Packet& P)
 	{
 		NET_Event		E;
-		E.import		(P);
+		E._import		(P);
 		queue.insert	(E);
 	}
 	IC BOOL				available	(u32 T)

@@ -16,6 +16,7 @@
 #include "ai\\soldier\\ai_soldier.h"
 #include "ai\\stalker\\ai_stalker.h"
 #include "ai\\zombie\\ai_zombie.h"
+#include "ai\\idol\\ai_idol.h"
 #include "car.h"
 #include "dummyobject.h"
 #include "customtarget.h"
@@ -23,6 +24,7 @@
 #include "..\fdemoplay.h"
 #include "a_star.h"
 #include "game_sv_single.h"
+#include "HangingLamp.h"
     
 ENGINE_API extern u32		psAlwaysRun;
 ENGINE_API extern float		psHUD_FOV;
@@ -549,6 +551,21 @@ public:
 		  pCreator->Cameras.AddEffector(xr_new<CDemoPlay> (fn,1.3f));
 	  }
 };
+class CCC_Rain : public CConsoleCommand {
+public:
+	CCC_Rain(LPCSTR N) : CConsoleCommand(N)  { };
+	virtual void Execute(LPCSTR args) {
+		int id1 = 0;
+		sscanf(args ,"%d",&id1);
+		if (id1 == 1) {
+			Engine.Event.Signal	("level.weather.rain.start");
+		}
+		else
+			if (id1 == 0) {
+				Engine.Event.Signal	("level.weather.rain.stop");
+			}
+	}
+};
 
 BOOL APIENTRY DllMain( HANDLE hModule, 
                        u32  ul_reason_for_call, 
@@ -589,6 +606,8 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 		CMD1(CCC_ALifeScheduleMin,	"al_schedule_min"		);		// set time factor
 		CMD1(CCC_ALifeScheduleMax,	"al_schedule_max"		);		// set time factor
 #endif
+		// temp
+		CMD1(CCC_Rain,				"rain"					);		// start rain
 
 		// hud
 		CMD3(CCC_Mask,				"hud_crosshair",		&psHUD_Flags,	HUD_CROSSHAIR);
@@ -650,8 +669,15 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include "weaponsvd.h"
 #include "weaponsvu.h"
 #include "weaponrpg7.h"
+#include "weaponval.h"
+#include "weaponvintorez.h"
+#include "weaponwalther.h"
+#include "weaponusp45.h"
+#include "weapongroza.h"
 #include "bolt.h"
+#include "torch.h"
 #include "f1.h"
+#include "rgd5.h"
 #include "Spectator.h"
 
 #include "customzone.h"
@@ -659,6 +685,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 #include "mincer.h"
 
 #include "simpledetector.h"
+#include "physicobject.h"
 
 extern "C" {
 	DLL_API DLL_Pure*	__cdecl xrFactory_Create		(CLASS_ID cls)
@@ -677,6 +704,7 @@ extern "C" {
 		case CLSID_AI_SOLDIER:			P =	xr_new<CAI_Soldier>();			break;
 		case CLSID_AI_STALKER:			P =	xr_new<CAI_Stalker>();			break;
 		case CLSID_AI_ZOMBIE:			P = xr_new<CAI_Zombie>();			break;
+		case CLSID_AI_IDOL:				P = xr_new<CAI_Idol>();				break;
 		
 		case CLSID_AI_CROW:				P = xr_new<CAI_Crow>();				break;
 		case CLSID_CAR_NIVA:			P = xr_new<CCar>();					break;
@@ -704,6 +732,11 @@ extern "C" {
 		case CLSID_OBJECT_W_SVD:		P = xr_new<CWeaponSVD>();			break;
 		case CLSID_OBJECT_W_SVU:		P = xr_new<CWeaponSVU>();			break;
 		case CLSID_OBJECT_W_RPG7:		P = xr_new<CWeaponRPG7>();			break;
+		case CLSID_OBJECT_W_VAL:		P = xr_new<CWeaponVal>();			break;
+		case CLSID_OBJECT_W_VINTOREZ:	P = xr_new<CWeaponVintorez>();		break;
+		case CLSID_OBJECT_W_WALTHER:	P = xr_new<CWeaponWalther>();		break;
+		case CLSID_OBJECT_W_USP45:		P = xr_new<CWeaponUSP45>();			break;
+		case CLSID_OBJECT_W_GROZA:		P = xr_new<CWeaponGroza>();			break;
 
 		// Inventory
 		case CLSID_IITEM_BOLT:			P = xr_new<CBolt>();				break;
@@ -711,14 +744,22 @@ extern "C" {
 		// Grenades
 		case CLSID_GRENADE_F1:			P = xr_new<CF1>();					break;
 		case CLSID_OBJECT_G_RPG7:		P = xr_new<CWeaponRPG7Grenade>();	break;
+		case CLSID_GRENADE_RGD5:		P = xr_new<CRGD5>();				break;
 
 		// Zones
 		case CLSID_ZONE:				P = xr_new<CCustomZone>();			break;
 		case CLSID_Z_MBALD:				P = xr_new<CMosquitoBald>();		break;
-		case CLSID_Z_MINCER:			P = xr_new<CMincer>();		break;
+		case CLSID_Z_MINCER:			P = xr_new<CMincer>();				break;
 
 		// Detectors
 		case CLSID_DETECTOR_SIMPLE:		P = xr_new<CSimpleDetector>();		break;
+
+		// Devices
+		case CLSID_DEVICE_TORCH:		P = xr_new<CTorch>();				break;
+
+		// entity
+		case CLSID_OBJECT_HLAMP:		P = xr_new<CHangingLamp>();			break;
+		case CLSID_OBJECT_PHYSIC:		P = xr_new<CPhysicObject>();			break;
 		}
 		R_ASSERT		(P);
 		P->SUB_CLS_ID	= cls;

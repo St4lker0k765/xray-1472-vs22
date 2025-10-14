@@ -6,7 +6,6 @@ class CGameObject;
 class	game_cl_GameState	: public game_GameState
 {
 public:
-	game_cl_GameState();
 	struct Player : public game_PlayerState 
 	{
 		string64	name;

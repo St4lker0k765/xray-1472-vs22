@@ -58,6 +58,13 @@ CLevel::~CLevel()
 	for (PGOIt p_it=m_StaticParticles.begin(); p_it!=m_StaticParticles.end(); p_it++)
 		xr_delete		(*p_it);
 	m_StaticParticles.clear();
+
+	// Unload sounds
+	for (u32 i=0; i<static_Sounds.size(); i++){
+		static_Sounds[i]->destroy();
+		xr_delete		(static_Sounds[i]);
+	}
+	static_Sounds.clear();
 }
 
 // Game interface ////////////////////////////////////////////////////
@@ -79,6 +86,31 @@ int	CLevel::get_RPID(LPCSTR name)
 		if (pos.similar(rp[i],EPS_L))	return i;
 	*/
 	return -1;
+}
+
+void CLevel::vfMergeKnownEnemies()
+{
+	// Merge visibility data from all units in the team
+	for (u32 T=0; T<Teams.size(); T++)
+	{
+		CTeam&	TD		= Teams[T];
+		for (u32 S=0; S<TD.Squads.size(); S++)
+		{
+			CSquad&	SD		= TD.Squads[S];
+			objVisible& VIS	= SD.KnownEnemys;
+
+			VIS.clear		();
+			for (u32 G=0; G<SD.Groups.size(); G++)
+			{
+				CGroup& GD = SD.Groups[G];
+				for (u32 M=0; M<GD.Members.size(); M++)
+				{
+					CEntityAlive* E	= dynamic_cast<CEntityAlive*>(GD.Members[M]);
+					if (E && E->g_Alive()&& !E->getDestroy())	E->GetVisible(VIS);
+				}
+			}
+		}
+	}
 }
 
 void CLevel::OnFrame	()
@@ -126,32 +158,12 @@ void CLevel::OnFrame	()
 	if (ph_world) ph_world->Step		(Device.fTimeDelta);
 	Device.Statistic.Physics.End		();
 
-	// Merge visibility data from all units in the team
-	for (u32 T=0; T<Teams.size(); T++)
-	{
-		CTeam&	TD		= Teams[T];
-		for (u32 S=0; S<TD.Squads.size(); S++)
-		{
-			CSquad&	SD		= TD.Squads[S];
-			objVisible& VIS	= SD.KnownEnemys;
-
-			VIS.clear		();
-			for (u32 G=0; G<SD.Groups.size(); G++)
-			{
-				CGroup& GD = SD.Groups[G];
-				for (u32 M=0; M<GD.Members.size(); M++)
-				{
-					CEntityAlive* E	= dynamic_cast<CEntityAlive*>(GD.Members[M]);
-					if (E && E->g_Alive())	E->GetVisible(VIS);
-				}
-			}
-		}
-	}
-
 	// If we have enought bandwidth - replicate client data on to server
 	Device.Statistic.netClient.Begin();
 	ClientSend						();
 	Device.Statistic.netClient.End	();
+
+	vfMergeKnownEnemies				();
 
 	CGameFont* F = HUD().pFontDI;
 	// If server - perform server-update

@@ -55,38 +55,44 @@ void __stdcall CActor::HeadCallback(CBoneInstance* B)
 void CActor::SActorMotions::SActorState::STorsoWpn::Create(CKinematics* K, LPCSTR base0, LPCSTR base1)
 {
 	char			buf[128];
-	aim				= K->ID_Cycle(strconcat(buf,base0,"_torso_aim",		base1));
-	holster			= K->ID_Cycle(strconcat(buf,base0,"_torso_holster",	base1));
-	draw			= K->ID_Cycle(strconcat(buf,base0,"_torso_draw",	base1));
-	reload			= K->ID_Cycle(strconcat(buf,base0,"_torso_reload",	base1));
-	drop			= K->ID_Cycle(strconcat(buf,base0,"_torso_drop",	base1));
-	attack			= K->ID_Cycle(strconcat(buf,base0,"_torso_attack",	base1));
+	aim				= K->ID_Cycle(strconcat(buf,base0,"_torso",base1,"_aim_0"));
+	holster			= K->ID_Cycle(strconcat(buf,base0,"_torso",base1,"_holster_0"));
+	draw			= K->ID_Cycle(strconcat(buf,base0,"_torso",base1,"_draw_0"));
+	reload			= K->ID_Cycle(strconcat(buf,base0,"_torso",base1,"_reload_0"));
+	drop			= K->ID_Cycle(strconcat(buf,base0,"_torso",base1,"_drop_0"));
+	attack			= K->ID_Cycle(strconcat(buf,base0,"_torso",base1,"_attack_0"));
 }
 void CActor::SActorMotions::SActorState::SAnimState::Create(CKinematics* K, LPCSTR base0, LPCSTR base1)
 {
 	char			buf[128];
-	legs_fwd		= K->ID_Cycle(strconcat(buf,base0,base1,"_fwd"));
-	legs_back		= K->ID_Cycle(strconcat(buf,base0,base1,"_back"));
-	legs_ls			= K->ID_Cycle(strconcat(buf,base0,base1,"_ls"));
-	legs_rs			= K->ID_Cycle(strconcat(buf,base0,base1,"_rs"));
+	legs_fwd		= K->ID_Cycle(strconcat(buf,base0,base1,"_fwd_0"));
+	legs_back		= K->ID_Cycle(strconcat(buf,base0,base1,"_back_0"));
+	legs_ls			= K->ID_Cycle(strconcat(buf,base0,base1,"_ls_0"));
+	legs_rs			= K->ID_Cycle(strconcat(buf,base0,base1,"_rs_0"));
 }
 
 void CActor::SActorMotions::SActorState::Create(CKinematics* K, LPCSTR base)
 {
-	char			buf[128];
-	legs_idle		= K->ID_Cycle(strconcat(buf,base,"_idle"));
+	string128		buf,buf1;
 	legs_turn		= K->ID_Cycle(strconcat(buf,base,"_turn"));
-	death			= K->ID_Cycle(strconcat(buf,base,"_death"));
+	legs_idle		= K->ID_Cycle(strconcat(buf,base,"_idle_1"));
+	death			= K->ID_Cycle(strconcat(buf,base,"_death_0"));
+	
 	m_walk.Create	(K,base,"_walk");
 	m_run.Create	(K,base,"_run");
+	
 	m_torso[0].Create(K,base,"_1");
 	m_torso[1].Create(K,base,"_2");
-	m_torso_idle	= K->ID_Cycle(strconcat(buf,base,"_torso_idle"));;
-
+	m_torso[2].Create(K,base,"_3");
+	
+	m_torso_idle	= K->ID_Cycle(strconcat(buf,base,"_torso_0_aim_0"));
 	jump_begin		= K->ID_Cycle(strconcat(buf,base,"_jump_begin"));
 	jump_idle		= K->ID_Cycle(strconcat(buf,base,"_jump_idle"));
 	landing[0]		= K->ID_Cycle(strconcat(buf,base,"_jump_end"));
 	landing[1]		= K->ID_Cycle(strconcat(buf,base,"_jump_end_1"));
+
+	for (int k=0; k<12; k++)
+		m_damage[k]	= K->ID_FX(strconcat(buf,base,"_damage_",itoa(k,buf1,10)));
 }
 
 void CActor::SActorMotions::Create(CKinematics* V)
@@ -95,6 +101,7 @@ void CActor::SActorMotions::Create(CKinematics* V)
 	m_steering_torso_right	= V->ID_Cycle_Safe("steering_torso_rs");
 	m_steering_torso_idle	= V->ID_Cycle_Safe("steering_torso_idle");
 	m_steering_legs_idle	= V->ID_Cycle_Safe("steering_legs_idle");
+	m_dead_stop				= V->ID_Cycle("norm_dead_stop_0");
 
 	m_normal.Create	(V,"norm");
 	m_crouch.Create	(V,"cr");
@@ -193,7 +200,7 @@ void CActor::g_SetAnimation( u32 mstate_rl )
 			//cfModel->OnMove();
 			//PKinematics	(pVisual)->PlayCycle("x90",false);
 			////////////////////
-		//PKinematics	(pVisual)->PlayCycle("death_init",false);
+			PKinematics(pVisual)->PlayCycle(m_anims.m_dead_stop);
 		}
 	}
 #ifdef _DEBUG

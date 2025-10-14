@@ -137,6 +137,9 @@ BOOL CAI_Dog::net_Spawn	(LPVOID DC)
 	// model
 	cNameVisual_set					(tpSE_Dog->caModel);
 	// personal characteristics
+	r_torso_current.yaw				= r_torso_target.yaw	= -tpSE_Dog->o_Angle.y;
+	r_torso_current.pitch			= r_torso_target.pitch	= 0;
+
 	eye_fov							= tpSE_Dog->fEyeFov;
 	eye_range						= tpSE_Dog->fEyeRange;
 	fHealth							= tpSE_Dog->fHealth;
@@ -194,6 +197,7 @@ void CAI_Dog::net_Export(NET_Packet& P)
 	// export last known packet
 	R_ASSERT				(!NET.empty());
 	net_update& N			= NET.back();
+	P.w_float_q16		(fHealth,-1000,1000);
 	P.w_u32					(N.dwTimeStamp);
 	P.w_u8					(0);
 	P.w_vec3				(N.p_pos);
@@ -208,6 +212,7 @@ void CAI_Dog::net_Import(NET_Packet& P)
 	net_update				N;
 
 	u8 flags;
+	P.r_float_q16		(fHealth,-1000,1000);
 	P.r_u32					(N.dwTimeStamp);
 	P.r_u8					(flags);
 	P.r_vec3				(N.p_pos);

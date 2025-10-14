@@ -6,6 +6,9 @@
 #include "..\cl_intersect.h"
 #include "tri-colliderKNoOPC\__aabb_tri.h"
 
+#include "GameObject.h"
+#include "Car.h"
+
 const float LOSE_CONTROL_DISTANCE=0.5f; //fly distance to lose control
 const float CLAMB_DISTANCE=0.5f;
 //const float JUMP_HIGHT=0.5;
@@ -23,6 +26,8 @@ void dBodyAngAccelFromTorqu(const dBodyID body, dReal* ang_accel, const dReal* t
 
 CPHCharacter::CPHCharacter(void)
 {
+b_external_impulse=false;
+m_phys_ref_object=NULL;
 p_lastMaterial=&lastMaterial;
 b_on_object=false;
 b_climb=false;
@@ -81,6 +86,8 @@ CPHCharacter::~CPHCharacter(void)
 void		CPHCharacter::ApplyImpulse(const Fvector& dir,const dReal P){
 if(!b_exist) return;
 if(!dBodyIsEnabled(m_body)) dBodyEnable(m_body);
+b_lose_control=true;
+b_external_impulse=true;
 dBodyAddForce(m_body,dir.x*P/fixed_step,dir.y*P/fixed_step,dir.z*P/fixed_step);
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +105,7 @@ m_control_force[2]=0.f;
 m_depart_position[0]=0.f;
 m_depart_position[1]=0.f;
 m_depart_position[2]=0.f;
-
+b_external_impulse=false;
 b_on_object=false;
 b_was_on_object=true;
 b_jumping=false;
@@ -136,6 +143,9 @@ m_geom_shell=dCreateCylinder(0,m_radius/k,m_cyl_hight+doun);
 m_cap=dCreateSphere(0,m_radius+m_radius/30.f);
 m_wheel=dCreateSphere(0,m_radius);
 m_hat=dCreateSphere(0,m_radius/k);
+
+
+
 m_cap_transform=dCreateGeomTransform(0);
 m_shell_transform=dCreateGeomTransform(0);
 m_hat_transform=dCreateGeomTransform(0);
@@ -173,6 +183,14 @@ dGeomCreateUserData(m_geom_shell);
 dGeomCreateUserData(m_cap);
 dGeomCreateUserData(m_wheel);
 dGeomCreateUserData(m_hat);
+
+if(m_phys_ref_object)
+{
+	dGeomUserDataSetPhysicsRefObject(m_geom_shell,m_phys_ref_object);
+	dGeomUserDataSetPhysicsRefObject(m_cap,m_phys_ref_object);
+	dGeomUserDataSetPhysicsRefObject(m_wheel,m_phys_ref_object);
+	dGeomUserDataSetPhysicsRefObject(m_hat,m_phys_ref_object);
+}
 //dGeomUserDataSetPhObject(m_wheel_transform,(CPHObject*)this);
 dGeomUserDataSetPhObject(m_wheel,(CPHObject*)this);
 //dGeomUserDataSetPhObject(m_shell_transform,(CPHObject*)this);
@@ -282,7 +300,8 @@ void CPHSimpleCharacter::PhDataUpdate(dReal step){
 	if(is_contact&&!is_control)
 							Disable();
 ///////////////////////
-
+	b_external_impulse=false;
+	
 	was_contact=is_contact;
 	was_control=is_control;
 	is_contact=false;
@@ -368,7 +387,10 @@ void CPHSimpleCharacter::PhTune(dReal step){
 	if(b_depart) 
 		Memory.mem_copy(m_depart_position,dBodyGetPosition(m_body),sizeof(dVector3));
 
-	if(is_contact) b_lose_control=false;
+	const dReal* velocity=dBodyGetLinearVel(m_body);
+	if(is_contact&& !b_external_impulse && dSqrt(velocity[0]*velocity[0]+velocity[2]*velocity[2])<5.) 
+																			b_lose_control=false;
+
 	if(b_valide_ground_contact&&m_ground_contact_normal[1]>M_SQRT1_2 ||(b_at_wall&&b_valide_wall_contact)) b_jumping=false;
 
 //deside if control lost
@@ -709,7 +731,7 @@ m_update_time=Device.fTimeGlobal;
 const float CHWON_ACCLEL_SHIFT=0.1f;
 const float CHWON_AABB_FACTOR =1.f;
 const float CHWON_ANG_COS	  =M_SQRT1_2;
-const float CHWON_CALL_UP_SHIFT=0.5f;
+const float CHWON_CALL_UP_SHIFT=0.05f;
 const float CHWON_CALL_FB_HIGHT=1.5f;
 const float CHWON_AABB_FB_FACTOR =1.f;
 
@@ -727,7 +749,8 @@ bool CPHSimpleCharacter::ValidateWalkOn()
 
 	accel_add.set(m_acceleration);
 	float mag=accel_add.magnitude();
-	if(!(mag>0.f)) return false;
+	if(!(mag>0.f)) return 
+						false;
 	accel_add.mul(CHWON_ACCLEL_SHIFT/mag);
 	accel.set(accel_add);
 	accel.div(CHWON_ACCLEL_SHIFT);
@@ -736,7 +759,7 @@ bool CPHSimpleCharacter::ValidateWalkOn()
 	center.add(accel_add);
 	center_forbid.set(center);
 	center_forbid.y+=CHWON_CALL_FB_HIGHT;
-	center.y+=m_radius*(1.f+CHWON_CALL_UP_SHIFT);
+	center.y+=m_radius+CHWON_CALL_UP_SHIFT;
 	CDB::RESULT*    R_begin;
 	CDB::RESULT*    R_end  ;
 	CDB::TRI*       T_array ;
@@ -761,7 +784,8 @@ bool CPHSimpleCharacter::ValidateWalkOn()
 		dCROSS(norm,=,side0,side1);//optimize it !!!
 		dNormalize3(norm);
 		if(dDOT(norm,(float*)&accel)<-CHWON_ANG_COS) 
-		return false;
+		return 
+				false;
 		}
 	}
 
@@ -790,7 +814,8 @@ bool CPHSimpleCharacter::ValidateWalkOn()
 										true;
 		}
 	}
-	return false;
+	return 
+		false;
 }
 void CPHSimpleCharacter::SetAcceleration(Fvector accel){
 	if(!b_exist) return;
@@ -1005,7 +1030,17 @@ EEnvironment	 CPHSimpleCharacter::CheckInvironment(){
 
 
 
-
+void CPHSimpleCharacter::SetPhysicsRefObject					(CPhysicsRefObject* ref_object)
+{
+m_phys_ref_object=ref_object;
+if(b_exist)
+{
+	dGeomUserDataSetPhysicsRefObject(m_geom_shell,ref_object);
+	dGeomUserDataSetPhysicsRefObject(m_cap,ref_object);
+	dGeomUserDataSetPhysicsRefObject(m_wheel,ref_object);
+	dGeomUserDataSetPhysicsRefObject(m_hat,ref_object);
+}
+}
 
 //////////////////////////////////////////////////////////////////////////
 /////////////////////CPHWheeledCharacter//////////////////////////////////
@@ -1254,5 +1289,73 @@ void	CPHCharacter::Disable(){
 	
 				}
 /////////////////////////////////////////////////////////////////
+
+}
+
+void __stdcall CarHitCallback(bool& do_colide,dContact& c)
+{
+	dxGeomUserData* usr_data_1=NULL;
+	dxGeomUserData* usr_data_2=NULL;
+	if(dGeomGetClass(c.geom.g1)==dGeomTransformClass){
+		const dGeomID geom=dGeomTransformGetGeom(c.geom.g1);
+		usr_data_1 = dGeomGetUserData(geom);
+	}
+	else
+		usr_data_1 = dGeomGetUserData(c.geom.g1);
+
+	if(dGeomGetClass(c.geom.g2)==dGeomTransformClass){
+		const dGeomID geom=dGeomTransformGetGeom(c.geom.g2);
+		usr_data_2 = dGeomGetUserData(geom);
+	}
+	else
+		usr_data_2 = dGeomGetUserData(c.geom.g2);
+
+	if(!(usr_data_1&&usr_data_2)) return;
+	
+	CPHCharacter* Character;
+	Character=dynamic_cast<CPHCharacter*>(usr_data_1->ph_object);
+	if(Character)
+	{
+		CGameObject* Obj=dynamic_cast<CGameObject*>(usr_data_1->ph_ref_object);
+		CCar*		 Car=dynamic_cast<CCar*>	   (usr_data_2->ph_ref_object);
+		if(Obj&&Car)
+		{
+			Fvector vel,rvel;
+			Car->GetVelocity(vel);
+			rvel.sub(vel,Character->GetVelocity());
+			if(rvel.dotproduct(*((Fvector*)c.geom.normal))>1.f)
+			{
+			vel.normalize();
+			Fvector pos;
+
+			pos.set(0,0,0);
+			Obj->Hit(100.f,vel,Car,0,pos,1000.f);
+			Obj->PHSetPushOut();
+			}
+		}
+	}
+
+	Character=dynamic_cast<CPHCharacter*>(usr_data_2->ph_object);
+	if(Character)
+	{
+		CGameObject* Obj=dynamic_cast<CGameObject*>(usr_data_2->ph_ref_object);
+		CCar*		 Car=dynamic_cast<CCar*>	   (usr_data_1->ph_ref_object);
+		if(Obj&&Car)
+		{
+			Fvector vel,rvel;
+			Car->GetVelocity(vel);
+			rvel.sub(vel,Character->GetVelocity());
+			if(-rvel.dotproduct(*((Fvector*)c.geom.normal))>5.f)
+			{
+			vel.normalize();
+			Fvector pos;
+
+			pos.set(0,0,0);
+			Obj->Hit(100.f,vel,Car,0,pos,10.f);
+			Obj->PHSetPushOut();
+			}
+		}
+	}
+
 
 }

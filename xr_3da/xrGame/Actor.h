@@ -44,6 +44,7 @@ protected:
 		eacFreeLook,
 		eacMaxCam
 	};
+	enum EDamages {DAMAGE_FX_COUNT = 12};
 public:
 	enum EMoveCommand
 	{
@@ -121,12 +122,16 @@ protected:
 			SAnimState		m_run;
 			STorsoWpn		m_torso[2];
 			CMotionDef*		m_torso_idle;
+
+			CMotionDef*		m_damage[DAMAGE_FX_COUNT];
+
 			void			Create(CKinematics* K, LPCSTR base);
 		};
 		CMotionDef*			m_steering_torso_left;
 		CMotionDef*			m_steering_torso_right;
 		CMotionDef*			m_steering_torso_idle;
 		CMotionDef*			m_steering_legs_idle;
+		CMotionDef*			m_dead_stop;
 
 		SActorState			m_normal;
 		SActorState			m_crouch;
@@ -177,7 +182,7 @@ protected:
 	Fvector					patch_position;
 
 
-int								skel_ddelay;
+	int						skel_ddelay;
 							
 	///////////////////////////////////////////////////
 	static void	__stdcall	SpinCallback	(CBoneInstance*);
@@ -255,7 +260,7 @@ private:
 	void					create_Skeleton1		();
 	void					attach_Vehicle			(CCar* vehicle);
 	void					use_Vehicle				();
-	CObject*				pick_Object				();
+	CCar*					pick_VehicleObject		();
 
 public:
 	void					detach_Vehicle			();
@@ -270,7 +275,7 @@ public:
 		if (mstate&mcAccel)	return psActorFlags.test(AF_ALWAYSRUN)?FALSE:TRUE ;
 		else				return psActorFlags.test(AF_ALWAYSRUN)?TRUE :FALSE;
 	}
-	IC BOOL					HUDview				( ) 
+	IC BOOL					HUDview				( )const 
 	{ 
 		return IsFocused()&&(cam_active==eacFirstEye)&&(!m_vehicle); 
 	}
@@ -311,6 +316,10 @@ public:
 		state.fVelocity		= ph_Movement.GetVelocityActual();
 		return TRUE;
 	}
+	virtual BOOL						ShadowGenerate	( ) {
+															if(m_vehicle)return FALSE;
+															return inherited::ShadowGenerate();
+															}
 	virtual void						g_PerformDrop		( );
 	virtual void						g_WeaponBones		(int &L, int &R1, int &R2);
 	
@@ -332,6 +341,8 @@ public:
 	// HUD
 	virtual void						OnHUDDraw			(CCustomHUD* hud);
 	//CWeaponList*						tpfGetWeapons		()	{return Weapons;}
+	virtual f32 GetMass() { return g_Alive()?ph_Movement.GetMass():m_phSkeleton?m_phSkeleton->getMass():0; }
+	virtual float						Radius				() const;
 
 #ifdef DEBUG
 	virtual void						OnRender			();

@@ -3,6 +3,7 @@
 #include "WeaponHUD.h"
 #include "PhysicsShell.h"
 #include "effectorshot.h"
+#include "actor.h"
 
 CMissile::CMissile(void) {
 	m_state = MS_HIDDEN;
@@ -59,9 +60,9 @@ BOOL CMissile::net_Spawn(LPVOID DC) {
 		
 		Fvector ax;
 		float	radius;
-		CHOOSE_MAX(	obb.m_halfsize.x,ax.set(obb.m_rotate.i) ; ax.mul(obb.m_halfsize.x); radius= std::min(obb.m_halfsize.y,obb.m_halfsize.z) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.z/=2.f,
-					obb.m_halfsize.y,ax.set(obb.m_rotate.j) ; ax.mul(obb.m_halfsize.y); radius= std::min(obb.m_halfsize.x,obb.m_halfsize.z) ;obb.m_halfsize.x/=2.f;obb.m_halfsize.z/=2.f,
-					obb.m_halfsize.z,ax.set(obb.m_rotate.k) ; ax.mul(obb.m_halfsize.z); radius= std::min(obb.m_halfsize.y,obb.m_halfsize.x) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.x/=2.f
+		CHOOSE_MAX(	obb.m_halfsize.x,ax.set(obb.m_rotate.i) ; ax.mul(obb.m_halfsize.x); radius=std::min(obb.m_halfsize.y,obb.m_halfsize.z) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.z/=2.f,
+					obb.m_halfsize.y,ax.set(obb.m_rotate.j) ; ax.mul(obb.m_halfsize.y); radius=std::min(obb.m_halfsize.x,obb.m_halfsize.z) ;obb.m_halfsize.x/=2.f;obb.m_halfsize.z/=2.f,
+					obb.m_halfsize.z,ax.set(obb.m_rotate.k) ; ax.mul(obb.m_halfsize.z); radius=std::min(obb.m_halfsize.y,obb.m_halfsize.x) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.x/=2.f
 					)
 		//radius*=1.4142f;
 		Fsphere sphere1,sphere2;
@@ -79,10 +80,11 @@ BOOL CMissile::net_Spawn(LPVOID DC) {
 		m_pPhysicsShell						= P_create_Shell	();
 		R_ASSERT							(m_pPhysicsShell);
 		m_pPhysicsShell->add_Element		(E);
-		m_pPhysicsShell->setMass			(2000.f);
-		m_pPhysicsShell->Activate			(svXFORM(),0,svXFORM());
+		m_pPhysicsShell->setDensity			(2000.f);
+		m_pPhysicsShell->Activate			(svXFORM(),0,svXFORM(),true);
 		m_pPhysicsShell->mDesired.identity	();
 		m_pPhysicsShell->fDesiredStrength	= 0.f;
+		m_pPhysicsShell->SetAirResistance();
 	}
 	return l_res;
 }
@@ -146,6 +148,7 @@ void CMissile::OnH_B_Independent() {
 		float rxy=r*_sin(teta);
 		a_vel.set(rxy*_cos(fi),rxy*_sin(fi),r*_cos(teta));
 		//a_vel.set(::Random.randF(ri*2.f*M_PI,ri*3.f*M_PI),::Random.randF(ri*2.f*M_PI,ri*3.f*M_PI),::Random.randF(ri*2.f*M_PI,ri*3.f*M_PI));
+
 		m_pPhysicsShell->Activate(l_p1, l_vel, a_vel);
 		svTransform.set(l_p1);
 		vPosition.set(svTransform.c);
@@ -164,8 +167,8 @@ void CMissile::UpdateCL() {
 			if(m_force > m_maxForce) m_force = m_maxForce;
 		}
 	}
-	if(getVisible() && /*m_destroyTime < 0xffffffff &&*/ m_pPhysicsShell) {
-		if(m_destroyTime < Device.dwTimeDelta) {
+	if(getVisible() && m_pPhysicsShell) {
+		if(m_destroyTime <= Device.dwTimeDelta) {
 			m_destroyTime = 0xffffffff;
 			R_ASSERT(!m_pInventory);
 			Destroy();
@@ -223,7 +226,7 @@ u32 CMissile::State(u32 state) {
 }
 
 void CMissile::OnVisible() {
-	if(m_pHUD && H_Parent()) {
+	if(m_pHUD && H_Parent() && dynamic_cast<CActor*>(H_Parent())) {
 		Fmatrix trans;
 		Level().Cameras.affected_Matrix(trans);
 		m_pHUD->UpdatePosition(trans);

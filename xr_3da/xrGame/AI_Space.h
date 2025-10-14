@@ -57,9 +57,13 @@ private:
 public:
 	// Query
 	xr_vector<bool>		q_mark_bit;		// temporal usage mark for queries
-	xr_vector<bool>		q_mark_bit_x;		// temporal usage mark for queries
+	xr_vector<bool>		q_mark_bit_x;	// temporal usage mark for queries
+	xr_vector<bool>		m_baNodeMarks;	// temporal usage mark for search enemy queries
 	xr_vector<BYTE>		q_mark;			// temporal usage mark for queries
-	xr_vector<u32>			q_stack;
+	xr_vector<u32>			q_stack;		// temporal usage stack for search enemy queries
+	xr_vector<u32>			m_dwaNodeStackM;// temporal usage stack for queries
+	xr_vector<u32>			m_dwaNodeStackS;// temporal usage stack for queries
+	u32					m_dwCurrentLevelID;
 	
 						CAI_Space		();
 	virtual				~CAI_Space		();
@@ -174,7 +178,9 @@ public:
 	void	vfChoosePoint					(Fvector &tStartPoint, Fvector &tFinishPoint, AI::PContour	&tCurContour, int iNodeIndex, Fvector &tTempPoint, int &iSavedIndex);
 	u32		dwfCheckPositionInDirection		(u32 dwStartNode, Fvector tStartPosition, Fvector tFinishPosition);
 
-	float	ffFindFarthestNodeInDirection	(u32 dwStartNode, Fvector tStartPoint, Fvector tFinishPoint, u32 &dwFinishNode, std::vector<bool> *tpaMarks = 0);
+	float	ffFindFarthestNodeInDirection	(u32 dwStartNode, Fvector tStartPoint, Fvector tFinishPoint, u32 &dwFinishNode, xr_vector<bool> *tpaMarks = 0);
+
+	bool	bfCreateStraightPTN_Path		(u32 dwStartNode, Fvector tStartPoint, Fvector tFinishPoint, xr_vector<Fvector> &tpaOutputPoints, xr_vector<u32> &tpaOutputNodes, bool bAddFirstPoint);
 	
 	// Device dependance
 	virtual void	OnDeviceCreate			();

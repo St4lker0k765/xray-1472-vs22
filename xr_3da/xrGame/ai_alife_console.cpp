@@ -81,10 +81,7 @@ void CAI_ALife::vfListObjects()
 	OBJECT_PAIR_IT	E = m_tObjectRegistry.end();
 	string64		tString;
 	Msg("%s->Listing objects :",cName());
-
-    int i = 0;
-
-	for (i=0; I != E; I++, i++) {
+	for (int i=0; I != E; I++, i++) {
 		Memory.mem_copy(tString,&((*I).second->m_tClassID),sizeof((*I).second->m_tClassID));
 		tString[sizeof((*I).second->m_tClassID)] = 0;
 		Msg("* %4d : %8s[m_tObjectID=%4d][MDL=%10s][GID=%4d][UPD=%d]",i,tString,(*I).first,(*I).second->s_name,(*I).second->m_tGraphID,(*I).second->m_tTimeID);
@@ -97,8 +94,7 @@ void CAI_ALife::vfListEvents()
 	EVENT_PAIR_IT	I = m_tEventRegistry.begin();
 	EVENT_PAIR_IT	E = m_tEventRegistry.end();
 	Msg("%s->Listing events :",cName());
-    int i = 0;
-	for (i=0; I != E; I++, i++)
+	for (int i=0; I != E; I++, i++)
 		Msg("* %4d : [m_tObjectID=%4d][BR=%1d][GID=%4d][TIME=%d]",i,(*I).first,(*I).second->m_tBattleResult,(*I).second->m_tGraphID,(*I).second->m_tTimeID);
 	Msg("Total %d events",i);
 }
@@ -108,8 +104,7 @@ void CAI_ALife::vfListTasks()
 	TASK_PAIR_IT	I = m_tTaskRegistry.begin();
 	TASK_PAIR_IT	E = m_tTaskRegistry.end();
 	Msg("%s->Listing tasks :",cName());
-    int i = 0;
-	for (i=0; I != E; I++, i++)
+	for (int i=0; I != E; I++, i++)
 		Msg("* %4d : [m_tObjectID=%4d][CID=%1d][TT=][GID=%4d][UPD=%d]",i,(*I).first,(*I).second->m_tCustomerID,(*I).second->m_tTaskType,(*I).second->m_tGraphID,(*I).second->m_tTimeID);
 	Msg("Total %d tasks",i);
 }
@@ -121,8 +116,7 @@ void CAI_ALife::vfListTerrain()
 	for (int j=0; j<LOCATION_TYPE_COUNT; j++) {
 		GRAPH_VECTOR_IT	I = m_tpTerrain[j].begin();
 		GRAPH_VECTOR_IT	E = m_tpTerrain[j].end();
-        int i = 0;
-		for (i=0; I != E; I++, i++) {
+		for (int i=0; I != E; I++, i++) {
 			GRAPH_IT	it1 = (*I).begin();
 			GRAPH_IT	E1  = (*I).end();
 			int			j;
@@ -349,144 +343,114 @@ void CAI_ALife::vfObjectInfo(_OBJECT_ID	&tObjectID)
 
 void CAI_ALife::vfEventInfo(_EVENT_ID &tEventID)
 {
-    EVENT_PAIR_IT it = m_tEventRegistry.find(tEventID);
-    if (it == m_tEventRegistry.end()) {
-        Msg("* Invalid event m_tObjectID! (%d)", tEventID);
-        return;
-    }
-    CALifeEvent &tEvent = *it->second;
-
-    Msg("* Event information");
-    Msg("* Event m_tObjectID  : %d", tEvent.m_tEventID);
-    Msg("* Graph m_tObjectID  : %d", tEvent.m_tGraphID);
-    vfPrintTime("* Time  m_tObjectID  :", tEvent.m_tTimeID);
-    Msg("* Battle    : %d", tEvent.m_tBattleResult);
-
-    Msg("* Monster 1 :");
-    CALifeEventGroup *tpMG = tEvent.m_tpMonsterGroup1;
-    Msg("*     Class  m_tObjectID    : %d", tpMG->m_tClassID);
-    Msg("*     Object m_tObjectID    : %d", tpMG->m_tObjectID);
-    // Msg("*     Spawn  m_tObjectID    : %d", tpMG->m_tSpawnID);
-    Msg("*     Count before : %d", tpMG->m_wCountBefore);
-    Msg("*     Count after  : %d", tpMG->m_wCountAfter);
-
-    Msg("* Monster 2 :");
-    tpMG = tEvent.m_tpMonsterGroup2;
-    Msg("*     Class  m_tObjectID    : %d", tpMG->m_tClassID);
-    Msg("*     Object m_tObjectID    : %d", tpMG->m_tObjectID);
-    // Msg("*     Spawn  m_tObjectID    : %d", tpMG->m_tSpawnID);
-    Msg("*     Count before : %d", tpMG->m_wCountBefore);
-    Msg("*     Count after  : %d", tpMG->m_wCountAfter);
-
-    {
-        string4096 S; S[0] = 0;
-        string16 S1;
-
-        OBJECT_PAIR_IT I = m_tObjectRegistry.begin();
-        OBJECT_PAIR_IT E = m_tObjectRegistry.end();
-
-        int j = 0;
-        for ( ; I != E; ++I)
-        {
-            CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>(I->second);
-            if (!tpALifeHuman)
-                continue;
-
-            PERSONAL_EVENT_P_IT i = tpALifeHuman->m_tpEvents.begin();
-            PERSONAL_EVENT_P_IT e = tpALifeHuman->m_tpEvents.end();
-            for ( ; i != e; ++i)
-            {
-                if ((*i)->m_tEventID == tEventID)
-                {
-                    if (j > 0)
-                        strcat_s(S, ",");
-
-                    _itoa_s(I->first, S1, 10);
-                    strcat_s(S, S1);
-
-                    ++j;
-                    break;
-                }
-            }
-        }
-        vfPrintLargeString(S, "Monsters, who know about the event", j, 105);
-    }
+	EVENT_PAIR_IT I = m_tEventRegistry.find(tEventID);
+	if (I == m_tEventRegistry.end()) {
+		Msg("* Invalid event m_tObjectID! (%d)",tEventID);
+		return;
+	}
+	CALifeEvent &tEvent = *((*I).second);
+	Msg("* Event information");
+	Msg("* Event m_tObjectID  : %d",tEvent.m_tEventID);
+	Msg("* Graph m_tObjectID  : %d",tEvent.m_tGraphID);
+	vfPrintTime("* Time  m_tObjectID  :",tEvent.m_tTimeID);
+	Msg("* Battle    : %d",tEvent.m_tBattleResult);
+	Msg("* Monster 1 :");
+	CALifeEventGroup *tpMG = tEvent.m_tpMonsterGroup1;
+	Msg("*     Class  m_tObjectID    : %d",tpMG->m_tClassID);
+	Msg("*     Object m_tObjectID    : %d",tpMG->m_tObjectID);
+//	Msg("*     Spawn  m_tObjectID    : %d",tpMG->m_tSpawnID);
+	Msg("*     Count before : %d",tpMG->m_wCountBefore);
+	Msg("*     Count after  : %d",tpMG->m_wCountAfter);
+	Msg("* Monster 2 :");
+	tpMG = tEvent.m_tpMonsterGroup2;
+	Msg("*     Class  m_tObjectID    : %d",tpMG->m_tClassID);
+	Msg("*     Object m_tObjectID    : %d",tpMG->m_tObjectID);
+//	Msg("*     Spawn  m_tObjectID    : %d",tpMG->m_tSpawnID);
+	Msg("*     Count before : %d",tpMG->m_wCountBefore);
+	Msg("*     Count after  : %d",tpMG->m_wCountAfter);
+	{
+		string4096	S;
+		string16	S1;
+		S[0] = 0;
+		OBJECT_PAIR_IT I = m_tObjectRegistry.begin();
+		OBJECT_PAIR_IT E = m_tObjectRegistry.end();
+		for (int j=0; I != E; I++) {
+			CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>((*I).second);
+			if (!tpALifeHuman)
+				continue;
+			PERSONAL_EVENT_P_IT i = tpALifeHuman->m_tpEvents.begin();
+			PERSONAL_EVENT_P_IT e = tpALifeHuman->m_tpEvents.end();
+			for ( ; i != e; i++)
+				if ((*i)->m_tEventID == tEventID) {
+					if (j++)
+						strcat(S,",");
+					strcat(S,itoa((*I).first,S1,10));
+					break;
+				}
+		}
+		vfPrintLargeString(S,"Monsters, who know about the event",j,105);
+	}
 }
 
 void CAI_ALife::vfTaskInfo(_TASK_ID &tTaskID)
 {
-    TASK_PAIR_IT it = m_tTaskRegistry.find(tTaskID);
-    if (it == m_tTaskRegistry.end()) {
-        Msg("* Invalid task m_tObjectID! (%d)", tTaskID);
-        return;
-    }
-    CALifeTask &tTask = *it->second;
-
-    Msg("* Task information");
-    Msg("* Task  m_tObjectID    : %d", tTask.m_tTaskID);
-    vfPrintTime("* Time  m_tObjectID  :", tTask.m_tTimeID);
-    // Msg("* Time  m_tObjectID    : %d", tTask.m_tTimeID);
-    Msg("* Customer m_tObjectID : %d", tTask.m_tCustomerID);
-    Msg("* Task type   : %d", tTask.m_tTaskType);
-
-    if (tTask.m_tTaskType == eTaskTypeSearchForItemOG) {
-        Msg("* Graph m_tObjectID    : %d", tTask.m_tGraphID);
-        Msg("* Object m_tObjectID   : %d", tTask.m_tObjectID);
-    }
-    else if (tTask.m_tTaskType == eTaskTypeSearchForItemOL) {
-        Msg("* Location m_tObjectID : %d", tTask.m_tLocationID);
-        Msg("* Object m_tObjectID   : %d", tTask.m_tObjectID);
-    }
-    else if (tTask.m_tTaskType == eTaskTypeSearchForItemCG) {
-        string64 tString;
-        Memory.mem_copy(tString, &(tTask.m_tClassID), sizeof(tTask.m_tClassID));
-        tString[sizeof(tTask.m_tClassID)] = 0;
-        Msg("* Graph m_tObjectID    : %d", tTask.m_tGraphID);
-        Msg("* Class m_tObjectID    : %d (%s)", tTask.m_tClassID, tString);
-    }
-    else if (tTask.m_tTaskType == eTaskTypeSearchForItemCL) {
-        string64 tString;
-        Memory.mem_copy(tString, &(tTask.m_tClassID), sizeof(tTask.m_tClassID));
-        tString[sizeof(tTask.m_tClassID)] = 0;
-        Msg("* Location m_tObjectID : %d", tTask.m_tLocationID);
-        Msg("* Class m_tObjectID    : %d (%s)", tTask.m_tClassID, tString);
-    }
-
-    string4096 S; S[0] = 0;
-    string16 S1;
-
-    {
-        OBJECT_PAIR_IT I = m_tObjectRegistry.begin();
-        OBJECT_PAIR_IT E = m_tObjectRegistry.end();
-
-        int j = 0;
-        for ( ; I != E; ++I)
-        {
-            CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>(I->second);
-            if (!tpALifeHuman)
-                continue;
-
-            TASK_IT i = tpALifeHuman->m_tpTaskIDs.begin();
-            TASK_IT e = tpALifeHuman->m_tpTaskIDs.end();
-            for ( ; i != e; ++i)
-            {
-                if ((*i) == tTaskID)
-                {
-                    if (j > 0)
-                        strcat_s(S, ",");
-
-                    _itoa_s(I->first, S1, 10);
-                    strcat_s(S, S1);
-
-                    ++j;
-                    break;
-                }
-            }
-        }
-        vfPrintLargeString(S, "Monsters, who know about the task", j, 105);
-    }
+	TASK_PAIR_IT I = m_tTaskRegistry.find(tTaskID);
+	if (I == m_tTaskRegistry.end()) {
+		Msg("* Invalid task m_tObjectID! (%d)",tTaskID);
+		return;
+	}
+	CALifeTask &tTask = *((*I).second);
+	Msg("* Task information");
+	Msg("* Task  m_tObjectID    : %d",tTask.m_tTaskID);
+	vfPrintTime("* Time  m_tObjectID  :",tTask.m_tTimeID);
+//	Msg("* Time  m_tObjectID    : %d",tTask.m_tTimeID);
+	Msg("* Customer m_tObjectID : %d",tTask.m_tCustomerID);
+	Msg("* Task type   : %d",tTask.m_tTaskType);
+	if (tTask.m_tTaskType == eTaskTypeSearchForItemOG) {
+		Msg("* Graph m_tObjectID    : %d",tTask.m_tGraphID);
+		Msg("* Object m_tObjectID   : %d",tTask.m_tObjectID);
+	}
+	else if (tTask.m_tTaskType == eTaskTypeSearchForItemOL) {
+		Msg("* Location m_tObjectID : %d",tTask.m_tLocationID);
+		Msg("* Object m_tObjectID   : %d",tTask.m_tObjectID);
+	}
+	else if (tTask.m_tTaskType == eTaskTypeSearchForItemCG) {
+		string64 tString;
+		Memory.mem_copy(tString,&(tTask.m_tClassID),sizeof(tTask.m_tClassID));
+		tString[sizeof(tTask.m_tClassID)] = 0;
+		Msg("* Graph m_tObjectID    : %d",tTask.m_tGraphID);
+		Msg("* Class m_tObjectID    : %d (%s)",tTask.m_tClassID,tString);
+	}
+	else if (tTask.m_tTaskType == eTaskTypeSearchForItemCL) {
+		string64 tString;
+		Memory.mem_copy(tString,&(tTask.m_tClassID),sizeof(tTask.m_tClassID));
+		tString[sizeof(tTask.m_tClassID)] = 0;
+		Msg("* Location m_tObjectID : %d",tTask.m_tLocationID);
+		Msg("* Class m_tObjectID    : %d (%s)",tTask.m_tClassID,tString);
+	}
+	string4096	S;
+	string16	S1;
+	S[0] = 0;
+	{
+		OBJECT_PAIR_IT I = m_tObjectRegistry.begin();
+		OBJECT_PAIR_IT E = m_tObjectRegistry.end();
+		for (int j=0; I != E; I++) {
+			CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>((*I).second);
+			if (!tpALifeHuman)
+				continue;
+			TASK_IT i = tpALifeHuman->m_tpTaskIDs.begin();
+			TASK_IT e = tpALifeHuman->m_tpTaskIDs.end();
+			for ( ; i != e; i++)
+				if ((*i) == tTaskID) {
+					if (j++)
+						strcat(S,",");
+					strcat(S,itoa((*I).first,S1,10));
+					break;
+				}
+		}
+		vfPrintLargeString(S,"Monsters, who know about the task",j,105);
+	}
 }
-
 
 void CAI_ALife::vfSpawnPointInfo(_SPAWN_ID &tSpawnID)
 {

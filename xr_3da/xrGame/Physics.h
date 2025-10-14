@@ -6,15 +6,29 @@
 #include "PHObject.h"
 #include "PHInterpolation.h"
 #include "_cylinder.h"
+//#define ODE_SLOW_SOLVER
 ///////////////////////////////////////////////////////////////////////////////
 const dReal fixed_step=0.02f;
 const int dis_frames=11;
 
-const dReal world_spring=24000000.f;//2400000.f;//550000.f;///1000000.f;;
-const dReal world_damping=400000.f;
-#define ERP(k_p,k_d)	((fixed_step*(k_p)) / (((fixed_step)*(k_p)) + (k_d)))
-#define CFM(k_p,k_d)	(1.f / (((fixed_step)*(k_p)) + (k_d)))
 
+#define ERP(k_p,k_d)		((fixed_step*(k_p)) / (((fixed_step)*(k_p)) + (k_d)))
+#define CFM(k_p,k_d)		(1.f / (((fixed_step)*(k_p)) + (k_d)))
+#define SPRING(cfm,erp)		((erp)/(cfm)/fixed_step)
+#define DAMPING(cfm,erp)	((1.f-(erp))/(cfm))
+
+//const dReal world_spring=24000000.f;//2400000.f;//550000.f;///1000000.f;;
+//const dReal world_damping=400000.f;//erp/cfm1.1363636e-006f,0.54545456f
+#ifndef  ODE_SLOW_SOLVER
+const dReal world_cfm=1.1363636e-008f;
+const dReal world_erp=0.74545456f;
+#else
+const dReal world_cfm=1.1363636e-006f;
+const dReal world_erp=0.54545456f;
+#endif
+
+const dReal world_spring=SPRING(world_cfm,world_erp);
+const dReal world_damping=DAMPING(world_cfm,world_erp);
 
 class CPHMesh {
 	dGeomID Geom;
@@ -31,17 +45,29 @@ class CPHJeep {
 	static const	u32 NofBodies=5;
 	static const	u32 NofJoints=4;
 
-	dReal MassShift;
+
 	dBodyID Bodies[NofBodies];
 	dGeomID Geoms[NofGeoms];
 	dJointID Joints[NofJoints];
+	CPhysicsRefObject* m_ref_object;
 	dVector3 startPosition;
-	bool weels_limited;
+	bool	 weels_limited;
+	bool	 bActive;
 	void CreateDynamicData();
 public:
-	CPHJeep(){weels_limited=true;}
 
+	dReal MassShift;
+
+	CPHJeep()
+	{
+		weels_limited=true;
+		bActive=false;
+		m_ref_object=NULL;
+		MassShift=0.25f;
+	}
+	void SetPhRefObject(CPhysicsRefObject * ref_object);
 	void applyImpulseTrace		(int part,const Fvector& pos, const Fvector& dir, float val){
+	if(!bActive) return;
 	val/=fixed_step;
 	if(part<0||part>NofBodies-1) return;
 	Fvector body_pos;
@@ -65,8 +91,13 @@ public:
 	void NeutralDrive();
 	void JointTune(dReal step);
 	void Revert();
-	void SetStartPosition(Fvector pos){dBodySetPosition(Bodies[0],pos.x,pos.y,pos.z);}
+	void SetStartPosition(Fvector pos)
+	{
+		if(!bActive) return;
+		dBodySetPosition(Bodies[0],pos.x,pos.y,pos.z);
+	}
 	void SetPosition(Fvector pos){
+		if(!bActive) return;
 		const dReal* currentPos=dBodyGetPosition(Bodies[0]);	
 		Fvector v={pos.x-currentPos[0],pos.y-currentPos[1],pos.z-currentPos[2]};
 		dBodySetPosition(Bodies[0],pos.x,pos.y,pos.z);
@@ -77,6 +108,7 @@ public:
 		}
 	}
 	void SetRotation(dReal* R){
+		if(!bActive) return;
 		const dReal* currentPos0=dBodyGetPosition(Bodies[0]);	
 		const dReal* currentR=dBodyGetRotation(Bodies[0]);
 		dMatrix3 relRot;
@@ -101,6 +133,13 @@ public:
 		
 	}
 	Fvector GetVelocity(){
+
+		if(!bActive) 
+		{
+			Fvector ret;
+			ret.set(0,0,0);
+			return ret;
+		}
 		Fvector ret;
 		const dReal* vel=dBodyGetLinearVel(Bodies[0]);
 		ret.x=vel[0];
@@ -108,6 +147,22 @@ public:
 		ret.z=vel[2];
 		return ret;
 	}
+	Fvector GetAngularVelocity(){
+
+		if(!bActive) 
+		{
+			Fvector ret;
+			ret.set(0,0,0);
+			return ret;
+		}
+		Fvector ret;
+		const dReal* vel=dBodyGetAngularVel(Bodies[0]);
+		ret.x=vel[0];
+		ret.y=vel[1];
+		ret.z=vel[2];
+		return ret;
+	}
+
 	PHDynamicData DynamicData;
 	dVector3 jeepBox;
 	dVector3 cabinBox;
@@ -138,7 +193,7 @@ class CPHWorld {
 	dSpaceID Space;
 	
 	CPHMesh Mesh;
-	std::list<CPHObject*> m_objects;
+	xr_list<CPHObject*> m_objects;
 public:
 	double m_frame_sum;
 	dReal frame_time;
@@ -154,12 +209,12 @@ public:
 	dSpaceID GetSpace(){return Space;};
 	//	dWorldID GetWorld(){return phWorld;};
 	void Create();
-	std::list <CPHObject*> ::iterator AddObject(CPHObject* object){
+	xr_list <CPHObject*> ::iterator AddObject(CPHObject* object){
 		m_objects.push_back(object);
 		//list <CPHObject*> ::iterator i= m_objects.end();
 		return --(m_objects.end());
 	};
-	void RemoveObject(std::list<CPHObject*> :: iterator i){
+	void RemoveObject(xr_list<CPHObject*> :: iterator i){
 		m_objects.erase((i));
 	};
 	//CPHElement* AddElement(){
@@ -209,7 +264,8 @@ class CPHElement:  public CPhysicsElement {
 	dMass					m_mass;
 	dSpaceID				m_space;
 	dBodyID					m_body;
-	dSpaceID					m_group;
+	dGeomID					m_group;
+	CPhysicsRefObject*		m_phys_ref_object;
 ///////////////////////////////
 	xr_vector<CPHElement*>		m_attached_elements;
 	CPHElement				*m_parent_element;
@@ -236,21 +292,27 @@ dReal						k_w;
 dReal						k_l;//1.8f;
 bool						attached;
 bool						b_contacts_saved;
-dJointGroupID				m_saved_contacts;			
+dJointGroupID				m_saved_contacts;
+ContactCallbackFun*			contact_callback;
+ObjectContactCallbackFun*	object_contact_callback;
+ObjectContactCallbackFun*	temp_for_push_out;
+u32							push_untill;
+
 public:
 
 /////////////////////////////////////////////////////////////////////////////
 static Shader*			hWallmark;
-ContactCallbackFun*			contact_callback;
+
 ////////////////////////////
 private:
-	dGeomID 			create_Sphere				(const Fsphere&		V);
-	dGeomID 			create_Box					(const Fobb&		V);
-	dGeomID  			create_Cylinder				(const Fcylinder&	V);
+	void			create_Sphere				(const Fsphere&		V);
+	dGeomID			create_Box					(const Fobb&		V);
+	void			create_Cylinder				(const Fcylinder&	V);
 
 	void			calculate_it_data			(const Fvector& mc,float mass);
 	void			calculate_it_data_use_density(const Fvector& mc,float density);
-	void			Disabling						();
+	void			Disabling					();
+	void			unset_Pushout				();
 public:
 	void					Disable					();
 	void					ReEnable				();
@@ -272,31 +334,51 @@ public:
 	virtual	void			add_Box					(const Fobb&		V);
 
 	virtual	void			add_Cylinder			(const Fcylinder&	V);
-	
-	virtual void			set_ContactCallback		(ContactCallbackFun* callback);
-	void			SetShell		(CPHShell* p){m_shell=p;}
-	void			InterpolateGlobalTransform(Fmatrix* m);
-	void			build(dSpaceID space);
-	void			destroy();
-	Fvector			get_mc_data();
-	Fvector			get_mc_geoms();
-	void			Start();
-	void			RunSimulation();
 
-	dBodyID			get_body(){return m_body;};
-	float			get_volume(){get_mc_data();return m_volume;};
-	void			SetTransform(const Fmatrix& m0);
+	virtual void			set_ContactCallback		(ContactCallbackFun* callback);
+
+	virtual void			set_ObjectContactCallback(ObjectContactCallbackFun* callback);
+	virtual void			set_PhysicsRefObject	 (CPhysicsRefObject* ref_object);
+	virtual void			set_PushOut				 (u32 time);
+	virtual void			get_LinearVel			 (Fvector& velocity);
+	virtual	void			set_BoxMass				 (const Fobb& box, float mass);
+
+	void			SetShell						(CPHShell* p){m_shell=p;}
+	void			SetPhObjectInGeomData			(CPHObject* O);
+
+	void			InterpolateGlobalTransform		(Fmatrix* m);
+	void			build							(dSpaceID space);
+	void			destroy							();
+	Fvector			get_mc_data						();
+	Fvector			get_mc_geoms					();
+	void			Start							();
+	void			RunSimulation					();
+
+	dBodyID			get_body						(){return m_body;};
+	float			get_volume						(){get_mc_data();return m_volume;};
+	void			SetTransform					(const Fmatrix& m0);
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////
-	virtual void			SetMaterial				(u32 m){ul_material=m;}
-	virtual void			SetMaterial				(LPCSTR m){ul_material=GMLib.GetMaterialIdx(m);}
+	virtual void			SetMaterial				(u32 m);
+
+	virtual void			SetMaterial				(LPCSTR m){SetMaterial(GMLib.GetMaterialIdx(m));}
+
 	virtual void			Activate				(const Fmatrix& m0, float dt01, const Fmatrix& m2,bool disable=false);
-	virtual void			Activate				(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel);
-	virtual void			Activate				();
+	virtual void			Activate				(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel,bool disable=false);
+	virtual void			Activate				(bool place_current_forms=false,bool disable=false);
+			void			Activate				(const Fmatrix& start_from, bool disable=false);
 	virtual void			Deactivate				();
 	virtual void			setMass					(float M);
+	virtual float			getMass					(){return m_mass.mass;}
+	virtual void			setDensity				(float M);
+	virtual void			setInertia				(const Fmatrix& M)																					{}
+	dMass*					GetMass					()
+	{
+		return &m_mass;
+	}
+
 	virtual void			applyForce				(const Fvector& dir, float val){
-																					if( !dBodyIsEnabled(m_body)) dBodyEnable(m_body);
+		if( !dBodyIsEnabled(m_body)) dBodyEnable(m_body);
 																					dBodyAddForce(m_body,dir.x*val,dir.y*val,dir.z*val);
 																					};
 	virtual void			applyImpulse			(const Fvector& dir, float val){
@@ -306,7 +388,10 @@ public:
 	virtual void			Update					();
 	CPHElement(dSpaceID a_space){ 
 	///	if(!hWallmark)hWallmark	= Device.Shader.Create("effects\\wallmark", "wallmarks\\wallmark_default");
+		push_untill=0;
 		contact_callback=ContactShotMark;
+		object_contact_callback=NULL;
+		temp_for_push_out=NULL;
 		m_space=a_space;
 		m_body=NULL;
 		bActive=false;
@@ -316,6 +401,7 @@ public:
 		m_parent_element=NULL;
 		m_shell=NULL;
 		m_group=NULL;
+		m_phys_ref_object=NULL;
 		ul_material=GMLib.GetMaterialIdx("objects\\box_default");
 		k_w=0.05f;
 		k_l=0.0002f;//1.8f;
@@ -332,6 +418,9 @@ class CPHJoint: public CPhysicsJoint{
 CPHShell*   pShell;
 dJointID m_joint;
 dJointID m_joint1;
+float erp;
+float cfm;
+
 enum eVs {
 vs_first,
 vs_second,
@@ -358,8 +447,13 @@ SPHAxis(){
 	zero=0.f;
 	//erp=ERP(world_spring/5.f,world_damping*5.f);
 	//cfm=CFM(world_spring/5.f,world_damping*5.f);
-	erp=0.6f;
+#ifndef ODE_SLOW_SOLVER
+	erp=world_erp;
+	cfm=world_cfm;
+#else
+	erp=0.3f;
 	cfm=0.000001f;
+#endif
 	direction.set(0,0,1);
 	vs=vs_first;
 	force=5.f;
@@ -403,6 +497,8 @@ void CreateFullControl();
 	
 public:
 	virtual void SetForceAndVelocity		(const float force,const float velocity=0.f,const int axis_num=-1);
+	virtual void SetForce					(const float force,const int axis_num=-1);
+	virtual void SetVelocity				(const float velocity=0.f,const int axis_num=-1);
 	CPHJoint(CPhysicsJoint::enumType type ,CPhysicsElement* first,CPhysicsElement* second);
 	virtual ~CPHJoint(){
 						if(bActive) Deactivate();
@@ -424,7 +520,7 @@ class CPHShell: public CPhysicsShell,public CPHObject {
 	dSpaceID			m_space;
 	bool bActivating;
 
-std::list<CPHObject*>::iterator m_ident;
+xr_list<CPHObject*>::iterator m_ident;
 				
 public:
 
@@ -459,7 +555,7 @@ public:
 	};
 	virtual void remove_Element(CPhysicsElement* E){
 	}
-
+	void					SetPhObjectInElements	();
 	virtual void			SetAirResistance		(dReal linear=0.0002f, dReal angular=0.05f){
 														xr_vector<CPHElement*>::iterator i;
 														for(i=elements.begin();i!=elements.end();i++)
@@ -475,11 +571,15 @@ public:
 	virtual void			Update					()	;											
 
 	virtual void			Activate				(const Fmatrix& m0, float dt01, const Fmatrix& m2,bool disable=false);
-	virtual void			Activate				(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel);
-	virtual void			Activate				();
+	virtual void			Activate				(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel,bool disable=false);
+	virtual void			Activate				(bool place_current_forms=false,bool disable=false);
 	virtual void			Deactivate				()		;
 
 	virtual void			setMass					(float M)									;
+
+	virtual void			setMass1				(float M)								;
+	virtual float			getMass					()											;
+	virtual void			setDensity				(float M)									;
 
 	virtual void			applyForce				(const Fvector& dir, float val)				{
 																								if(!bActive) return;
@@ -492,16 +592,29 @@ public:
 	virtual void			set_JointResistance		(float force)
 														{
 														xr_vector<CPHJoint*>::iterator i;
-														for(i=joints.begin();i!=joints.end();i++) 
-															(*i)->SetForceAndVelocity(force);
+														for(i=joints.begin();i!=joints.end();i++)
+														{
+															(*i)->SetForce(force);
+															(*i)->SetVelocity();
 														}
-	virtual void			set_ContactCallback		(ContactCallbackFun* callback)				;
+															//(*i)->SetForceAndVelocity(force);
+														}
+	virtual void			set_ContactCallback		  (ContactCallbackFun* callback)				;
+	virtual void			set_ObjectContactCallback (ObjectContactCallbackFun* callback);
+	virtual void			set_PhysicsRefObject	  (CPhysicsRefObject* ref_object);
+	virtual void			set_PushOut				  (u32 time);
+	virtual void			get_LinearVel			  (Fvector& velocity);
+	virtual void			SetMaterial				  (u32 m);
+	virtual void			SetMaterial				  (LPCSTR m);
 	virtual void			Enable					();
 
 	virtual	void PhDataUpdate(dReal step);
 	virtual	void PhTune(dReal step);
 	virtual void InitContact(dContact* c){};
 	virtual void StepFrameUpdate(dReal step){};
+
+
+	virtual void			SmoothElementsInertia(float k);
 
 	dSpaceID GetSpace()
 	{

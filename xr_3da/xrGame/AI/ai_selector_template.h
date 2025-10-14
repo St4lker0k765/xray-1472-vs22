@@ -26,7 +26,7 @@
 //#define OLD_COVER_COST
 #define DEST_POSITIONS
 #define ATTACK_HIT_REACTION_TIME		30000
-#define FIRE_SAFETY_ANGLE				PI/10
+#define FIRE_SAFETY_ANGLE				PI/18.f
 #define MAGNITUDE_EPSILON				0.01
 
 #define aiSearchRange					(u64(1) <<  0)
@@ -430,7 +430,7 @@ public:
 
 	IC		void vfAddEnemyLookCost						()
 			{
-				if (fabs(m_dwCurTime - m_dwHitTime) < ATTACK_HIT_REACTION_TIME) {
+				if (_abs(s32(m_dwCurTime - m_dwHitTime)) < ATTACK_HIT_REACTION_TIME) {
 					Fvector tTempDirection0, tTempDirection1 = m_tHitDir;
 					tTempDirection0.sub(m_tEnemyPosition,m_tCurrentPosition);
 					vfNormalizeSafe(tTempDirection0);
@@ -442,7 +442,7 @@ public:
 
 	IC		void vfAddEnemyLookCost						(float fAngle)
 			{
-				if (fabs(m_dwCurTime - m_dwHitTime) < ATTACK_HIT_REACTION_TIME) {
+				if (_abs(m_dwCurTime - m_dwHitTime) < ATTACK_HIT_REACTION_TIME) {
 					Fvector tTempDirection0, tTempDirection1 = m_tHitDir;
 					tTempDirection0.sub(m_tEnemyPosition,m_tCurrentPosition);
 					vfNormalizeSafe(tTempDirection0);

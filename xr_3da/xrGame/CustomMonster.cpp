@@ -194,13 +194,13 @@ void CCustomMonster::net_Export(NET_Packet& P)					// export to server
 	// export last known packet
 	R_ASSERT				(!NET.empty());
 	net_update& N			= NET.back();
+	P.w_float_q16		(fHealth,-1000,1000);
 	P.w_u32					(N.dwTimeStamp);
 	P.w_u8					(0);
 	P.w_vec3				(N.p_pos);
 	P.w_angle8				(N.o_model);
 	P.w_angle8				(N.o_torso.yaw);
 	P.w_angle8				(N.o_torso.pitch);
-	P.w_float				(N.fHealth);
 }
 
 void CCustomMonster::net_Import(NET_Packet& P)
@@ -209,14 +209,14 @@ void CCustomMonster::net_Import(NET_Packet& P)
 	net_update				N;
 
 	u8 flags;
+	P.r_float_q16		(fHealth,-1000,1000);
 	P.r_u32					(N.dwTimeStamp);
 	P.r_u8					(flags);
 	P.r_vec3				(N.p_pos);
 	P.r_angle8				(N.o_model);
 	P.r_angle8				(N.o_torso.yaw);
 	P.r_angle8				(N.o_torso.pitch);
-	P.r_float				(N.fHealth);
-
+	
 	if (NET.empty() || (NET.back().dwTimeStamp<N.dwTimeStamp))	{
 		NET.push_back			(N);
 		NET_WasInterpolating	= TRUE;
@@ -351,12 +351,13 @@ void CCustomMonster::UpdateCL	()
 				u32	d2					= B.dwTimeStamp - A.dwTimeStamp;
 				float					f = (float(d1)/float(d2));
 				
-				NET_Last.p_pos.sub		(B.p_pos,A.p_pos);
-				if (dwTime - B.dwTimeStamp < 150)
-					NET_Last.p_pos.mul		(f);
-				else
-					NET_Last.p_pos.mul		((float(d2 + 150)/float(d2)));
-				NET_Last.p_pos.add		(A.p_pos);
+//				NET_Last.p_pos.sub		(B.p_pos,A.p_pos);
+//				if (dwTime - B.dwTimeStamp < 150)
+//					NET_Last.p_pos.mul		(f);
+//				else
+//					NET_Last.p_pos.mul		((float(d2 + 150)/float(d2)));
+//				NET_Last.p_pos.add		(A.p_pos);
+				NET_Last.lerp			(A,B,std::min(f,2.f));
 				
 				Fvector					dir;
 				AI_Path.Direction		(dir);
@@ -429,7 +430,11 @@ void CCustomMonster::GetVisible			(objVisible& R)
 	for (; I!=E; I++)	if (positive(I->fuzzy)) {
 		CEntityAlive *tpEntityAlive = dynamic_cast<CEntityAlive *>(I->O);
 		CActor		 *tpActor = dynamic_cast<CActor *>(I->O);
+#ifdef IGNORE_ACTOR
 		if (tpEntityAlive && (tfGetRelationType(tpEntityAlive) != eRelationTypeFriend) && tpEntityAlive->g_Alive() && !tpActor)
+#else
+		if (tpEntityAlive && (tfGetRelationType(tpEntityAlive) != eRelationTypeFriend) && tpEntityAlive->g_Alive())// && !tpActor)
+#endif
 			R.insert(I->O);
 	}
 }
@@ -449,6 +454,7 @@ void CCustomMonster::eye_pp_s0			( )
 	eye_matrix.c.add						(X.c,m_tEyeShift);
 	Device.Statistic.TEST0.End				();
 }
+
 void CCustomMonster::eye_pp_s1			( )
 {
 	eye_pp_stage						++;
@@ -622,18 +628,14 @@ void CCustomMonster::Death	()
 
 void CCustomMonster::Die	()
 {
-#ifndef NO_PHYSICS_IN_AI_MOVE
-	Movement.DestroyCharacter();
-#endif
+
 
 }
 BOOL CCustomMonster::net_Spawn	(LPVOID DC)
 {
 	if (!inherited::net_Spawn(DC))	return FALSE;
 
-#ifndef NO_PHYSICS_IN_AI_MOVE
-	Movement.CreateCharacter();
-#endif
+
 
 	Movement.SetPosition	(vPosition);
 	Movement.SetVelocity	(0,0,0);
@@ -643,7 +645,7 @@ BOOL CCustomMonster::net_Spawn	(LPVOID DC)
 
 	eye_matrix.identity		();
 
-	r_torso_current.yaw		= r_torso_target.yaw	= E->o_Position.y;
+	r_torso_current.yaw		= r_torso_target.yaw	= -E->o_Angle.y;
 	r_torso_current.pitch	= r_torso_target.pitch	= 0;
 
 	R_ASSERT				(pVisual->Type==MT_SKELETON);

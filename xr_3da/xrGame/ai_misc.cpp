@@ -9,7 +9,6 @@
 #include "stdafx.h"
 #include "ai_space.h"
 #include "LevelGameDef.h"
-#include <cmath>
 
 using namespace AI;
 
@@ -203,41 +202,33 @@ IC void vfIntersectContours(PSegment &tSegment, PContour &tContour0, PContour &t
 		Log("! AI_PathNodes: Can't find intersection segment");
 }
 
-void vfComputeCircle(Fvector tPosition, Fvector tPoint0, Fvector tPoint1,
-                     float& fRadius, Fvector& tCircleCentre, Fvector& tFinalPosition, float& fBeta)
+void vfComputeCircle(Fvector tPosition, Fvector tPoint0, Fvector tPoint1, float &fRadius, Fvector &tCircleCentre, Fvector &tFinalPosition, float &fBeta)
 {
-    Fvector tP0, tP1;
-    float fAlpha, fSinus, fCosinus, fRx;
+	Fvector tP0, tP1;
+	float fAlpha, fSinus, fCosinus, fRx;
 
-    tP0.sub(tPosition, tPoint0);
-    tP1.sub(tPoint1,    tPoint0);
-    fRx = tP0.magnitude();
-    tP0.normalize();
-    tP1.normalize();
+	tP0.sub(tPosition,tPoint0);
+	tP1.sub(tPoint1,tPoint0);
+	fRx = tP0.magnitude();
+	tP0.normalize();
+	tP1.normalize();
 
-    clamp(fAlpha = tP0.dotproduct(tP1), -0.9999999f, 0.9999999f);
-    fAlpha = 0.5f * (fBeta = std::acosf(fAlpha));
-    fBeta  = PI - fBeta;
+	clamp(fAlpha = tP0.dotproduct(tP1),-0.9999999f,0.9999999f);
+	fAlpha = .5f*(fBeta = acosf(fAlpha));
+	fBeta = PI - fBeta;
 
-    tP0.mul(fRx);
-    tP1.mul(fRx);
-
-    tFinalPosition = tP1;
-    tFinalPosition.add(tPoint0);
-
-    tCircleCentre.add(tP0, tP1);
-
-    fSinus   = std::sinf(fAlpha);
-    fCosinus = std::cosf(fAlpha);
-
-    fRadius = fRx * fSinus / fCosinus;
-    fRx     = fRadius * (1.f / fSinus - 1.f);
-
-    const float len = tCircleCentre.magnitude();
-    if (len > 0.f)
-        tCircleCentre.mul((fRadius + fRx) / len);
-
-    tCircleCentre.add(tPoint0);
+	tP0.mul(fRx);
+	tP1.mul(fRx);
+	
+	tFinalPosition = tP1;
+	tFinalPosition.add(tPoint0);
+	
+	tCircleCentre.add(tP0,tP1);
+	_sincos(fAlpha,fSinus,fCosinus);
+	fRadius = fRx*fSinus/fCosinus;
+	fRx = fRadius*(1.f/fSinus - 1.f);
+	tCircleCentre.mul((fRadius + fRx)/tCircleCentre.magnitude());
+	tCircleCentre.add(tPoint0);
 }
 
 void CAI_Space::vfChoosePoint(Fvector &tStartPoint, Fvector &tFinishPoint, PContour	&tCurContour, int iNodeIndex, Fvector &tTempPoint, int &iSavedIndex)
@@ -312,7 +303,7 @@ void CAI_Space::vfChoosePoint(Fvector &tStartPoint, Fvector &tFinishPoint, PCont
 //	PSegment tSegment;
 //	u32 dwCurNode, dwPrevNode, dwPrevPrevNode;
 //	int i, j, iCurrentPatrolPoint, iCount, iNodeIndex, iSavedIndex = -1, iStartI;
-//	float fSuitAngleCosinus = cosf(fSuitableAngle), fHalfSubNodeSize = (Header().size)*.5f, fSegmentSize, fDistance, fRadius, fAlpha0, fAlpha, fTemp, fRoundedDistance = ::Random.randF(fRoundedDistanceMin,fRoundedDistanceMax), fPreviousRoundedDistance = fRoundedDistance;
+//	float fSuitAngleCosinus = _cos(fSuitableAngle), fHalfSubNodeSize = (Header().size)*.5f, fSegmentSize, fDistance, fRadius, fAlpha0, fAlpha, fTemp, fRoundedDistance = ::Random.randF(fRoundedDistanceMin,fRoundedDistanceMax), fPreviousRoundedDistance = fRoundedDistance;
 //	bool bStop = false, bOk = false;
 //
 //	// init deviation points
@@ -839,26 +830,20 @@ void CAI_Space::vfCreateFastRealisticPath(xr_vector<Fvector> &tpaPoints, u32 dwS
 	PSegment tSegment;
 	u32 dwCurNode, dwPrevNode, dwPrevPrevNode;
 	int i, j, iCurrentPatrolPoint, iCount, iNodeIndex, iSavedIndex = -1, iStartI;
-	float fSuitAngleCosinus = cosf(fSuitableAngle), fHalfSubNodeSize = (Header().size)*.5f, fSegmentSize, fDistance, fRadius, fAlpha0, fAlpha, fTemp, fRoundedDistance = ::Random.randF(fRoundedDistanceMin,fRoundedDistanceMax), fPreviousRoundedDistance = fRoundedDistance;
+	float fSuitAngleCosinus = _cos(fSuitableAngle), fHalfSubNodeSize = (Header().size)*.5f, fSegmentSize, fDistance, fRadius, fAlpha0, fAlpha, fTemp, fRoundedDistance = ::Random.randF(fRoundedDistanceMin,fRoundedDistanceMax), fPreviousRoundedDistance = fRoundedDistance;
 	bool bStop = false, bOk = false;
 
-	tpaDeviations[0].set(0, 0, 0);
-	for (i = 1; i < (int)tpaDeviations.size(); ++i)
-	{
-		fRadius = ::Random.randF(fRadiusMin, fRadiusMax);
-		fAlpha = ::Random.randF(0.f, PI_MUL_2);
-
-		const float s = std::sinf(fAlpha);
-		const float c = std::cosf(fAlpha);
-		fAlpha0 = s;
-		fTemp = c;
-
+	// init deviation points
+	tpaDeviations[0].set(0,0,0);
+	for ( i=1; i<(int)tpaDeviations.size(); i++) {
+		fRadius = ::Random.randF(fRadiusMin,fRadiusMax);
+		fAlpha = ::Random.randF(0.f,PI_MUL_2);
+		_sincos(fAlpha,fAlpha0,fTemp);
 		if (bUseDeviations)
-			tpaDeviations[i].set(fTemp * fRadius, 0.f, fAlpha0 * fRadius);
+			tpaDeviations[i].set(fTemp*fRadius,0,fAlpha0*fRadius);
 		else
-			tpaDeviations[i].set(0.f, 0.f, 0.f);
-
-		tTempPoint.add(tpaPoints[i], tpaDeviations[i]);
+			tpaDeviations[i].set(0,0,0);
+		tTempPoint.add(tpaPoints[i],tpaDeviations[i]);
 	}
 	
 	if (!bLooped)
@@ -920,12 +905,7 @@ void CAI_Space::vfCreateFastRealisticPath(xr_vector<Fvector> &tpaPoints, u32 dwS
 						else
 							fAlpha = -acosf(tCurrentPosition.x);
 						fTemp = fAlpha - fAlpha0;
-						{
-							const float s = std::sinf(fTemp);
-							const float c = std::cosf(fTemp);
-							tCurrentPosition.z = s;
-							tCurrentPosition.x = c;
-						}
+						_sincos(fTemp,tCurrentPosition.z,tCurrentPosition.x);
 						tCurrentPosition.mul(fRadius);
 						tCurrentPosition.add(tCircleCentre);
 						if (tPrevPoint.distance_to_xz(tFinalPosition) < tCurrentPosition.distance_to_xz(tFinalPosition)) {
@@ -933,12 +913,7 @@ void CAI_Space::vfCreateFastRealisticPath(xr_vector<Fvector> &tpaPoints, u32 dwS
 							tCurrentPosition.sub(tCircleCentre);
 							tCurrentPosition.normalize();
 							fTemp = fAlpha + fAlpha0;
-							{
-								const float s = std::sinf(fTemp);
-								const float c = std::cosf(fTemp);
-								tCurrentPosition.z = s;
-								tCurrentPosition.x = c;
-							}
+							_sincos(fTemp,tCurrentPosition.z,tCurrentPosition.x);
 							tCurrentPosition.mul(fRadius);
 							tCurrentPosition.add(tCircleCentre);
 						}
@@ -1408,7 +1383,7 @@ u32 CAI_Space::dwfCheckPositionInDirection(u32 dwStartNode, Fvector tStartPositi
 			return(-1);
 	}
 	
-	if (bfInsideNode(Node(dwCurNode),tFinishPosition))
+	if (bfInsideNode(Node(dwCurNode),tFinishPosition) && (abs(ffGetY(*Node(dwCurNode),tFinishPosition.x,tFinishPosition.z) - tFinishPosition.y) < .5f))
 		return(dwCurNode);
 	else
 		return(-1);
@@ -1464,7 +1439,7 @@ float CAI_Space::ffMarkNodesInDirection(u32 dwStartNode, Fvector tStartPoint, Fv
 	return(fCurDistance);
 }
 
-float CAI_Space::ffFindFarthestNodeInDirection(u32 dwStartNode, Fvector tStartPoint, Fvector tFinishPoint, u32 &dwFinishNode, std::vector<bool> *tpaMarks)
+float CAI_Space::ffFindFarthestNodeInDirection(u32 dwStartNode, Fvector tStartPoint, Fvector tFinishPoint, u32 &dwFinishNode, xr_vector<bool> *tpaMarks)
 {
 	PContour				tCurContour;
 	NodeCompressed			*tpNode;
@@ -1497,4 +1472,85 @@ float CAI_Space::ffFindFarthestNodeInDirection(u32 dwStartNode, Fvector tStartPo
 		dwFinishNode		= dwCurNode;
 	}
 	return(fCurDistance);
+}
+
+bool CAI_Space::bfCreateStraightPTN_Path(u32 dwStartNode, Fvector tStartPoint, Fvector tFinishPoint, xr_vector<Fvector> &tpaOutputPoints, xr_vector<u32> &tpaOutputNodes, bool bAddFirstPoint)
+{
+	PContour				tCurContour;
+	NodeCompressed			*tpNode;
+	NodeLink				*taLinks;
+	int						i, iCount, iSavedIndex, iPrevIndex = -1, iNextNode;
+	Fvector					tTempPoint = tStartPoint;
+	float					fDistance = tStartPoint.distance_to(tFinishPoint), fCurDistance = 0.f;
+	u32						dwCurNode = dwStartNode;
+
+	tpaOutputPoints.clear	();
+	tpaOutputNodes.clear	();
+	if (bAddFirstPoint) {
+		tpaOutputPoints.push_back(tStartPoint);
+		tpaOutputNodes.push_back(dwStartNode);
+	}
+
+	while (!bfInsideNode(Node(dwCurNode),tFinishPoint) && (fCurDistance < (fDistance + EPS_L))) {
+		tpNode				= Node(dwCurNode);
+		taLinks				= (NodeLink *)((BYTE *)tpNode + sizeof(NodeCompressed));
+		iCount				= tpNode->links;
+		iSavedIndex			= -1;
+		UnpackContour		(tCurContour,dwCurNode);
+		for ( i=0; i < iCount; i++)
+			if ((iNextNode = UnpackLink(taLinks[i])) != iPrevIndex)
+				vfChoosePoint	(tStartPoint,tFinishPoint,tCurContour, iNextNode,tTempPoint,iSavedIndex);
+
+		if (iSavedIndex > -1) {
+			fCurDistance		= tStartPoint.distance_to_xz(tTempPoint);
+			PContour			tNextContour;
+			PSegment			tNextSegment;
+			Fvector				tIntersectPoint;
+			UnpackContour		(tNextContour,iSavedIndex);
+			vfIntersectContours	(tNextSegment,tNextContour,tCurContour);
+			u32					dwIntersect = lines_intersect(tStartPoint.x,tStartPoint.z,tFinishPoint.x,tFinishPoint.z,tNextSegment.v1.x,tNextSegment.v1.z,tNextSegment.v2.x,tNextSegment.v2.z,&tIntersectPoint.x,&tIntersectPoint.z);
+			VERIFY				(dwIntersect);
+			tIntersectPoint.y	= ffGetY(*tpNode,tIntersectPoint.x,tIntersectPoint.z);
+			
+			tpaOutputPoints.push_back(tIntersectPoint);
+			tpaOutputNodes.push_back(iSavedIndex);
+			
+			iPrevIndex			= dwCurNode;
+			dwCurNode			= iSavedIndex;
+		}
+		else {
+			int					iNodeIndex;
+			taLinks				= (NodeLink *)((BYTE *)tpNode + sizeof(NodeCompressed));
+			bool				bOk = false;
+			for ( i=0; i < iCount; i++) {
+				NodeCompressed *tpLastNode = Node(iNodeIndex = UnpackLink(taLinks[i]));
+				if (bfInsideNode(tpLastNode,tFinishPoint)) {
+					PContour			tNextContour;
+					PSegment			tNextSegment;
+					UnpackContour		(tNextContour,iNodeIndex);
+					vfIntersectContours	(tNextSegment,tNextContour,tCurContour);
+					Fvector				tAdditionalPoint = tFinishPoint.distance_to_xz(tNextSegment.v1) < tFinishPoint.distance_to_xz(tNextSegment.v2) ? tNextSegment.v1 : tNextSegment.v2;
+					tAdditionalPoint.y	= ffGetY(*tpNode,tAdditionalPoint.x,tAdditionalPoint.z);
+					
+					tpaOutputPoints.push_back(tAdditionalPoint);
+					tpaOutputNodes.push_back(iNodeIndex);
+					
+					fCurDistance		= fDistance;
+					dwCurNode			= iNodeIndex;
+					bOk					= true;
+					break;
+				}
+			}
+			if (!bOk)
+				return(false);
+		}
+	}
+
+	if (bfInsideNode(Node(dwCurNode),tFinishPoint)) {
+		tpaOutputPoints.push_back(tFinishPoint);
+		tpaOutputNodes.push_back(dwCurNode);
+		return(true);
+	}
+	else
+		return(false);
 }

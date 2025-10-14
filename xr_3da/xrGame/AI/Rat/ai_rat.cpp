@@ -154,6 +154,11 @@ void CAI_Rat::Load(LPCSTR section)
 		m_tpaTerrain.push_back(tTerrainPlace);
 	}
 	m_fGoingSpeed					= pSettings->r_float	(section, "going_speed");
+
+	// prefetching
+	cNameVisual_set					("monsters\\rat\\rat_1");
+	cNameVisual_set					("monsters\\rat\\rat_2");
+	cNameVisual_set					("monsters\\rat\\rat_3");
 }
 
 BOOL CAI_Rat::net_Spawn	(LPVOID DC)
@@ -165,6 +170,9 @@ BOOL CAI_Rat::net_Spawn	(LPVOID DC)
 	if (!inherited::net_Spawn(DC))
 		return(FALSE);
 	// personal characteristics
+	r_torso_current.yaw				= r_torso_target.yaw	= -tpSE_Rat->o_Angle.y;
+	r_torso_current.pitch			= r_torso_target.pitch	= 0;
+
 	eye_fov							= tpSE_Rat->fEyeFov;
 	eye_range						= tpSE_Rat->fEyeRange;
 	fHealth							= tpSE_Rat->fHealth;
@@ -227,13 +235,13 @@ void CAI_Rat::net_Export(NET_Packet& P)
 	// export last known packet
 	R_ASSERT				(!NET.empty());
 	net_update& N			= NET.back();
+	P.w_float_q16		(fHealth,-1000,1000);
 	P.w_u32					(N.dwTimeStamp);
 	P.w_u8					(0);
 	P.w_vec3				(N.p_pos);
 	P.w_angle8				(N.o_model);
 	P.w_angle8				(N.o_torso.yaw);
 	P.w_angle8				(N.o_torso.pitch);
-	P.w_float				(N.fHealth);
 
 	P.w						(&m_tNextGP,				sizeof(m_tNextGP));
 	P.w						(&m_tCurGP,					sizeof(m_tCurGP));
@@ -252,13 +260,13 @@ void CAI_Rat::net_Import(NET_Packet& P)
 	net_update				N;
 
 	u8 flags;
+	P.r_float_q16		(fHealth,-1000,1000);
 	P.r_u32					(N.dwTimeStamp);
 	P.r_u8					(flags);
 	P.r_vec3				(N.p_pos);
 	P.r_angle8				(N.o_model);
 	P.r_angle8				(N.o_torso.yaw);
 	P.r_angle8				(N.o_torso.pitch);
-	P.r_float				(N.fHealth);
 
 	P.r						(&m_tNextGP,				sizeof(m_tNextGP));
 	P.r						(&m_tCurGP,					sizeof(m_tCurGP));
@@ -285,7 +293,7 @@ void CAI_Rat::CreateSkeleton(){
 	//sphere.P.set(0,0,0);
 	//sphere.R=0.25;
 	//element->add_Sphere(sphere);
-	element->setMass(m_phMass);
+	element->setDensity(m_phMass);
 	element->SetMaterial("creatures\\rat");
 	m_pPhysicsShell=P_create_Shell();
 	m_pPhysicsShell->add_Element(element);
@@ -312,7 +320,7 @@ void CAI_Rat::CreateSkeleton(){
 	box.m_halfsize.set(0.10f,0.085f,0.25f);
 	element->add_Box(box);
 
-	element->setMass(200.f);
+	element->setDensity(200.f);
 	m_pPhysicsShell->add_Element(element);
 	element->SetMaterial("materials\\skel1");
 

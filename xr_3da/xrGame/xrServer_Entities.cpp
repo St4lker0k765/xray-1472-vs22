@@ -5,7 +5,7 @@
 #include "clsid_game.h"
 #include "xrServer_Entities.h"
 
-xrSE_Weapon::xrSE_Weapon(LPCSTR caSection) : CALifeDynamicObject(caSection)
+xrSE_Weapon::xrSE_Weapon(LPCSTR caSection) : CALifeItem(caSection)
 {
 	a_current			= 90;
 	a_elapsed			= 0;
@@ -97,9 +97,9 @@ void	xrSE_Weapon::FillProp		(LPCSTR pref, PropItemVec& items)
 #endif
 
 //***** WeaponAmmo
-xrSE_WeaponAmmo::xrSE_WeaponAmmo(LPCSTR caSection) : CALifeObject(caSection)
+xrSE_WeaponAmmo::xrSE_WeaponAmmo(LPCSTR caSection) : CALifeItem(caSection)
 {
-	m_boxSize = pSettings->r_s32(caSection, "box_size");
+	a_elapsed = m_boxSize = pSettings->r_s32(caSection, "box_size");
 }
 
 void xrSE_WeaponAmmo::STATE_Read(NET_Packet& P, u16 size)
@@ -137,6 +137,7 @@ void xrSE_WeaponAmmo::FillProp(LPCSTR pref, PropItemVec& values) {
 xrSE_Teamed::xrSE_Teamed(LPCSTR caSection) : CALifeDynamicObject(caSection)
 {
 	s_team = s_squad = s_group = 0;
+	fHealth						= 100;
 }
 
 void	xrSE_Teamed::STATE_Read			(NET_Packet& P, u16 size)
@@ -146,6 +147,7 @@ void	xrSE_Teamed::STATE_Read			(NET_Packet& P, u16 size)
 	P.r_u8				(s_squad);
 	P.r_u8				(s_group);
 }
+
 void	xrSE_Teamed::STATE_Write		(NET_Packet& P)
 {
 	inherited::STATE_Write(P);
@@ -153,8 +155,19 @@ void	xrSE_Teamed::STATE_Write		(NET_Packet& P)
 	P.w_u8				(s_squad);
 	P.w_u8				(s_group);
 }
-void	xrSE_Teamed::UPDATE_Read		(NET_Packet& P)	{inherited::UPDATE_Read(P);};
-void	xrSE_Teamed::UPDATE_Write		(NET_Packet& P)	{inherited::UPDATE_Write(P);};
+
+void	xrSE_Teamed::UPDATE_Read		(NET_Packet& P)
+{
+	inherited::UPDATE_Read(P);
+	P.r_float_q16		(fHealth,	-1000,1000);
+};
+
+void	xrSE_Teamed::UPDATE_Write		(NET_Packet& P)
+{
+	inherited::UPDATE_Write(P);
+	P.w_float_q16		(fHealth,	-1000,1000);
+};
+
 #ifdef _EDITOR
 void	xrSE_Teamed::FillProp			(LPCSTR pref, PropItemVec& items)
 {
@@ -162,6 +175,7 @@ void	xrSE_Teamed::FillProp			(LPCSTR pref, PropItemVec& items)
     PHelper.CreateU8(items,PHelper.PrepareKey(pref,s_name, "Team"),		&s_team, 	0,64,1);
     PHelper.CreateU8(items,PHelper.PrepareKey(pref,s_name, "Squad"),	&s_squad, 	0,64,1);
     PHelper.CreateU8(items,PHelper.PrepareKey(pref,s_name, "Group"),	&s_group, 	0,64,1);
+   	PHelper.CreateFloat(		items, PHelper.PrepareKey(pref,s_name,"Personal",	"Health" 				),&fHealth,							0,200,5);
 }
 #endif
 
@@ -227,7 +241,7 @@ void	xrSE_Dummy::FillProp			(LPCSTR pref, PropItemVec& values)
 #endif
 
 //***** MercuryBall
-xrSE_MercuryBall::xrSE_MercuryBall(LPCSTR caSection) : CALifeDynamicObject(caSection)
+xrSE_MercuryBall::xrSE_MercuryBall(LPCSTR caSection) : CALifeItem(caSection)
 {
 	s_Model[0]	=	0;
 }
@@ -246,10 +260,10 @@ void	xrSE_MercuryBall::FillProp	(LPCSTR pref, PropItemVec& items)
 
 
 //***** Car
-void xrSE_Car::STATE_Read			(NET_Packet& P, u16 size)	{inherited::STATE_Read(P,size); };
-void xrSE_Car::STATE_Write			(NET_Packet& P)				{inherited::STATE_Write(P);		};
-void xrSE_Car::UPDATE_Read			(NET_Packet& P)				{inherited::UPDATE_Read(P);};
-void xrSE_Car::UPDATE_Write			(NET_Packet& P)				{inherited::UPDATE_Write(P);};
+void xrSE_Car::STATE_Read			(NET_Packet& P, u16 size)	{};
+void xrSE_Car::STATE_Write			(NET_Packet& P)				{};
+void xrSE_Car::UPDATE_Read			(NET_Packet& P)				{};
+void xrSE_Car::UPDATE_Write			(NET_Packet& P)				{};
 #ifdef _EDITOR
 void xrSE_Car::FillProp				(LPCSTR pref, PropItemVec& values)
 {
@@ -449,7 +463,7 @@ void xrSE_Spectator::FillProp		(LPCSTR pref, PropItemVec& items)
 #endif
 
 //***** Actor
-xrSE_Actor::xrSE_Actor			(LPCSTR caSection) : xrSE_Teamed(caSection)
+xrSE_Actor::xrSE_Actor				(LPCSTR caSection) : xrSE_Teamed(caSection), CALifeTraderParams(caSection)
 {
 	caModel[0]						= 0;
 	strcat(caModel,"actors\\Different_stalkers\\stalker_hood_multiplayer.ogf");
@@ -458,6 +472,7 @@ xrSE_Actor::xrSE_Actor			(LPCSTR caSection) : xrSE_Teamed(caSection)
 void xrSE_Actor::STATE_Read			(NET_Packet& P, u16 size)
 {
 	inherited::STATE_Read(P,size);
+	CALifeTraderParams::STATE_Read(P,size);
 	if (m_wVersion >= 3)
 		P.r_string(caModel);
 };
@@ -465,12 +480,14 @@ void xrSE_Actor::STATE_Read			(NET_Packet& P, u16 size)
 void xrSE_Actor::STATE_Write		(NET_Packet& P)
 {
 	inherited::STATE_Write(P);
+	CALifeTraderParams::STATE_Write(P);
 	P.w_string(caModel);
 };
 
 void xrSE_Actor::UPDATE_Read		(NET_Packet& P)
 {
 	inherited::UPDATE_Read(P);
+	CALifeTraderParams::UPDATE_Read(P);
 	P.r_u32				(timestamp	);
 	P.r_u8				(flags		);
 	P.r_vec3			(o_Position	);
@@ -480,13 +497,13 @@ void xrSE_Actor::UPDATE_Read		(NET_Packet& P)
 	P.r_angle8			(torso.pitch);
 	P.r_sdir			(accel		);
 	P.r_sdir			(velocity	);
-	P.r_float_q16		(fHealth,	-1000,1000);
 	P.r_float_q16		(fArmor,	-1000,1000);
 	P.r_u8				(weapon		);
 };
 void xrSE_Actor::UPDATE_Write		(NET_Packet& P)
 {
 	inherited::UPDATE_Write(P);
+	CALifeTraderParams::UPDATE_Write(P);
 	P.w_u32				(timestamp	);
 	P.w_u8				(flags		);
 	P.w_vec3			(o_Position	);
@@ -496,7 +513,6 @@ void xrSE_Actor::UPDATE_Write		(NET_Packet& P)
 	P.w_angle8			(torso.pitch);
 	P.w_sdir			(accel		);
 	P.w_sdir			(velocity	);
-	P.w_float_q16		(fHealth,	-1000,1000);
 	P.w_float_q16		(fArmor,	-1000,1000);
 	P.w_u8				(weapon		);
 }
@@ -521,8 +537,8 @@ void xrSE_Enemy::UPDATE_Read		(NET_Packet& P)
 	P.r_angle8			(o_model		);
 	P.r_angle8			(o_torso.yaw	);
 	P.r_angle8			(o_torso.pitch	);
-	if (m_wVersion >= 5)
-		P.r_float		(fHealth);
+//	if ((m_wVersion >= 5) && (m_wVersion <= 8))
+//		P.r_float		(fHealth);
 }
 void xrSE_Enemy::UPDATE_Write		(NET_Packet& P)
 {
@@ -533,13 +549,11 @@ void xrSE_Enemy::UPDATE_Write		(NET_Packet& P)
 	P.w_angle8			(o_model		);
 	P.w_angle8			(o_torso.yaw	);
 	P.w_angle8			(o_torso.pitch	);
-	P.w_float			(fHealth);
 }
 #ifdef _EDITOR
 void	xrSE_Enemy::FillProp			(LPCSTR pref, PropItemVec& items)
 {
   	inherited::FillProp(pref,items);
-   	PHelper.CreateFloat(		items, PHelper.PrepareKey(pref,s_name,"Personal",	"Health" 				),&fHealth,							0,200,5);
 }
 #endif
 
@@ -590,6 +604,41 @@ void	xrSE_Enemy::FillProp			(LPCSTR pref, PropItemVec& items)
 //		}
 //	}
 //};
+void					xrSE_Visualed::visual_read(NET_Packet& P)
+{
+	P.r_string			(visual_name);
+#ifdef _EDITOR
+	OnChangeVisual		(0);
+#endif
+}
+
+void					xrSE_Visualed::visual_write(NET_Packet& P)
+{
+	P.w_string			(visual_name);
+}
+
+#ifdef _EDITOR
+#include "BodyInstance.h"
+void __fastcall			xrSE_Visualed::OnChangeVisual(PropValue* sender)
+{
+	Device.Models.Delete(visual);
+    if (visual_name[0]){
+        visual				= Device.Models.Create(visual_name);
+        // play idle motion if skeleton
+        if (PKinematics(visual)){ 
+            CMotionDef* M	= PKinematics(visual)->ID_Cycle_Safe("idle");
+            if (M) PKinematics(visual)->PlayCycle(M); 
+            PKinematics(visual)->Calculate();
+        }
+    }
+}
+void 					xrSE_Visualed::FillProp(LPCSTR pref, PropItemVec& values)
+{
+    PropValue* V		= PHelper.CreateGameObject(values, PHelper.PrepareKey(pref,"Model"),visual_name,sizeof(visual_name));
+    V->SetEvents		(0,0,OnChangeVisual);
+}
+#endif
+
 void					xrSE_CFormed::cform_read			(NET_Packet& P)
 {
 	shapes.clear();
@@ -714,14 +763,14 @@ void CALifeMonsterAbstract::UPDATE_Write(NET_Packet &tNetPacket)
 void CALifeMonsterAbstract::UPDATE_Read(NET_Packet &tNetPacket)
 {
 	inherited::UPDATE_Read		(tNetPacket);
-	if (m_wVersion >= 7) {
+//	if (m_wVersion >= 7) {
 		tNetPacket.r				(&m_tNextGraphID,			sizeof(m_tNextGraphID));
 		tNetPacket.r				(&m_tPrevGraphID,			sizeof(m_tPrevGraphID));
 		tNetPacket.r				(&m_fGoingSpeed,			sizeof(m_fGoingSpeed));
 		tNetPacket.r				(&m_fCurSpeed,				sizeof(m_fCurSpeed));
 		tNetPacket.r				(&m_fDistanceFromPoint,		sizeof(m_fDistanceFromPoint));
 		tNetPacket.r				(&m_fDistanceToPoint,		sizeof(m_fDistanceToPoint));
-	}
+//	}
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -825,8 +874,8 @@ void xrSE_Rat::STATE_Write(NET_Packet& P)
 void xrSE_Rat::UPDATE_Read(NET_Packet& P)
 {
 	inherited::UPDATE_Read(P);
-	if ((m_wVersion >= 2) && (m_wVersion <= 5))
-		P.r_float (fHealth);
+//	if ((m_wVersion >= 2) && (m_wVersion <= 5))
+//		P.r_float (fHealth);
 }
 
 void xrSE_Rat::UPDATE_Write(NET_Packet& P)
@@ -1116,6 +1165,8 @@ xrSE_Zone::xrSE_Zone(LPCSTR caSection) : CALifeDynamicObject(caSection)
 
 void xrSE_Zone::STATE_Read		(NET_Packet& P, u16 size)	{
 	// CForm
+	if (m_wVersion >= 15)
+		inherited::STATE_Read(P,size);
 	cform_read			(P);
 
 	P.r_float(m_maxPower);
@@ -1123,6 +1174,7 @@ void xrSE_Zone::STATE_Read		(NET_Packet& P, u16 size)	{
 	P.r_u32(m_period);
 };
 void xrSE_Zone::STATE_Write		(NET_Packet& P)				{
+	inherited::STATE_Write(P);
 	// CForm
 	cform_write			(P);
 
@@ -1247,7 +1299,7 @@ void xrGraphPoint::FillProp			(LPCSTR pref, PropItemVec& items)
 }
 #endif
 
-xrSE_Human::xrSE_Human(LPCSTR caSection) : CALifeMonsterAbstract(caSection)
+xrSE_Human::xrSE_Human(LPCSTR caSection) : CALifeMonsterAbstract(caSection), CALifeTraderParams(caSection)
 {
 	caModel[0]						= 0;
 	strcat(caModel,"actors\\Different_stalkers\\stalker_no_hood_singleplayer");
@@ -1259,32 +1311,35 @@ void xrSE_Human::STATE_Read(NET_Packet& P, u16 size)
 {
 	// inherited properties
 	inherited::STATE_Read(P,size);
+	CALifeTraderParams::STATE_Read(P,size);
 	// model
 	P.r_string(caModel);
 	// personal characteristics
-	P.r_float (fHealth);
+	if (m_wVersion <= 8)
+		P.r_float (fHealth);
 }
 
 void xrSE_Human::STATE_Write(NET_Packet& P)
 {
 	// inherited properties
 	inherited::STATE_Write(P);
+	CALifeTraderParams::STATE_Write(P);
 	// model
 	P.w_string(caModel);
-	// personal characteristics
-	P.w_float (fHealth);
 }
 
 void xrSE_Human::UPDATE_Read(NET_Packet& P)
 {
 	inherited::UPDATE_Read(P);
-	if ((m_wVersion >= 2) && (m_wVersion <= 5))
-		P.r_float (fHealth);
+	CALifeTraderParams::UPDATE_Read(P);
+//	if ((m_wVersion >= 2) && (m_wVersion <= 5))
+//		P.r_float (fHealth);
 }
 
 void xrSE_Human::UPDATE_Write(NET_Packet& P)
 {
 	inherited::UPDATE_Write(P);
+	CALifeTraderParams::UPDATE_Write(P);
 }
 
 #ifdef _EDITOR
@@ -1293,12 +1348,228 @@ void xrSE_Human::FillProp(LPCSTR pref, PropItemVec& items)
    	inherited::FillProp(pref, items);
 	// model
     PHelper.CreateGameObject(	items, PHelper.PrepareKey(pref,s_name,"Model"								),caModel,							sizeof(caModel));
-	// personal characteristics
-   	PHelper.CreateFloat(		items, PHelper.PrepareKey(pref,s_name,"Personal",	"Health" 				),&fHealth,							0,200,5);
 }	
 #endif
 
 
+xrSE_Idol::xrSE_Idol(LPCSTR caSection) : xrSE_Human(caSection)
+{
+	m_dwAniPlayType		= 0;
+	m_caAnimations[0]	= 0;
+}
+
+void xrSE_Idol::STATE_Read(NET_Packet& P, u16 size)
+{
+	inherited::STATE_Read(P,size);
+	P.r_string			(m_caAnimations);
+	P.r_u32				(m_dwAniPlayType);
+}
+
+void xrSE_Idol::STATE_Write(NET_Packet& P)
+{
+	inherited::STATE_Write(P);
+	P.w_string	(m_caAnimations);
+	P.w_u32		(m_dwAniPlayType);
+}
+
+void xrSE_Idol::UPDATE_Read(NET_Packet& P)
+{
+}
+
+void xrSE_Idol::UPDATE_Write(NET_Packet& P)
+{
+}
+
+#ifdef _EDITOR
+void xrSE_Idol::FillProp(LPCSTR pref, PropItemVec& items)
+{
+   	inherited::FillProp		(pref, items);
+    PHelper.CreateText		(items, PHelper.PrepareKey(pref,s_name,"Idol", "Animations"),m_caAnimations,sizeof(m_caAnimations));
+   	PHelper.CreateU32		(items, PHelper.PrepareKey(pref,s_name,"Idol", "Animation playing type"),&m_dwAniPlayType,0,2,1);
+}	
+#endif
+
+//***** Lamp
+xrSE_HangingLamp::xrSE_HangingLamp(LPCSTR caSection) : xrServerEntity(caSection)
+{
+	flags.set				(flPhysic,TRUE);
+    mass					= 10.f;
+	spot_texture[0]			= 0;
+	color_animator[0]		= 0;
+	spot_bone[0]			= 0;
+	spot_range				= 10.f;
+	spot_cone_angle			= PI_DIV_3;
+	color					= 0xffffffff;
+    spot_brightness			= 1.f;
+}
+xrSE_HangingLamp::~xrSE_HangingLamp()
+{
+}
+void xrSE_HangingLamp::STATE_Read		(NET_Packet& P, u16 size)
+{
+	visual_read				(P);
+	// model
+	P.r_u32					(color);
+	P.r_string				(color_animator);
+	P.r_string				(spot_texture);
+	P.r_string				(spot_bone);
+	P.r_float				(spot_range);
+	P.r_angle8				(spot_cone_angle);
+    if (m_wVersion>10)
+		P.r_float			(spot_brightness);
+    if (m_wVersion>11)
+    	P.r_u16				(flags.flags);
+    if (m_wVersion>12)
+    	P.r_float			(mass);
+	// internal
+	strlwr					(spot_bone);
+}
+void xrSE_HangingLamp::STATE_Write		(NET_Packet& P)
+{
+	visual_write			(P);
+	// model
+	P.w_u32					(color);
+	P.w_string				(color_animator);
+	P.w_string				(spot_texture);
+	P.w_string				(spot_bone);
+	P.w_float				(spot_range);
+	P.w_angle8				(spot_cone_angle);
+	P.w_float				(spot_brightness);
+   	P.w_u16					(flags.flags);
+	P.w_float				(mass);
+}
+void xrSE_HangingLamp::UPDATE_Read		(NET_Packet& P)	{};
+void xrSE_HangingLamp::UPDATE_Write		(NET_Packet& P)	{};
+#ifdef _EDITOR
+void	xrSE_HangingLamp::FillProp		(LPCSTR pref, PropItemVec& values)
+{
+	inherited::FillProp		(pref,values);
+	xrSE_Visualed::FillProp	(PHelper.PrepareKey(pref,s_name),values);
+	PHelper.CreateColor		(values, PHelper.PrepareKey(pref,s_name,"Color"),			&color);
+	PHelper.CreateFlag16	(values, PHelper.PrepareKey(pref,s_name,"Physic"),			&flags,				flPhysic);
+	PHelper.CreateLightAnim	(values, PHelper.PrepareKey(pref,s_name,"Color animator"),	color_animator,		sizeof(color_animator));
+	PHelper.CreateText		(values, PHelper.PrepareKey(pref,s_name,"Guide bone"),		spot_bone,			sizeof(spot_bone));
+	PHelper.CreateTexture	(values, PHelper.PrepareKey(pref,s_name,"Texture"),			spot_texture,		sizeof(spot_texture));
+	PHelper.CreateFloat		(values, PHelper.PrepareKey(pref,s_name,"Range"),			&spot_range,		0.1f, 1000.f);
+	PHelper.CreateAngle		(values, PHelper.PrepareKey(pref,s_name,"Angle"),			&spot_cone_angle,	0, deg2rad(120.f));
+    PHelper.CreateFloat		(values, PHelper.PrepareKey(pref,s_name,"Brightness"),		&spot_brightness,	0.1f, 5.f);
+    PHelper.CreateFloat		(values, PHelper.PrepareKey(pref,s_name,"Mass"),			&mass,				1.f, 1000.f);
+}
+#endif
+
+xrSE_DeviceTorch::xrSE_DeviceTorch(LPCSTR caSection) : CALifeItem(caSection), xrSE_Visualed("lights\\lights_torch")
+{
+	strcpy					(spot_texture,"");
+	strcpy					(animator,"");
+	spot_range				= 10.f;
+	spot_cone_angle			= PI_DIV_3;
+	color					= 0xffffffff;
+    spot_brightness			= 1.f;
+}
+xrSE_DeviceTorch::~xrSE_DeviceTorch()
+{
+}
+void xrSE_DeviceTorch::STATE_Read		(NET_Packet& P, u16 size)
+{
+	visual_read				(P);
+	// model
+	P.r_u32					(color);
+	P.r_string				(animator);
+	P.r_string				(spot_texture);
+	P.r_float				(spot_range);
+	P.r_angle8				(spot_cone_angle);
+	P.r_float				(spot_brightness);
+}
+void xrSE_DeviceTorch::STATE_Write		(NET_Packet& P)
+{
+	visual_write			(P);
+	// model
+	P.w_u32					(color);
+	P.w_string				(animator);
+	P.w_string				(spot_texture);
+	P.w_float				(spot_range);
+	P.w_angle8				(spot_cone_angle);
+	P.w_float				(spot_brightness);
+}
+void xrSE_DeviceTorch::UPDATE_Read		(NET_Packet& P)	{};
+void xrSE_DeviceTorch::UPDATE_Write		(NET_Packet& P)	{};
+#ifdef _EDITOR
+void	xrSE_DeviceTorch::FillProp		(LPCSTR pref, PropItemVec& values)
+{
+	inherited::FillProp		(pref,values);
+	xrSE_Visualed::FillProp	(PHelper.PrepareKey(pref,s_name),values);
+	PHelper.CreateColor		(values, PHelper.PrepareKey(pref,s_name,"Color"),			&color);
+	PHelper.CreateLightAnim	(values, PHelper.PrepareKey(pref,s_name,"Color animator"),	animator,			sizeof(animator));
+	PHelper.CreateTexture	(values, PHelper.PrepareKey(pref,s_name,"Texture"),			spot_texture,		sizeof(spot_texture));
+	PHelper.CreateFloat		(values, PHelper.PrepareKey(pref,s_name,"Range"),			&spot_range,		0.1f, 1000.f);
+	PHelper.CreateAngle		(values, PHelper.PrepareKey(pref,s_name,"Angle"),			&spot_cone_angle,	0, PI_DIV_2);
+    PHelper.CreateFloat		(values, PHelper.PrepareKey(pref,s_name,"Brightness"),		&spot_brightness,	0.1f, 5.f);
+}
+#endif
+//--------------------------------------------------------------------
+
+//***** Physic Object
+xrSE_PhysicObject::xrSE_PhysicObject(LPCSTR caSection) : CALifeDynamicObject(caSection) 
+{
+	type 		= epotBox;
+	mass 		= 10.f;
+    fixed_bone[0]=0;
+}
+xrSE_PhysicObject::~xrSE_PhysicObject() 
+{
+}
+void xrSE_PhysicObject::STATE_Read		(NET_Packet& P, u16 size) 
+{
+	if (m_wVersion >= 14)
+		if (m_wVersion >= 16)
+			inherited::STATE_Read	(P,size);
+		else
+			CALifeObject::STATE_Read(P,size);
+	visual_read				(P);
+	P.r_u32					(type);
+	P.r_float				(mass);
+    if (m_wVersion>9){
+		P.r_string			(fixed_bone);
+    }
+	// internal
+	strlwr					(fixed_bone);
+}
+void xrSE_PhysicObject::STATE_Write		(NET_Packet& P)
+{
+	inherited::STATE_Write	(P);
+	visual_write			(P);
+	P.w_u32					(type);
+	P.w_float				(mass);
+	P.w_string				(fixed_bone);
+}
+void xrSE_PhysicObject::UPDATE_Read		(NET_Packet& P)	{inherited::UPDATE_Read(P);};
+void xrSE_PhysicObject::UPDATE_Write	(NET_Packet& P)	{inherited::UPDATE_Write(P);};
+#ifdef _EDITOR
+xr_token po_types[]={
+	{ "Box",			epotBox			},
+	{ "Fixed chain",	epotFixedChain	},
+	{ "Free chain",		epotFreeChain	},
+	{ "Skeleton",		epotSkeleton	},
+	{ 0,				0				}
+};
+void	xrSE_PhysicObject::FillProp		(LPCSTR pref, PropItemVec& values) {
+	inherited::FillProp(pref,values);
+	xrSE_Visualed::FillProp	(PHelper.PrepareKey(pref,s_name),values);
+	PHelper.CreateToken		(values, PHelper.PrepareKey(pref,s_name,"Type"), &type,	po_types, 1);
+	PHelper.CreateFloat		(values, PHelper.PrepareKey(pref,s_name,"Mass"), &mass, 0.1f, 10000.f);
+	PHelper.CreateText		(values, PHelper.PrepareKey(pref,s_name,"Fixed bone"),	fixed_bone,	sizeof(fixed_bone));
+}
+#endif
+
+// temporary object for WT
+xrSE_TempObject::xrSE_TempObject(LPCSTR caSection) : xrServerEntity(caSection) {}
+void xrSE_TempObject::STATE_Read	(NET_Packet& P, u16 size) {};
+void xrSE_TempObject::STATE_Write	(NET_Packet& P) {};
+void xrSE_TempObject::UPDATE_Read	(NET_Packet& P)	{};
+void xrSE_TempObject::UPDATE_Write	(NET_Packet& P)	{};
+#ifdef _EDITOR
+void xrSE_TempObject::FillProp		(LPCSTR pref, PropItemVec& values) {};
+#endif
 
 //--------------------------------------------------------------------
 xrServerEntity*	F_entity_Create		(LPCSTR caSection)
@@ -1310,6 +1581,7 @@ xrServerEntity*	F_entity_Create		(LPCSTR caSection)
 	switch (cls){
 	case CLSID_OBJECT_ACTOR:		return xr_new<xrSE_Actor>			(caSection);
 	case CLSID_OBJECT_DUMMY:		return xr_new<xrSE_Dummy>			(caSection);
+	case CLSID_OBJECT_HLAMP:		return xr_new<xrSE_HangingLamp>		(caSection);
 	case CLSID_AI_GRAPH:			return xr_new<xrGraphPoint>			(caSection);
 	case CLSID_AI_CROW:				return xr_new<xrSE_Crow>			(caSection);
 	case CLSID_AI_RAT:				return xr_new<xrSE_Rat>				(caSection);
@@ -1318,6 +1590,7 @@ xrServerEntity*	F_entity_Create		(LPCSTR caSection)
 	case CLSID_AI_DOG:				return xr_new<xrSE_Dog>				(caSection);
 	case CLSID_AI_SOLDIER:			return xr_new<xrSE_Enemy>			(caSection);
 	case CLSID_AI_STALKER:			return xr_new<xrSE_Human>			(caSection);
+	case CLSID_AI_IDOL:				return xr_new<xrSE_Idol>			(caSection);
 	case CLSID_EVENT:				return xr_new<xrSE_Event>			(caSection);
 	case CLSID_CAR_NIVA:			return xr_new<xrSE_Car>				(caSection);
 	case CLSID_SPECTATOR:			return xr_new<xrSE_Spectator>		(caSection);
@@ -1352,8 +1625,17 @@ xrServerEntity*	F_entity_Create		(LPCSTR caSection)
 	case CLSID_TARGET_CS:			return xr_new<xrSE_Target_CS>		(caSection);
 	case CLSID_TARGET_CS_CASK:		return xr_new<xrSE_Target_CSCask>	(caSection);
 	case CLSID_IITEM_BOLT:			return xr_new<CALifeDynamicObject>	(caSection);
-	case CLSID_GRENADE_F1:			return xr_new<CALifeDynamicObject>	(caSection);
-	case CLSID_OBJECT_G_RPG7:		return xr_new<CALifeDynamicObject>	(caSection);
-}
+	case CLSID_GRENADE_F1:			return xr_new<CALifeItem>			(caSection);
+	case CLSID_OBJECT_G_RPG7:		return xr_new<xrSE_TempObject>		(caSection);
+	case CLSID_GRENADE_RGD5:		return xr_new<CALifeItem>			(caSection);
+	case CLSID_DEVICE_TORCH:		return xr_new<xrSE_DeviceTorch>		(caSection);
+	case CLSID_OBJECT_W_VAL:		return xr_new<xrSE_Weapon>			(caSection);
+	case CLSID_OBJECT_W_VINTOREZ:	return xr_new<xrSE_Weapon>			(caSection);
+	case CLSID_OBJECT_W_WALTHER:	return xr_new<xrSE_Weapon>			(caSection);
+	case CLSID_OBJECT_W_USP45:		return xr_new<xrSE_Weapon>			(caSection);
+	case CLSID_OBJECT_W_GROZA:		return xr_new<xrSE_Weapon>			(caSection);
+    case CLSID_OBJECT_PHYSIC:		return xr_new<xrSE_PhysicObject>	(caSection);
+    default: NODEFAULT;
+	}
 	return 0;
 }

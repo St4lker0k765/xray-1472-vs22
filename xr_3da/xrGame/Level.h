@@ -70,6 +70,9 @@ public:
 	CTracer						Tracers;
 	CEffect_Rain				eff_Rain;
 
+	// sounds
+	xr_vector<sound*>				static_Sounds;
+
 	// waypoints
 	typedef struct tagSWayPoint{
 		Fvector	tWayPoint;
@@ -169,6 +172,8 @@ public:
 	// Save/Load/State
 	void						SLS_Load				(LPCSTR name);		// Game Load
 	void						SLS_Default				();					// Default/Editor Load
+
+	void						vfMergeKnownEnemies		();
 
 	// C/D
 	CLevel();

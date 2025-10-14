@@ -46,6 +46,31 @@ public:
 	void							cform_write			(NET_Packet& P);
 };
 
+class xrSE_Visualed
+{
+public:
+#ifdef _EDITOR
+	IVisual*						visual;
+    void __fastcall					OnChangeVisual		(PropValue* sender);
+#endif
+	string64						visual_name;
+public:
+									xrSE_Visualed		(LPCSTR name=0)
+    {
+    	strcpy			(visual_name,name?name:"");
+#ifdef _EDITOR
+		visual			= 0;
+        OnChangeVisual	(0);
+#endif
+    }
+	void							visual_read			(NET_Packet& P);
+	void							visual_write		(NET_Packet& P);
+    
+#ifdef _EDITOR
+    void 							FillProp			(LPCSTR pref, PropItemVec& values);
+#endif
+};
+
 // Some preprocessor help
 #ifdef _EDITOR
 #define xrSE_EDITOR_METHODS	virtual void FillProp(LPCSTR pref, PropItemVec& values);
@@ -57,19 +82,64 @@ public:
 
 //
 #define xrSE_DECLARE_BEGIN(__A,__B)	class __A : public __B	{ typedef __B inherited; public:
+#define xrSE_DECLARE_BEGIN2(__A,__B,__C) class __A : public __B, public __C	{ typedef __B inherited; public:
 
 //
 #define	xrSE_DECLARE_END \
 public:\
-virtual void 						UPDATE_Read	(NET_Packet& P); \
+virtual void 						UPDATE_Read		(NET_Packet& P); \
 virtual void 						UPDATE_Write	(NET_Packet& P); \
 virtual void 						STATE_Read		(NET_Packet& P, u16 size); \
-virtual void 						STATE_Write	(NET_Packet& P); \
+virtual void 						STATE_Write		(NET_Packet& P); \
 xrSE_EDITOR_METHODS\
 };
 
+xrSE_DECLARE_BEGIN2(xrSE_HangingLamp,xrServerEntity,xrSE_Visualed)
+	enum{
+    	flPhysic					= (1<<0)
+    };
+	Flags16							flags;
+    float							mass;
+	u32								color;
+	string64						color_animator;
+	string64						spot_texture;
+	string32						spot_bone;
+	float							spot_range;
+	float							spot_cone_angle;
+    float							spot_brightness;
+									xrSE_HangingLamp	(LPCSTR caSection);
+    virtual							~xrSE_HangingLamp	();
+xrSE_DECLARE_END
+
+xrSE_DECLARE_BEGIN2(xrSE_DeviceTorch,CALifeItem,xrSE_Visualed)
+	u32								color;
+	string64						animator;
+	string64						spot_texture;
+	float							spot_range;
+	float							spot_cone_angle;
+    float							spot_brightness;
+									xrSE_DeviceTorch	(LPCSTR caSection);
+    virtual							~xrSE_DeviceTorch	();
+xrSE_DECLARE_END
+
+// Physyc Object ////////////////////////////////////////////////////
+enum EPOType {
+	epotBox,
+	epotFixedChain,
+    epotFreeChain,
+    epotSkeleton
+};
+xrSE_DECLARE_BEGIN2(xrSE_PhysicObject,CALifeDynamicObject,xrSE_Visualed)
+	u32 							type;
+	f32 							mass;
+    string32 						fixed_bone;
+									xrSE_PhysicObject	(LPCSTR caSection);
+    virtual 						~xrSE_PhysicObject	();
+xrSE_DECLARE_END
+/////////////////////////////////////////////////////////////////////
+
 //***** Weapon
-xrSE_DECLARE_BEGIN(xrSE_Weapon,CALifeDynamicObject)
+xrSE_DECLARE_BEGIN(xrSE_Weapon,CALifeItem)
 	u32								timestamp;
 	u8								flags;
 	u8								state;
@@ -89,7 +159,7 @@ xrSE_DECLARE_BEGIN(xrSE_Weapon,CALifeDynamicObject)
 xrSE_DECLARE_END
 
 //***** WeaponAmmo
-xrSE_DECLARE_BEGIN(xrSE_WeaponAmmo,CALifeObject)
+xrSE_DECLARE_BEGIN(xrSE_WeaponAmmo,CALifeItem)
 	u16								a_elapsed;
 	u16								m_boxSize;
 							
@@ -101,6 +171,7 @@ xrSE_DECLARE_BEGIN(xrSE_Teamed,CALifeDynamicObject)
 	u8								s_team;
 	u8								s_squad;
 	u8								s_group;
+	float							fHealth;
 
 									xrSE_Teamed		(LPCSTR caSection);
 	virtual u8						g_team			()					{ return s_team;	}
@@ -127,14 +198,14 @@ xrSE_DECLARE_BEGIN(xrSE_Dummy,xrServerEntity)
 xrSE_DECLARE_END
 
 //***** MercuryBall
-xrSE_DECLARE_BEGIN(xrSE_MercuryBall,CALifeDynamicObject)
+xrSE_DECLARE_BEGIN(xrSE_MercuryBall,CALifeItem)
 	string64						s_Model;
 									xrSE_MercuryBall(LPCSTR caSection);
 xrSE_DECLARE_END
 
 //***** Car
-xrSE_DECLARE_BEGIN(xrSE_Car,xrSE_Teamed)
-									xrSE_Car		(LPCSTR caSection) : xrSE_Teamed(caSection)
+xrSE_DECLARE_BEGIN(xrSE_Car,xrServerEntity)
+									xrSE_Car		(LPCSTR caSection) : xrServerEntity(caSection)
 	{
 	};
 xrSE_DECLARE_END
@@ -147,9 +218,9 @@ xrSE_DECLARE_BEGIN(xrSE_Crow,xrServerEntity)
 xrSE_DECLARE_END
 
 //***** Health
-xrSE_DECLARE_BEGIN(xrSE_Health,CALifeDynamicObject)
+xrSE_DECLARE_BEGIN(xrSE_Health,CALifeItem)
 	u8								amount;
-									xrSE_Health		(LPCSTR caSection) : CALifeDynamicObject(caSection)
+									xrSE_Health		(LPCSTR caSection) : CALifeItem(caSection)
 	{
 	};
 xrSE_DECLARE_END
@@ -195,7 +266,7 @@ xrSE_DECLARE_BEGIN(xrSE_Spectator,xrServerEntity)
 xrSE_DECLARE_END
 
 //***** Actor
-xrSE_DECLARE_BEGIN(xrSE_Actor,xrSE_Teamed)
+xrSE_DECLARE_BEGIN2(xrSE_Actor,xrSE_Teamed,CALifeTraderParams)
 	u32								timestamp;
 	u8								flags;
 	u16								mstate;
@@ -203,7 +274,6 @@ xrSE_DECLARE_BEGIN(xrSE_Actor,xrSE_Teamed)
 	SRotation						torso;
 	Fvector							accel;
 	Fvector							velocity;
-	float							fHealth;
 	float							fArmor;
 	u8								weapon;
 	string64						caModel;
@@ -216,10 +286,8 @@ xrSE_DECLARE_BEGIN(xrSE_Enemy,xrSE_Teamed)
 	u8								flags;
 	float							o_model;				// model yaw
 	SRotation						o_torso;				// torso in world coords
-	float							fHealth;
 									xrSE_Enemy		(LPCSTR caSection) : xrSE_Teamed(caSection)
 	{
-		fHealth						= 100;
 	}
 xrSE_DECLARE_END
 
@@ -283,9 +351,9 @@ public:
 	virtual void					UPDATE_Read	(NET_Packet &tNetPacket);
 };
 
-class CALifeMonster : public CALifeMonsterAbstract, public CALifeMonsterParams {
+class CALifeMonster : public CALifeMonsterAbstract {
 public:
-									CALifeMonster(LPCSTR caSection) : CALifeMonsterAbstract(caSection), CALifeMonsterParams(caSection)
+									CALifeMonster(LPCSTR caSection) : CALifeMonsterAbstract(caSection)
 	{
 	};
 	virtual void					STATE_Write	(NET_Packet &tNetPacket);
@@ -329,9 +397,9 @@ public:
 
 };
 
-class CALifeHuman : public CALifeHumanAbstract, public CALifeHumanParams {
+class CALifeHuman : public CALifeHumanAbstract {
 public:
-									CALifeHuman	(LPCSTR caSection) : CALifeHumanAbstract(caSection), CALifeHumanParams(caSection)
+									CALifeHuman	(LPCSTR caSection) : CALifeHumanAbstract(caSection)
 	{
 	};
 	virtual void					STATE_Write	(NET_Packet &tNetPacket);
@@ -423,13 +491,20 @@ xrSE_DECLARE_BEGIN(xrSE_Dog,CALifeMonsterAbstract)
 									xrSE_Dog	(LPCSTR caSection);				// constructor for variable initialization
 xrSE_DECLARE_END
 
-xrSE_DECLARE_BEGIN(xrSE_Human,CALifeMonsterAbstract)
+xrSE_DECLARE_BEGIN2(xrSE_Human,CALifeMonsterAbstract,CALifeTraderParams)
 	// model
 	string64						caModel;
 	
 	// Personal characteristics:
 									xrSE_Human	(LPCSTR caSection);
 xrSE_DECLARE_END
+
+xrSE_DECLARE_BEGIN(xrSE_Idol,xrSE_Human)
+	string256						m_caAnimations;
+	u32								m_dwAniPlayType;
+									xrSE_Idol	(LPCSTR caSection);
+xrSE_DECLARE_END
+
 //***** Zone
 //xrSE_DECLARE_BEGIN(xrSE_Zone,CALifeDynamicObject)
 class xrSE_Zone : public CALifeDynamicObject, public xrSE_CFormed { typedef CALifeDynamicObject inherited; public:
@@ -454,6 +529,10 @@ public:
 									xrGraphPoint(LPCSTR caSection);
 xrSE_DECLARE_END
 
+xrSE_DECLARE_BEGIN(xrSE_TempObject,xrServerEntity)
+public:
+									xrSE_TempObject(LPCSTR caSection);
+xrSE_DECLARE_END
 // 
 #undef xrSE_EDITOR_METHODS
 #undef xrSE_DECLARE_BEGIN

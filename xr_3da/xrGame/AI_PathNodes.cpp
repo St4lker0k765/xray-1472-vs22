@@ -450,13 +450,14 @@ void CPathNodes::Calculate(CCustomMonster* Me, Fvector& p_dest, Fvector& p_src, 
 //	else
 #ifndef NO_PHYSICS_IN_AI_MOVE
 	Me->setEnabled(false);
-	Level().ObjectSpace.GetNearest(p_dest,1.f); 
+	Level().ObjectSpace.GetNearest(p_dest,3.f); 
 	CObjectSpace::NL_TYPE &tpNearestList = Level().ObjectSpace.q_nearest; 
 	Me->setEnabled(true);
 #endif
 
 	motion.mul			(mdir,dist/mdist);
 	p_dest.add			(motion);
+	//Msg("Before : [%f][%f][%f]",VPUSH(p_dest));
 
 #ifndef NO_PHYSICS_IN_AI_MOVE
 	if ((tpNearestList.empty())) 
@@ -484,6 +485,7 @@ void CPathNodes::Calculate(CCustomMonster* Me, Fvector& p_dest, Fvector& p_src, 
 		}
 	}
 #endif
+	//Msg("After  : [%f][%f][%f]",VPUSH(p_dest));
 
 	float	real_motion	= motion.magnitude() + dist_save-dist;
 	float	real_speed	= real_motion/dt;

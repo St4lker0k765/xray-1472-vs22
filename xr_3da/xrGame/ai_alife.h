@@ -35,6 +35,9 @@ private:
 	TASK_VECTOR						m_tpBufferTaskIDs;
 	xrServer						*m_tpServer;
 
+	//temporary buffer
+	OBJECT_VECTOR					m_tpChildren;
+
 	// comnmon
 	void							vfUpdateDynamicData			(CALifeDynamicObject *tpALifeDynamicObject);
 	void							vfUpdateDynamicData			();
@@ -51,12 +54,12 @@ private:
 	void							vfBallanceCreatures			();
 	void							vfUpdateCreatures			();
 	// after surge
-	CALifeTrader *					tpfGetNearestSuitableTrader	(CALifeHuman *tpALifeHuman);
-	void							vfCommunicateWithTrader		(CALifeHuman *tpALifeHuman, CALifeTrader *tpTrader);
+	CALifeTrader *					tpfGetNearestSuitableTrader	(CALifeHuman			*tpALifeHuman);
+	void							vfCommunicateWithTrader		(CALifeHuman			*tpALifeHuman, CALifeTrader *tpTrader);
 	void							vfUpdateMonster				(CALifeMonsterAbstract	*tpALifeMonsterAbstract);
-	void							vfUpdateHuman				(CALifeHuman			*tpALifeHuman);
-	bool							bfProcessItems				(CALifeHumanParams		&tHumanParams, _GRAPH_ID tGraphID, float fMaxItemMass, float fProbability);
-	bool							bfCheckForItems				(CALifeHumanAbstract	*tpALifeHumanAbstract);
+	void							vfUpdateHuman				(xrSE_Human				*tpALifeHuman);
+	bool							bfProcessItems				(xrServerEntity			&tServerEntity, _GRAPH_ID tGraphID, float fMaxItemMass, float fProbability);
+	bool							bfCheckForItems				(xrSE_Human				*tpALifeHumanAbstract);
 	void							vfCheckForDeletedEvents		(CALifeHumanAbstract	*tpALifeHumanAbstract);
 	void							vfCheckForTheBattle			(CALifeMonsterAbstract	*tpALifeMonsterAbstract);
 	void							vfChooseNextRoutePoint		(CALifeMonsterAbstract	*tpALifeMonsterAbstract);
@@ -81,6 +84,7 @@ public:
 			void					ProcessOnlineOfflineSwitches(CALifeDynamicObject *I);
 			void					vfReleaseObject				(CALifeDynamicObject *tpALifeObject);
 			void					vfNewGame					();
+			void					vfRemoveObject				(xrServerEntity *tpServerEntity);
 #ifdef ALIFE_SUPPORT_CONSOLE_COMMANDS
 			void					vfListObjects				();
 			void					vfListEvents				();

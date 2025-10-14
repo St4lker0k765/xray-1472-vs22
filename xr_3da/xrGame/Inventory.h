@@ -71,16 +71,18 @@ public:
 	f32 TotalWeight();										// Вес инвенторя
 	bool Take(CGameObject *pObj);							// Взять объект. Объект попадает в рюкзак
 	bool Drop(CGameObject *pObj);							// Выбросить объект
+	bool DropAll();											// Выбросить все
 	bool Slot(PIItem pIItem);								// Вставить объект себе в слот. То что было - на пояс. Нельзя - в рюкзак
 	bool Belt(PIItem pIItem);								// Повесить объект на пояс
 	bool Ruck(PIItem pIItem);								// Полжить объект в рюкзак
 	bool Activate(u32 slot);								// Активировать объект в указанном слоте
-	PIItem ActiveItem();									// Возвращает указатель на объект в актовном слоте
+	PIItem ActiveItem() const;								// Возвращает указатель на объект в актовном слоте
 	bool Action(s32 cmd, u32 flags);						// true если известная команда, иначе false
 	void Update(u32 deltaT);								// Обновление
 	PIItem Same(const PIItem pIItem);						// Ищет на поясе аналогичный IItem
 	PIItem SameSlot(u32 slot);								// Ищет на поясе IItem для указанного слота
 	PIItem Get(const char *name, bool bSearchRuck);			// Ищет на поясе или в рюкзаке IItem с указанным именем (cName())
+	PIItem Get(const u16  id,	 bool bSearchRuck);			// Ищет на поясе или в рюкзаке IItem с указанным именем (id)
 
 	TIItemSet m_all;										// Наборы объектов. m_all - все
 	TIItemList m_ruck, m_belt;								// Списки объектов. m_ruck - рюкзак, m_belt - пояс

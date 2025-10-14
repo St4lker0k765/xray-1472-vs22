@@ -1,9 +1,8 @@
 #ifndef EXTENDED_GEOM
 #define EXTENDED_GEOM
 #include "PHObject.h"
-#pragma warning(disable:4995)
-#include <ode/ode.h>
-#pragma warning(default:4995)
+#include "ode_include.h"
+
 
 enum Material 
 {
@@ -12,7 +11,7 @@ enum Material
 	mesh_default,
 	car_cabin,
 	weapon_default,
-	matrerial_default
+	matrerial_default 
 };
 
 struct Triangle 
@@ -30,17 +29,20 @@ struct Triangle
 
 };
 
-typedef  void __stdcall ContactCallbackFun(CDB::TRI* T,dContactGeom* c);
-
+typedef  void __stdcall ContactCallbackFun		(CDB::TRI* T,		dContactGeom* c);
+typedef	 void __stdcall ObjectContactCallbackFun(bool& do_colide,	dContact& c);
+class CPhysicsRefObject;
 struct dxGeomUserData
 {
 	dVector3	last_pos;
 	bool		pushing_neg,pushing_b_neg;
 	Triangle	neg_tri,b_neg_tri;
 	CPHObject*	ph_object;
+	CPhysicsRefObject* ph_ref_object;
 	u32			material;
 	u32			tri_material;
 	ContactCallbackFun* callback;
+	ObjectContactCallbackFun* object_callback;
 //	struct ContactsParameters
 //	{
 //	dReal damping;
@@ -65,6 +67,8 @@ IC void dGeomCreateUserData(dxGeom* geom)
 	((dxGeomUserData*)dGeomGetData(geom))->material=0;
 	((dxGeomUserData*)dGeomGetData(geom))->tri_material=0;
 	((dxGeomUserData*)dGeomGetData(geom))->callback=NULL;
+	((dxGeomUserData*)dGeomGetData(geom))->object_callback=NULL;
+	((dxGeomUserData*)dGeomGetData(geom))->ph_ref_object=NULL;
 	//((dxGeomUserData*)dGeomGetData(geom))->ContactsParameters::mu=1.f;
 	//((dxGeomUserData*)dGeomGetData(geom))->ContactsParameters::damping=1.f;
 	//((dxGeomUserData*)dGeomGetData(geom))->ContactsParameters::spring=1.f;
@@ -91,8 +95,18 @@ IC void dGeomUserDataSetPhObject(dxGeom* geom,CPHObject* phObject)
 	((dxGeomUserData*)dGeomGetData(geom))->ph_object=phObject;
 }
 
+IC void dGeomUserDataSetPhysicsRefObject(dxGeom* geom,CPhysicsRefObject* phRefObject)
+{
+	((dxGeomUserData*)dGeomGetData(geom))->ph_ref_object=phRefObject;
+}
+
 IC void dGeomUserDataSetContactCallback(dxGeom* geom,ContactCallbackFun* callback)
 {
 	((dxGeomUserData*)dGeomGetData(geom))->callback=callback;
+}
+
+IC void dGeomUserDataSetObjectContactCallback(dxGeom* geom,ObjectContactCallbackFun* obj_callback)
+{
+	((dxGeomUserData*)dGeomGetData(geom))->object_callback=obj_callback;
 }
 #endif

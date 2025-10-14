@@ -24,17 +24,17 @@ float ffGetStartVolume(ESoundTypes eType)
 			if ((eType & SOUND_TYPE_MONSTER_DYING) == SOUND_TYPE_MONSTER_DYING)
 				return(.3f);
 			else if ((eType & SOUND_TYPE_MONSTER_INJURING) == SOUND_TYPE_MONSTER_INJURING)
-				return(.15f);
+				return(.5f);
 			else if ((eType & SOUND_TYPE_MONSTER_WALKING) == SOUND_TYPE_MONSTER_WALKING)
-				return(.05f);
+				return(.2f);
 			else if ((eType & SOUND_TYPE_MONSTER_JUMPING) == SOUND_TYPE_MONSTER_JUMPING)
-				return(.06f);
+				return(.2f);
 			else if ((eType & SOUND_TYPE_MONSTER_FALLING) == SOUND_TYPE_MONSTER_FALLING)
-				return(.06f);
+				return(.4f);
 			else if ((eType & SOUND_TYPE_MONSTER_TALKING) == SOUND_TYPE_MONSTER_TALKING)
-				return(.10f);
-			else if ((eType & SOUND_TYPE_MONSTER_ATTACKING_ANIMAL) == SOUND_TYPE_MONSTER_ATTACKING_ANIMAL)
 				return(.3f);
+			else if ((eType & SOUND_TYPE_MONSTER_ATTACKING_ANIMAL) == SOUND_TYPE_MONSTER_ATTACKING_ANIMAL)
+				return(.5f);
 		}
 		else
 			if ((eType & SOUND_TYPE_WORLD) == SOUND_TYPE_WORLD) {
@@ -42,7 +42,7 @@ float ffGetStartVolume(ESoundTypes eType)
 					return(.3f);
 				else if ((eType & SOUND_TYPE_WORLD_DOOR_CLOSING) == SOUND_TYPE_WORLD_DOOR_CLOSING)
 					return(.5f);
-				else if ((eType & SOUND_TYPE_WORLD_WINDOW_BREAKING) == SOUND_TYPE_WORLD_WINDOW_BREAKING)
+				else if ((eType & SOUND_TYPE_WORLD_OBJECT_BREAKING) == SOUND_TYPE_WORLD_OBJECT_BREAKING)
 					return(.8f);
 				else if ((eType & SOUND_TYPE_WORLD_OBJECT_FALLING) == SOUND_TYPE_WORLD_OBJECT_FALLING)
 					return(.7f);

@@ -48,6 +48,9 @@ public:
 	BOOL m_ready;
 	sound m_ambient;
 
+	char m_effectsSTR[255];
+	xr_vector<LPCSTR> m_effects;
+	std::list<CPGObject*> m_effectsPSs;
 
 	//virtual	void Hit(float P, Fvector &dir,	CObject* who, s16 element,Fvector p_in_object_space){}
 };

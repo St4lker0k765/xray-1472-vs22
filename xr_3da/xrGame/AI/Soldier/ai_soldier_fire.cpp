@@ -11,7 +11,6 @@
 #include "..\\..\\xr_weapon_list.h"
 #include "..\\..\\hudmanager.h"
 
-#define	FIRE_SAFETY_ANGLE				PI/10
 #define SPECIAL_SQUAD					6
 #define LIGHT_FITTING			
 
@@ -105,25 +104,21 @@ void CAI_Soldier::HitSignal	(float amount, Fvector& vLocalDir, CObject* who, s16
 		}
 	}
 	
-	if (fHealth > 0.f)
-	{
-		if (CEntity* tpEntity = dynamic_cast<CEntity*>(who))
+	if (fHealth > 0) {
+		CEntity *tpEntity = dynamic_cast<CEntity *>(who);
+		if (tpEntity)
 			vfAddHurtToList(tpEntity);
-
-		CKinematics* kin = PKinematics(pVisual);
-		if (kin)
-		{
-			CMotionDef* md = (::Random.randI(0, 2) == 0)
-				? tSoldierAnimations.tNormal.tTorso.tpDamageLeft
-				: tSoldierAnimations.tNormal.tTorso.tpDamageRight;
-
-			float power = 1.f;
-			kin->PlayFX(md, power);
-		}
-
-		sound& S = sndHit[Random.randI(SND_HIT_COUNT)];
-		if (!S.feedback)
-			::Sound->play_at_pos(S, this, vPosition);
+//		if (::Random.randI(0,2))
+//			PKinematics(pVisual)->PlayFX(tSoldierAnimations.tNormal.tTorso.tpDamageLeft,1.f);
+//		else
+//			PKinematics(pVisual)->PlayFX(tSoldierAnimations.tNormal.tTorso.tpDamageRight,1.f);
+		
+		// Play hit-sound
+		sound& S	= sndHit[Random.randI(SND_HIT_COUNT)];
+		
+		if (S.feedback)			
+			return;
+		::Sound->play_at_pos(S,this,vPosition);
 	}
 }
 

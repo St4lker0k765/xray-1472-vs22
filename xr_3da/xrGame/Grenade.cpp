@@ -6,6 +6,29 @@
 #include "..\PSObject.h"
 #include "..\PGObject.h"
 
+#define INVSQRT2 .70710678118654752440084436210485f
+static void GetBasis(const Fvector &n, Fvector &u, Fvector &v) {
+	if(_abs(n.z) > INVSQRT2) {
+		FLOAT a = n.y * n.y + n.z * n.z;
+		FLOAT k = 1.f / _sqrt(a);
+		u.x = 0;
+		u.y = -n.z * k;
+		u.z = n.y * k;
+		v.x = a * k;
+		v.y = -n.x * u.z;
+		v.z = n.x * u.y;
+	} else {
+		FLOAT a = n.x * n.x + n.y * n.y;
+		FLOAT k = 1.f / _sqrt(a);
+		u.x = -n.y * k;
+		u.y = n.x * k;
+		u.z = 0;
+		v.x = -n.z * u.y;
+		v.y = n.z * u.x;
+		v.z = a * k;
+	}
+}
+
 CGrenade::CGrenade(void) {
 	m_pFake = NULL;
 	m_blast = 50.f;
@@ -14,15 +37,24 @@ CGrenade::CGrenade(void) {
 	m_fragsR = 30.f;
 	m_fragHit = 50;
 	m_eSoundExplode = ESoundTypes(SOUND_TYPE_WEAPON_SHOOTING);
-	m_eSoundRicochet = ESoundTypes(SOUND_TYPE_WEAPON_BULLET_RICOCHET);
+	m_eSoundRicochet = ESoundTypes(0/*SOUND_TYPE_WEAPON_BULLET_RICOCHET*/);
+	m_eSoundCheckout = ESoundTypes(SOUND_TYPE_WEAPON_RECHARGING);
 	m_expoldeTime = 0xffffffff;
 	m_pLight = ::Render->light_create();
 	m_pLight->set_shadow(true);
+	hWallmark = 0;
 }
 
 CGrenade::~CGrenade(void) {
 	if(hWallmark) Device.Shader.Delete(hWallmark);
 	::Render->light_destroy(m_pLight);
+	SoundDestroy(sndExplode);
+	SoundDestroy(sndCheckout);
+	SoundDestroy(sndRicochet[0]);
+	SoundDestroy(sndRicochet[1]);
+	SoundDestroy(sndRicochet[2]);
+	SoundDestroy(sndRicochet[3]);
+	SoundDestroy(sndRicochet[4]);
 }
 
 void CGrenade::Load(LPCSTR section) {
@@ -54,6 +86,7 @@ void CGrenade::Load(LPCSTR section) {
 	m_lightTime = pSettings->r_u32(section,"light_time");
 
 	SoundCreate(sndExplode, "explode", m_eSoundExplode);
+	SoundCreate(sndCheckout, "checkout", m_eSoundCheckout);
 	SoundCreate(sndRicochet[0], "ric1", m_eSoundRicochet);
 	SoundCreate(sndRicochet[1], "ric2", m_eSoundRicochet);
 	SoundCreate(sndRicochet[2], "ric3", m_eSoundRicochet);
@@ -69,12 +102,6 @@ BOOL CGrenade::net_Spawn(LPVOID DC) {
 
 void CGrenade::net_Destroy() {
 	if(hWallmark) Device.Shader.Delete(hWallmark);
-	SoundDestroy(sndExplode);
-	SoundDestroy(sndRicochet[0]);
-	SoundDestroy(sndRicochet[1]);
-	SoundDestroy(sndRicochet[2]);
-	SoundDestroy(sndRicochet[3]);
-	SoundDestroy(sndRicochet[4]);
 	inherited::net_Destroy();
 }
 
@@ -108,6 +135,13 @@ void CGrenade::OnH_B_Independent() {
 	//else CInventoryItem::OnH_B_Independent();
 }
 
+u32 CGrenade::State(u32 state) {
+	if(state == MS_THREATEN) {
+		Sound->play_at_pos(sndCheckout, 0, vPosition, false);
+	}
+	return inherited::State(state);
+}
+
 bool CGrenade::Activate() {
 	Show();
 	return true;
@@ -135,7 +169,7 @@ void CGrenade::Throw() {
 
 void CGrenade::Destroy() {
 	Explode();
-	m_expoldeTime = 500;
+	m_expoldeTime = 5000;
 	//inherited::Destroy();
 }
 
@@ -145,12 +179,21 @@ void CGrenade::Explode() {
 	Fvector l_dir; f32 l_dst;
 	m_blasted.clear();
 	feel_touch_update(vPosition, m_blastR);
-	std::list<s16> l_elsemnts;
-	std::list<Fvector> l_bs_positions;
+	xr_list<s16> l_elsemnts;
+	xr_list<Fvector> l_bs_positions;
 	while(m_blasted.size()) {
 		CGameObject *l_pGO = *m_blasted.begin();
-		l_dir.sub(l_pGO->Position(), vPosition); l_dst = l_dir.magnitude(); l_dir.div(l_dst);
-		f32 l_impuls = m_blast * (1.f - l_dst/m_blastR);
+		Fvector l_goPos; if(l_pGO->Visual()) l_pGO->clCenter(l_goPos); else l_goPos.set(l_pGO->Position());
+		l_dir.sub(l_goPos, vPosition); l_dst = l_dir.magnitude(); l_dir.div(l_dst); l_dir.y += .2f;
+		f32 l_S = (l_pGO->Visual()?l_pGO->Radius()*l_pGO->Radius():0);
+		if(l_pGO->Visual()) {
+			const Fbox &l_b1 = l_pGO->BoundingBox(); Fbox l_b2; l_b2.invalidate();
+			Fmatrix l_m; l_m.identity(); l_m.k.set(l_dir); GetBasis(l_m.k, l_m.i, l_m.j);
+			for(int i = 0; i < 8; i++) { Fvector l_v; l_b1.getpoint(i, l_v); l_m.transform_tiny(l_v); l_b2.modify(l_v); }
+			Fvector l_c, l_d; l_b2.get_CD(l_c, l_d);
+			l_S = l_d.x*l_d.y;
+		}
+		f32 l_impuls = m_blast * (1.f - (l_dst/m_blastR)*(l_dst/m_blastR)) * l_S;
 		if(l_impuls > .001f) {
 			setEnabled(false);
 			l_impuls *= l_pGO->ExplosionEffect(vPosition, m_blastR, l_elsemnts, l_bs_positions);
@@ -163,7 +206,7 @@ void CGrenade::Explode() {
 			u_EventGen		(P,GE_HIT,l_pGO->ID());
 			P.w_u16			(u16(ID()));
 			P.w_dir			(l_dir);
-			P.w_float		(0);
+			P.w_float		(l_impuls);
 			P.w_s16			(l_element);
 			P.w_vec3		(l_bs_pos);
 			P.w_float		(l_impuls);
@@ -180,7 +223,7 @@ void CGrenade::Explode() {
 		if(Level().ObjectSpace.RayPick(vPosition, l_dir, m_fragsR, RQ)) {
 			Fvector l_end, l_bs_pos; l_end.mad(vPosition,l_dir,RQ.range); l_bs_pos.set(0, 0, 0);
 			if(RQ.O) {
-				f32 l_hit = m_fragHit * (1.f - RQ.range/m_fragsR);
+				f32 l_hit = m_fragHit * (1.f - (RQ.range/m_fragsR)*(RQ.range/m_fragsR));
 				CEntity* E = dynamic_cast<CEntity*>(RQ.O);
 				if(E) l_hit *= E->HitScale(RQ.element);
 				NET_Packet		P;
@@ -284,7 +327,7 @@ void CGrenade::OnEvent(NET_Packet& P, u16 type)
 }
 
 void CGrenade::OnAnimationEnd() {
-	switch(State()) {
+	switch(inherited::State()) {
 		case MS_END : {
 			m_pInventory->Ruck(this); 
 			m_destroyTime = 0;
@@ -310,10 +353,45 @@ void CGrenade::UpdateCL() {
 		inherited::Destroy();
 	} else if(m_expoldeTime < 0xffffffff) {
 		m_expoldeTime -= Device.dwTimeDelta;
-		if(m_expoldeTime > (500 - m_lightTime)) {
-			f32 l_scale = f32(m_expoldeTime - (500 - m_lightTime))/f32(m_lightTime);
+		if(m_expoldeTime > (5000 - m_lightTime)) {
+			f32 l_scale = f32(m_expoldeTime - (5000 - m_lightTime))/f32(m_lightTime);
 			m_pLight->set_color(m_lightColor.r*l_scale, m_lightColor.g*l_scale, m_lightColor.b*l_scale);
 			m_pLight->set_range(m_lightRange*l_scale);
 		} else m_pLight->set_range(0);
 	} else m_pLight->set_active(false);
+}
+
+bool CGrenade::Action(s32 cmd, u32 flags) {
+	if(inherited::Action(cmd, flags)) return true;
+	switch(cmd) {
+		case kWPN_NEXT : {
+			if(flags&CMD_START) {
+				if(m_pInventory) {
+					PPIItem l_it = m_pInventory->m_belt.begin();
+					while(l_it != m_pInventory->m_belt.end() && strcmp((*l_it)->cNameSect(), cNameSect())) l_it++;
+					if(l_it != m_pInventory->m_belt.end()) {
+						while(l_it != m_pInventory->m_belt.end()) {
+							CGrenade *l_pG = dynamic_cast<CGrenade*>(*l_it);
+							if(l_pG && strcmp(l_pG->cNameSect(), cNameSect())) {
+								m_pInventory->Ruck(this); m_pInventory->Slot(l_pG); m_pInventory->Belt(this); m_pInventory->Activate(l_pG->m_slot);
+								return true;
+							}
+							l_it++;
+						}
+						l_it = m_pInventory->m_belt.begin();
+						while(*l_it != this) {
+							CGrenade *l_pG = dynamic_cast<CGrenade*>(*l_it);
+							if(l_pG && strcmp(l_pG->cNameSect(), cNameSect())) {
+								m_pInventory->Ruck(this); m_pInventory->Slot(l_pG); m_pInventory->Belt(this); m_pInventory->Activate(l_pG->m_slot);
+								return true;
+							}
+							l_it++;
+						}
+					}
+					return true;
+				}
+			}
+		} return true;
+	}
+	return false;
 }

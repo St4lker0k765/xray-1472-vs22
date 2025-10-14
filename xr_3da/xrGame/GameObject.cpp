@@ -66,7 +66,7 @@ void CGameObject::OnEvent		(NET_Packet& P, u16 type)
 		break;
 	case GE_DESTROY:
 		{
-			Log			("-CL_destroy",cName());
+			//Log			("-CL_destroy",cName());
 			setDestroy	(TRUE);
 		}
 		break;
@@ -112,6 +112,10 @@ BOOL CGameObject::net_Spawn		(LPVOID	DC)
 			AI_NodeID			=	AI.q_Node	(a_obj->m_tNodeID,vPosition);
 		else
 			AI_NodeID			=	AI.q_LoadSearch(vPosition);
+		
+		if (!AI_NodeID)
+			Msg("! GameObject::NET_Spawn : Corresponding node hasn't been found for object %s",cName());
+
 		AI_Node				=	AI.Node		(AI_NodeID);
 		getAI().ref_add		(AI_NodeID);
 	}
@@ -130,7 +134,7 @@ BOOL CGameObject::net_Spawn		(LPVOID	DC)
 			getAI().ref_add  (AI_NodeID);
 		}
 	}
-	Msg			("--spawn--ai-node: %f ms",1000.f*T.GetElapsed_sec());
+	//Msg			("--spawn--ai-node: %f ms",1000.f*T.GetAsync());
 
 	// Phantom
 	// respawnPhantom			= E->ID_Phantom;
@@ -160,6 +164,10 @@ void CGameObject::Sector_Detect	()
 
 			AI.ref_dec  (AI_NodeID);
 			AI_NodeID	= AI.q_Node	(AI_NodeID,vPosition);
+			
+			if (!AI_NodeID)
+				Msg("! GameObject::Sector_Detect : Corresponding node hasn't been found for monster %s",cName());
+
 			AI.ref_add  (AI_NodeID);
 			AI_Node		= AI.Node	(AI_NodeID);
 		}
@@ -207,20 +215,65 @@ void CGameObject::u_EventSend(NET_Packet& P, BOOL sync)
 	Level().Send(P,net_flags(TRUE,TRUE));
 }
 
-void CGameObject::Hit(float P, Fvector &dir,	CObject* who, s16 element,Fvector p_in_object_space, float impulse){
+void CGameObject::Hit(float P, Fvector &dir,	CObject* who, s16 element,Fvector p_in_object_space, float impulse)
+{
 	if(m_pPhysicsShell) m_pPhysicsShell->applyImpulseTrace(p_in_object_space,dir,impulse);
 }
 
-f32 CGameObject::ExplosionEffect(const Fvector &expl_centre, const f32 expl_radius, std::list<s16> &elements, std::list<Fvector> &bs_positions) {
+f32 CGameObject::ExplosionEffect(const Fvector &expl_centre, const f32 expl_radius, xr_list<s16> &elements, xr_list<Fvector> &bs_positions) {
 	Collide::ray_query RQ;
-	Fvector l_dir; l_dir.sub(vPosition, expl_centre); l_dir.normalize();
+	Fvector l_pos; clCenter(l_pos);
+	Fvector l_dir; l_dir.sub(l_pos, expl_centre); l_dir.normalize();
 	if(!Level().ObjectSpace.RayPick(expl_centre, l_dir, expl_radius, RQ)) return 0;
 	if(RQ.O != this) return 0;
 	elements.push_back(RQ.element);
-	Fvector l_pos; l_pos.set(0, 0, 0);
+	l_pos.set(0, 0, 0);
 	bs_positions.push_back(l_pos);
 	return 1.f;
 }
+
+void CGameObject::PHSetMaterial(u32 m)
+{
+	if(m_pPhysicsShell)
+		m_pPhysicsShell->SetMaterial(m);
+}
+
+void CGameObject::PHSetMaterial(LPCSTR m)
+{
+	if(m_pPhysicsShell)
+		m_pPhysicsShell->SetMaterial(m);
+}
+
+void CGameObject::PHGetLinearVell		(Fvector& velocity)
+{
+if(!m_pPhysicsShell)
+{
+	velocity.set(0,0,0);
+	return;
+}
+m_pPhysicsShell->get_LinearVel(velocity);
+
+}
+
+void CGameObject::OnH_B_Chield()
+{
+	inherited::OnH_B_Chield();
+	PHSetPushOut();
+}
+
+void CGameObject::PHSetPushOut()
+{
+	if(m_pPhysicsShell)
+		m_pPhysicsShell->set_PushOut(5000);
+}
+///void CGameObject::OnH_A_Independent()
+//{
+//	if(m_pPhysicsShell)
+//		m_pPhysicsShell->set_PushOut(50000);
+		//m_pPhysicsShell->SetMaterial("objects\\soft_object");
+
+//	inherited::OnH_A_Independent();
+//}
 
 #ifdef DEBUG
 void CGameObject::OnRender()

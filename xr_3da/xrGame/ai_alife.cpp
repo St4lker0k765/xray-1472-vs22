@@ -10,7 +10,7 @@
 #include "ai_alife.h"
 #include "ai_space.h"
 
-CAI_ALife::CAI_ALife(xrServer *tpServer)
+CAI_ALife::CAI_ALife(xrServer *tpServer) : CALifeGraphRegistry(tpServer->game)
 {
 	m_tpServer			= tpServer;
 	m_bLoaded			= false;
@@ -47,18 +47,16 @@ void CAI_ALife::vfNewGame()
 
 	ALIFE_ENTITY_P_IT			B = m_tpSpawnPoints.begin();
 	ALIFE_ENTITY_P_IT			E = m_tpSpawnPoints.end();
-
-	ALIFE_ENTITY_P_IT			j;
-
+	u16							l_wGenID = 0x8000;
 	for (ALIFE_ENTITY_P_IT I = B ; I != E; ) {
 		u32	wGroupID = (*I)->m_dwSpawnGroup;
 		float fSum = (*I)->m_ucProbability;
-		for (j = I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++)
+		for (ALIFE_ENTITY_P_IT j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++)
 			fSum += (*j)->m_ucProbability;
 		float fProbability = ::Random.randF(0,fSum);
 		fSum = (*I)->m_ucProbability;
 		ALIFE_ENTITY_P_IT m = j, k = I;
-		for (j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++) {
+		for ( j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++) {
 			fSum += (*j)->m_ucProbability;
 			if (fSum > fProbability) {
 				k = j;
@@ -77,12 +75,12 @@ void CAI_ALife::vfNewGame()
 		u16						id;
 		tNetPacket.r_begin		(id);
 		i->UPDATE_Read			(tNetPacket);
-		i->ID					= 0xffff;
+		i->ID					= l_wGenID++;
 		CALifeAbstractGroup		*tpALifeAbstractGroup = dynamic_cast<CALifeAbstractGroup*>(i);
 		if (tpALifeAbstractGroup) {
-			i->ID				= m_tpServer->PerformIDgen(0xffff);
+			i->ID				= m_tpServer->PerformIDgen(l_wGenID++);
 			i->m_tObjectID		= i->ID;
-			m_tObjectRegistry.insert(std::make_pair(i->m_tObjectID,i));
+			m_tObjectRegistry.insert(make_pair(i->m_tObjectID,i));
 			
 			tpALifeAbstractGroup->m_tpMembers.resize(tpALifeAbstractGroup->m_wCount);
 			OBJECT_IT			II = tpALifeAbstractGroup->m_tpMembers.begin();
@@ -103,10 +101,10 @@ void CAI_ALife::vfNewGame()
 				tp2->UPDATE_Read	(tNetPacket);
 				Memory.mem_copy		(tp2->s_name,S,(strlen(S) + 1)*sizeof(char));
 				tp2->m_bDirectControl	= false;
-				tp2->ID				= 0xffff;
+				tp2->ID				= l_wGenID++;
 				vfCreateObject		(tp2);
 				*II					= tp2->m_tObjectID = tp2->ID;
-				m_tObjectRegistry.insert(std::make_pair(tp2->m_tObjectID,tp2));
+				m_tObjectRegistry.insert(make_pair(tp2->m_tObjectID,tp2));
 				CALifeMonsterAbstract *tp3 = dynamic_cast<CALifeMonsterAbstract*>(tp2);
 				if (tp3) 
 					vfAssignGraphPosition(tp3);
@@ -118,7 +116,7 @@ void CAI_ALife::vfNewGame()
 		else {
             vfCreateObject		(i);
 			i->m_tObjectID		= i->ID;
-			m_tObjectRegistry.insert(std::make_pair(i->m_tObjectID,i));
+			m_tObjectRegistry.insert(make_pair(i->m_tObjectID,i));
 			CALifeMonsterAbstract *tp3 = dynamic_cast<CALifeMonsterAbstract*>(i);
 			if (tp3)
 				vfAssignGraphPosition(tp3);
@@ -156,14 +154,14 @@ void CAI_ALife::Load()
 	Log							("* Loading parameters...");
 	shedule_Min					= pSettings->r_s32	("alife","schedule_min");
 	shedule_Max					= pSettings->r_s32	("alife","schedule_max");
-	m_qwMaxProcessTime			= pSettings->r_s32	("alife","procees_time")*CPU::cycles_per_microsec;
-	m_fOnlineDistance			= pSettings->r_float	("alife","online_distance");
+	m_qwMaxProcessTime			= pSettings->r_s32	("alife","process_time")*CPU::cycles_per_microsec;
+	m_fOnlineDistance			= pSettings->r_float("alife","online_distance");
 	m_dwSwitchDelay				= pSettings->r_s32	("alife","switch_delay");
-	m_fTimeFactor				= pSettings->r_float	("alife","time_factor");
+	m_fTimeFactor				= pSettings->r_float("alife","time_factor");
 
 	string256					caFileName;
 	IReader						*tpStream;
-	if (!FS.exist(caFileName,SAVE_PATH,SAVE_NAME)) {
+	if (!FS.exist(SAVE_NAME)) {
 		R_ASSERT				(FS.exist(caFileName, "$game_data$", SPAWN_NAME));
 		tpStream				= FS.r_open(caFileName);
 		Log						("* Loading spawn registry");
@@ -173,7 +171,7 @@ void CAI_ALife::Load()
 		Save					();
 		R_ASSERT2				(false,"New game has been generated successfully.\nYou have to restart game");
 	}
-	tpStream					= FS.r_open(caFileName);
+	tpStream					= FS.r_open(SAVE_NAME);
 	R_ASSERT					(tpStream);
 	Log							("* Loading simulator...");
 	CALifeHeader::Load			(*tpStream);
@@ -186,6 +184,7 @@ void CAI_ALife::Load()
 	CALifeTaskRegistry::Load	(*tpStream);
 	Log							("* Building dynamic objects...");
 	vfUpdateDynamicData			();
+	m_tpChildren.reserve(128);
 	m_bLoaded					= true;
 	Msg							("* Loading ALife Simulator is successfully completed (%7.3f Mb)",float(Memory.mem_usage() - dwMemUsage)/1048576.0);
 }
@@ -257,6 +256,47 @@ CALifeTrader* CAI_ALife::tpfGetNearestSuitableTrader(CALifeHuman *tpALifeHuman)
 	}
 	return(tpBestTrader);
 }
+
+void CAI_ALife::vfRemoveObject(xrServerEntity *tpServerEntity)
+{
+	CALifeDynamicObject *tpALifeDynamicObject = m_tObjectRegistry[tpServerEntity->ID];
+	VERIFY(tpALifeDynamicObject);
+	m_tObjectRegistry.erase(tpServerEntity->ID);
+	
+	vfRemoveObjectFromGraphPoint(tpALifeDynamicObject,tpALifeDynamicObject->m_tGraphID);
+
+	{
+		bool bOk = false;
+		ALIFE_ENTITY_P_IT	B = m_tpCurrentLevel->begin(), I = B;
+		ALIFE_ENTITY_P_IT	E = m_tpCurrentLevel->end();
+		for ( ; I != E; I++)
+			if (*I == tpALifeDynamicObject) {
+				if (I - B >= m_dwObjectsBeingSwitched) {
+					if (m_dwObjectsBeingSwitched)
+						m_dwObjectsBeingSwitched--;
+				}
+				m_tpCurrentLevel->erase(I);
+				bOk			= true;
+				break;
+			}
+		VERIFY(bOk);
+	}
+
+	{
+		bool bOk = false;
+		ALIFE_MONSTER_P_IT	I = m_tpScheduledObjects.begin();
+		ALIFE_MONSTER_P_IT	E = m_tpScheduledObjects.end();
+		for ( ; I != E; I++)
+			if (*I == tpALifeDynamicObject) {
+				m_tpScheduledObjects.erase(I);
+				bOk = true;
+				break;
+			}
+	}
+
+	tpServerEntity->m_bALifeControl = false;
+}
+
 
 void CAI_ALife::vfGenerateAnomalousZones()
 {

@@ -8,6 +8,8 @@
 #include "..\CameraFirstEye.h"
 #include "..\xr_level_controller.h"
 #include "EffectorBobbing.h"
+#include "EffectorPPHit.h"
+#include "EffectorHit.h"
 #include "customitem.h"
 #include "hudmanager.h"
 #include "Actor_Flags.h"
@@ -23,6 +25,9 @@
 
 #include "targetassault.h"
 #include "targetcs.h"
+
+#include "ai_sounds.h"
+#include "ai_space.h"
 
 const u32		patch_frames	= 50;
 const float		respawn_delay	= 1.f;
@@ -231,7 +236,13 @@ void CActor::net_Export	(NET_Packet& P)					// export to server
 	//VERIFY				(Weapons);
 
 	u8					flags=0;
-	CGameObject::net_Export(P);
+	//CGameObject::net_Export(P);
+	P.w_float_q16		(fHealth,-1000,1000);
+
+	P.w_float			(m_inventory.TotalWeight());
+	P.w_u32				(0);
+	P.w_u32				(0);
+
 	P.w_u32				(Level().timeServer());
 	P.w_u8				(flags);
 	P.w_vec3			(vPosition);
@@ -241,7 +252,6 @@ void CActor::net_Export	(NET_Packet& P)					// export to server
 	P.w_angle8			(r_torso.pitch);
 	P.w_sdir			(NET_SavedAccel);
 	P.w_sdir			(ph_Movement.GetVelocity());
-	P.w_float_q16		(fHealth,-1000,1000);
 	P.w_float_q16		(fArmor,-1000,1000);
 
 	int w_id = -1;//Weapons->ActiveWeaponID	();
@@ -258,7 +268,15 @@ void CActor::net_Import		(NET_Packet& P)					// import from server
 
 	u8	flags;
 	u16	tmp;
-	CGameObject::net_Import(P);
+	//CGameObject::net_Import(P);
+	P.r_float_q16		(fHealth,-1000,1000);
+
+	float fDummy;
+	u32 dwDummy;
+	P.r_float			(fDummy);
+	P.r_u32				(dwDummy);
+	P.r_u32				(dwDummy);
+
 	P.r_u32				(N.dwTimeStamp	);
 	P.r_u8				(flags			);
 	P.r_vec3			(N.p_pos		);
@@ -268,7 +286,6 @@ void CActor::net_Import		(NET_Packet& P)					// import from server
 	P.r_angle8			(N.o_torso.pitch);
 	P.r_sdir			(N.p_accel		);
 	P.r_sdir			(N.p_velocity	);
-	P.r_float_q16		(fHealth,-1000,1000);
 	P.r_float_q16		(fArmor,-1000,1000);
 
 	u8					wpn;
@@ -289,6 +306,7 @@ BOOL CActor::net_Spawn		(LPVOID DC)
 {
 	if (!inherited::net_Spawn(DC))	return FALSE;
 	ph_Movement.CreateCharacter();
+	ph_Movement.SetPhysicsRefObject(this);
 	ph_Movement.SetPLastMaterial(&last_gmtl_id);
 	ph_Movement.SetPosition	(vPosition);
 	ph_Movement.SetVelocity	(0,0,0);
@@ -341,9 +359,10 @@ BOOL CActor::net_Spawn		(LPVOID DC)
 		strcpy				(D->s_name_replace,"");
 		D->s_gameid			=	u8(GameID());
 		D->s_RP				=	0xff;
-		D->ID				=	0xfffd - i;
+		D->ID				=	0xffff;
 		D->ID_Parent		=	E->ID;
 		D->ID_Phantom		=	0xffff;
+		D->o_Position		=	vPosition;
 		D->s_flags.assign	(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
 		D->RespawnTime		=	0;
 		// Send
@@ -370,26 +389,26 @@ BOOL CActor::net_Spawn		(LPVOID DC)
 	//Weapons->Init		("bip01_r_hand","bip01_l_finger1");
 
 	// load damage params
-	if (pSettings->line_exist(cNameSect(), "damage"))
+	if (pSettings->line_exist(cNameSect(),"damage"))
 	{
-		const char* damage_sect = pSettings->r_string(cNameSect(), "damage");
-		CInifile::Sect& dam_sect = pSettings->r_section(damage_sect);
-
-		for (CInifile::SectIt it = dam_sect.begin(); it != dam_sect.end(); ++it)
+		string32 buf;
+		CInifile::Sect& dam_sect	= pSettings->r_section(pSettings->r_string(cNameSect(),"damage"));
+		for (CInifile::SectIt it=dam_sect.begin(); it!=dam_sect.end(); it++)
 		{
-			const char* key = it->first.c_str();
-			const char* val = it->second.c_str();
-
-			if (0 == _stricmp(key, "default")) {
-				hit_factor = (float)std::atof(val);
-			} else {
-				int bone = V->LL_BoneID(key);
-				R_ASSERT2(bone != BONE_NONE, key);
-				V->LL_GetInstance(bone).set_param(0, (float)std::atof(val));
+			if (0==strcmp(it->first.c_str(), "default")) {
+				hit_factor	= (float)atof(it->second.c_str());
+			}else{
+				int bone	= V->LL_BoneID(it->first.c_str());
+				R_ASSERT2(bone!=BONE_NONE,it->first.c_str());
+				CBoneInstance& B = V->LL_GetInstance(bone);
+				B.set_param(0,(float)atof(_GetItem(it->second.c_str(),0,buf)));
+				B.set_param(1,atoi(_GetItem(it->second.c_str(),1,buf)));
 			}
 		}
 	}
 
+	//. temporary
+//	Level().Cameras.AddEffector(xr_new<CEffectorPPHit>	());
 
 	return					TRUE;
 }
@@ -416,6 +435,11 @@ void CActor::Hit		(float iLost, Fvector &dir, CObject* who, s16 element, float i
 	if (g_Alive()<=0) return;
 	Fvector position_in_bone_space;
 	position_in_bone_space.set(0.f,0.f,0.f);
+	if(pCreator->CurrentEntity() == this) {
+		Fvector l_d; l_d.set(dir); l_d.normalize();
+		Level().Cameras.AddEffector(xr_new<CEffectorPPHit>(svTransform.i.dotproduct(l_d), svTransform.j.dotproduct(l_d), .5f, .003f*iLost));
+		Level().Cameras.AddEffector(xr_new<CEffectorHit>(svTransform.i.dotproduct(l_d), svTransform.j.dotproduct(l_d), .8f, .003f*iLost));
+	}
 	switch (GameID())
 	{
 	case GAME_SINGLE:		
@@ -451,6 +475,12 @@ void CActor::Hit		(float iLost, Fvector &dir, CObject* who, s16 element,Fvector 
 	}
 
 	if (g_Alive()<=0) return;
+
+	if(pCreator->CurrentEntity() == this) {
+		Fvector l_d; l_d.set(dir); l_d.normalize();
+		Level().Cameras.AddEffector(xr_new<CEffectorPPHit>(svTransform.i.dotproduct(l_d), svTransform.j.dotproduct(l_d), .5f, .003f*iLost));
+		Level().Cameras.AddEffector(xr_new<CEffectorHit>(svTransform.i.dotproduct(l_d), svTransform.j.dotproduct(l_d), .8f, .003f*iLost));
+	}
 
 	switch (GameID())
 	{
@@ -498,14 +528,26 @@ void CActor::HitSignal(float perc, Fvector& vLocalDir, CObject* who, s16 element
 		if (hit_slowmo>1.f)		hit_slowmo = 1.f;
 
 		// check damage bone
+		Fvector D;
+		svTransform.transform_dir(D,vLocalDir);
+
+		float	yaw, pitch;
+		D.getHP(yaw,pitch);
+		CKinematics *tpKinematics = PKinematics(pVisual);
+#pragma todo("forward-back bone impulse direction has been determined incorrectly!")
+		CMotionDef *tpMotionDef = m_anims.m_normal.m_damage[iFloor(tpKinematics->LL_GetInstance(element).get_param(1) + (getAI().bfTooSmallAngle(r_model_yaw + r_model_yaw_delta,yaw,PI_DIV_2) ? 0 : 1))];
+		float power_factor = perc/100.f; clamp(power_factor,0.f,1.f);
+		tpKinematics->PlayFX(tpMotionDef,power_factor);
 	}
 }
 
 void CActor::Die	( )
 {
-	// Dima
-	b_DropActivated			= TRUE;
-	g_PerformDrop			();
+	//// Dima
+	//b_DropActivated			= TRUE;
+	//g_PerformDrop			();
+	// @@@ WT
+	m_inventory.DropAll();
 	// Play sound
 	::Sound->play_at_pos		(sndDie[Random.randI(SND_DIE_COUNT)],this,vPosition);
 	cam_Set					(eacFreeLook);
@@ -621,7 +663,7 @@ void CActor::g_Physics			(Fvector& _accel, float jump, float dt)
 				pCreator->Cameras.AddEffector		(xr_new<CEffectorFall> (ph_Movement.gcontact_Power));
 			Fvector D; D.set					(0,1,0);
 			if (ph_Movement.gcontact_HealthLost)	{
-				Hit	(ph_Movement.gcontact_HealthLost,D,this,-1,0);
+				Hit	(ph_Movement.gcontact_HealthLost,D,this,6 + 2*::Random.randI(0,2),0);
 				if(g_Alive()<=0)
 					ph_Movement.GetDeathPosition(vPosition);
 			}
@@ -655,10 +697,10 @@ void CActor::ZoneEffect	(float z_amount)
 
 	// Calc shift func
 	float f_x			= Device.fTimeGlobal;
-	float f_sin4x		= sinf(4.f*f_x);
-	float f_sin4x_s		= sinf(PI/3.f + 4.f*f_x);
+	float f_sin4x		= _sin(4.f*f_x);
+	float f_sin4x_s		= _sin(PI/3.f + 4.f*f_x);
 	float f_sin4x_sa	= _abs(f_sin4x_s);
-	float F				= (f_sin4x+f_sin4x_sa)+(1+f_sin4x*f_sin4x_sa)+ 0.3f*sinf(tanf(PI/(2.1f)*sinf(f_x)));
+	float F				= (f_sin4x+f_sin4x_sa)+(1+f_sin4x*f_sin4x_sa)+ 0.3f*_sin(tanf(PI/(2.1f)*_sin(f_x)));
 
 	// Fov/Shift + Pulse
 	CCameraBase* C		= cameras	[cam_active];
@@ -745,8 +787,8 @@ void CActor::Update	(u32 DT)
 
 	//********************** just for vitya's pleasure
 	//CRender_target*		T	= ::Render->getTarget();
-	////T->set_duality_h		(.015f*sinf(1.f*Device.fTimeGlobal));
-	////T->set_duality_v		(.017f*cosf(1.1f*Device.fTimeGlobal));
+	////T->set_duality_h		(.015f*_sin(1.f*Device.fTimeGlobal));
+	////T->set_duality_v		(.017f*_cos(1.1f*Device.fTimeGlobal));
 	//T->set_duality_h		(.0f);
 	//T->set_duality_v		(.0f);
 	//T->set_noise			(.5f);//(.5f);
@@ -892,8 +934,9 @@ void CActor::Update	(u32 DT)
 	}
 
 	// sounds update
-	float	s_k			=	(mstate_real&mcCrouch)?0.85f:1.f;
-	float	s_vol		=	s_k * (isAccelerated(mstate_real)?1.f:.85f);
+	// Дима. Было 1.0(начальная громкость) и 0.85(если сидя), стало 0.2 и 0.5 соответственно
+	float	s_k			=	ffGetStartVolume(SOUND_TYPE_MONSTER_WALKING)*((mstate_real&mcCrouch) ? CROUCH_SOUND_FACTOR : 1.f);
+	float	s_vol		=	s_k * (isAccelerated(mstate_real) ? 1.f : ACCELERATED_SOUND_FACTOR);
 	Fvector	s_pos		=	Position	();
 	s_pos.y				+=	.15f;
 	if (sndStep[0].feedback)		{
@@ -909,6 +952,7 @@ void CActor::Update	(u32 DT)
 	if (!sndLanding.feedback&&(mstate_real&(mcLanding|mcLanding2))){
 		sndLanding.clone	(mtl_pair->HitSounds[0]);
 		::Sound->play_at_pos	(sndLanding,this,s_pos);
+		sndLanding.feedback->set_volume(.2f);
 	}
 
 	m_inventory.Update(DT);
@@ -920,7 +964,7 @@ void CActor::OnVisible	()
 
 	//CWeapon* W				= Weapons->ActiveWeapon();
 	//CWeapon *W = dynamic_cast<CWeapon*>(m_inventory.ActiveItem()); if(W) W->OnVisible();
-	if(m_inventory.ActiveItem()) m_inventory.ActiveItem()->OnVisible();
+	if(m_inventory.ActiveItem()&&!m_vehicle) m_inventory.ActiveItem()->OnVisible();
 }
 
 void CActor::g_cl_ValidateMState(float dt, u32 mstate_wf)
@@ -1231,7 +1275,8 @@ void CActor::OnHUDDraw	(CCustomHUD* hud)
 	//if (W)				W->OnVisible		();
 	//CWeapon *W = dynamic_cast<CWeapon*>(m_inventory.ActiveItem()); if(W) W->OnVisible();
 
-	if(m_inventory.ActiveItem()) m_inventory.ActiveItem()->OnVisible();
+	if(m_inventory.ActiveItem()&&!m_vehicle)
+								m_inventory.ActiveItem()->OnVisible();
 
 
 #ifdef _DEBUG
@@ -1323,16 +1368,6 @@ void CActor::ForceTransform(const Fmatrix& m)
 
 }
 
-CObject* CActor::pick_Object()
-{
-	setEnabled(false);
-	Collide::ray_query	l_rq;
-	l_rq.O=NULL;
-	pCreator->ObjectSpace.RayPick(Device.vCameraPosition, Device.vCameraDirection, 15.f, l_rq);
-	setEnabled(true);
-
-	return l_rq.O;
-}
 
 #ifdef DEBUG
 void dbg_draw_frustum (float FOV, float _FAR, float A, Fvector &P, Fvector &D, Fvector &U);
@@ -1347,3 +1382,13 @@ void CActor::OnRender	()
 	dbg_draw_frustum			(C->f_fov, 230.f, 1.f, C->vPosition, C->vDirection, C->vNormal);
 }
 #endif
+
+ENGINE_API extern float		psHUD_FOV;
+float CActor::Radius()const
+{ 
+	float R		= inherited::Radius();
+	CWeapon* W	= dynamic_cast<CWeapon*>(m_inventory.ActiveItem());
+	if (W) R	+= W->Radius();
+//	if (HUDview()) R *= 1.f/psHUD_FOV;
+	return R;
+}

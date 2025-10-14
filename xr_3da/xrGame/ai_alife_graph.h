@@ -40,6 +40,7 @@ public:
 	typedef struct tagSLevel {
 		string256							caLevelName;
 		Fvector								tOffset;
+		u32									dwLevelID;
 	} SLevel;
 
 	typedef struct tagSGraphHeader {
@@ -91,6 +92,7 @@ public:
 			for ( ; I != E; I++) {
 				m_tpGraphVFS->r_stringZ		((*I).caLevelName);
 				m_tpGraphVFS->r_fvector3	((*I).tOffset);
+				(*I).dwLevelID				= m_tpGraphVFS->r_u32();
 			}
 		}
 		R_ASSERT						(m_tGraphHeader.dwVersion == XRAI_CURRENT_VERSION);

@@ -232,6 +232,33 @@
     <Filter Include="Physics\Tri-Collider">
       <UniqueIdentifier>{c062f757-4c05-481f-b548-7af3bea5f045}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Game\Objects\AMonsters\ai_idol">
+      <UniqueIdentifier>{3bc3474d-3d8a-44b0-99fe-dddeb3083f5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\RGD5">
+      <UniqueIdentifier>{3cb11c15-20d5-465f-b535-97943008b286}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon Val">
+      <UniqueIdentifier>{d24ad917-9304-4cd7-ab1b-c5350cfd507d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon Vintorez">
+      <UniqueIdentifier>{7a2b5e14-0aca-47fb-baf0-d38d043ad9cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon Walther 99">
+      <UniqueIdentifier>{7ad7b25b-685a-4ccd-854a-9079f59f0bf1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon USP45">
+      <UniqueIdentifier>{638786e0-5eda-4a29-8043-29586d4efa10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Weapons\Weapon Groza">
+      <UniqueIdentifier>{7dadbfc0-c260-4f0c-9e93-5ac61d550a1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\Items &amp; Weapons\Devices">
+      <UniqueIdentifier>{6d8795f1-1c5e-4f81-b55b-7eba14f2e20a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Game\Objects\_lamp">
+      <UniqueIdentifier>{28045280-6d4b-404b-9588-4946aa34bb5f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="StdAfx.cpp">
@@ -816,9 +843,6 @@
     <ClCompile Include="a_star.cpp">
       <Filter>AI\ARoute\AStar</Filter>
     </ClCompile>
-    <ClCompile Include="a_star_interfaces.cpp">
-      <Filter>AI\ARoute\AStar</Filter>
-    </ClCompile>
     <ClCompile Include="ai_sounds.cpp">
       <Filter>AI\ASound</Filter>
     </ClCompile>
@@ -851,6 +875,42 @@
     </ClCompile>
     <ClCompile Include="tri-colliderknoopc\dcTriListCollider.cpp">
       <Filter>Physics\Tri-Collider</Filter>
+    </ClCompile>
+    <ClCompile Include="AI\Idol\ai_idol.cpp">
+      <Filter>Game\Objects\AMonsters\ai_idol</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectorHit.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectorPPHit.cpp">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClCompile>
+    <ClCompile Include="PhysicObject.cpp">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClCompile>
+    <ClCompile Include="RGD5.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\RGD5</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponVal.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Val</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponVintorez.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Vintorez</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponWalther.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Walther 99</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponUSP45.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon USP45</Filter>
+    </ClCompile>
+    <ClCompile Include="WeaponGroza.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Groza</Filter>
+    </ClCompile>
+    <ClCompile Include="Torch.cpp">
+      <Filter>Game\Objects\Items &amp; Weapons\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="HangingLamp.cpp">
+      <Filter>Game\Objects\_lamp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1318,6 +1378,48 @@
     </ClInclude>
     <ClInclude Include="tri-colliderKNoOPC\dxTriList.h">
       <Filter>Physics\Tri-Collider</Filter>
+    </ClInclude>
+    <ClInclude Include="AI\Idol\ai_idol.h">
+      <Filter>Game\Objects\AMonsters\ai_idol</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectorHit.h">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClInclude>
+    <ClInclude Include="EffectorPPHit.h">
+      <Filter>Game\Objects\_actor</Filter>
+    </ClInclude>
+    <ClInclude Include="PhysicObject.h">
+      <Filter>Game\Objects\Basic</Filter>
+    </ClInclude>
+    <ClInclude Include="RGD5.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\RGD5</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponVal.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Val</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponVintorez.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Vintorez</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponWalther.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Walther 99</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponUSP45.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon USP45</Filter>
+    </ClInclude>
+    <ClInclude Include="WeaponGroza.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Weapons\Weapon Groza</Filter>
+    </ClInclude>
+    <ClInclude Include="Torch.h">
+      <Filter>Game\Objects\Items &amp; Weapons\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="HangingLamp.h">
+      <Filter>Game\Objects\_lamp</Filter>
+    </ClInclude>
+    <ClInclude Include="ode_include.h">
+      <Filter>Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="ode_redefine.h">
+      <Filter>Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -6,16 +6,18 @@
 #define AFX_GAMEOBJECT_H__3DA72D03_C759_4688_AEBB_89FA812AA873__INCLUDED_
 #pragma once
 
-class CPhysicsShell;
-class CGameObject : public CObject  
+#include "PhysicsShell.h"
+class CGameObject : 
+	public CObject, 
+	public CPhysicsRefObject
 	/******* Oles
 #ifdef DEBUG
 	, public pureRender
 #endif
 	*/
 {
-public:
 	typedef CObject inherited;
+public:
 	// AI connection
 	u32											AI_NodeID;
 	NodeCompressed*								AI_Node;
@@ -39,6 +41,12 @@ public:
 	virtual void			UpdateCL			();
 	
 	virtual	void			Hit					(float P, Fvector &dir,	CObject* who, s16 element,Fvector p_in_object_space, float impulse);
+	//virtual void			OnH_A_Independent	();
+	virtual void			OnH_B_Chield		();
+	virtual void			PHGetLinearVell		(Fvector& velocity);
+	virtual void			PHSetMaterial		(LPCSTR m);
+	virtual void			PHSetMaterial		(u32 m);
+	virtual void			PHSetPushOut		();
 
 	virtual bool			IsVisibleForZones() { return true; }
 
@@ -49,7 +57,8 @@ public:
 	CGameObject();
 	virtual ~CGameObject();
 
-	virtual f32 ExplosionEffect(const Fvector &expl_centre, const f32 expl_radius, std::list<s16> &elements, std::list<Fvector> &bs_positions);
+	virtual f32 ExplosionEffect(const Fvector &expl_centre, const f32 expl_radius, xr_list<s16> &elements, xr_list<Fvector> &bs_positions);
+	virtual f32 GetMass() { return m_pPhysicsShell?m_pPhysicsShell->getMass():0; }
 
 #ifdef DEBUG
 	virtual void			OnRender			();

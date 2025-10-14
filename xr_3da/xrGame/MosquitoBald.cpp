@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "mosquitobald.h"
 #include "hudmanager.h"
+#include "..\PGObject.h"
 
 static
 f32 g_pp_fade = 2000.f;
@@ -26,6 +27,8 @@ void CMosquitoBald::Load(LPCSTR section) {
 	m_pp.noise = pSettings->r_float(l_PP,"noise");
 	m_pp.noise_scale = pSettings->r_float(l_PP,"noise_scale");
 	sscanf(pSettings->r_string(l_PP,"noise_color"), "%d,%d,%d,%d", &m_pp.r, &m_pp.g, &m_pp.b, &m_pp.a);
+
+	m_pHitEffect = pSettings->r_string(section,"hit_effect");
 }
 
 void CMosquitoBald::Affect(CObject* O) {
@@ -35,9 +38,10 @@ void CMosquitoBald::Affect(CObject* O) {
 		char l_pow[255]; sprintf(l_pow, "zone hit. %.1f", Power(l_pO->Position().distance_to(P)));
 		if(bDebug) HUD().outMessage(0xffffffff,l_pO->cName(), l_pow);
 		Fvector l_dir; l_dir.set(::Random.randF(-.5f,.5f), ::Random.randF(.0f,1.f), ::Random.randF(-.5f,.5f)); l_dir.normalize();
+		//Fvector l_dir; l_dir.sub(l_pO->Position(), P); l_dir.normalize();
 		//l_pO->ph_Movement.ApplyImpulse(l_dir, 50.f*Power(l_pO->Position().distance_to(P)));
 		Fvector position_in_bone_space;
-		float power = Power(l_pO->Position().distance_to(P)), impulse = m_hitImpulseScale*power;
+		float power = Power(l_pO->Position().distance_to(P)), impulse = m_hitImpulseScale*power*l_pO->GetMass();
 		if(power > 0.01f) {
 			m_time = 0;
 			position_in_bone_space.set(0.f,0.f,0.f);
@@ -50,6 +54,8 @@ void CMosquitoBald::Affect(CObject* O) {
 			l_P.w_vec3			(position_in_bone_space);
 			l_P.w_float			(impulse);
 			l_pO->u_EventSend		(l_P);
+
+			CPGObject* pStaticPG = xr_new<CPGObject>(m_pHitEffect,l_pO->Sector()); pStaticPG->play_at_pos(l_pO->Position());
 		}
 	}
 }
@@ -67,8 +73,8 @@ void CMosquitoBald::UpdateCL() {
 		IRender_Target*		T	= ::Render->getTarget();
 		f32 l_h = m_pp_time < g_pp_fade ? m_pp.duality_h * ((f32)m_pp_time / g_pp_fade) : m_pp.duality_h;
 		f32 l_v = m_pp_time < g_pp_fade ? m_pp.duality_v * ((f32)m_pp_time / g_pp_fade) : m_pp.duality_v;
-		T->set_duality_h		(l_h*sinf(1.f*Device.fTimeGlobal));
-		T->set_duality_v		(l_v*cosf(1.1f*Device.fTimeGlobal));
+		T->set_duality_h		(l_h*_sin(1.f*Device.fTimeGlobal));
+		T->set_duality_v		(l_v*_cos(1.1f*Device.fTimeGlobal));
 		//T->set_duality_h		(.0f);
 		//T->set_duality_v		(.0f);
 		T->set_blur				(m_pp_time < g_pp_fade ? m_pp.blur * ((f32)m_pp_time / g_pp_fade) : m_pp.blur);
@@ -86,14 +92,14 @@ void CMosquitoBald::UpdateCL() {
 		IRender_Target*		T	= ::Render->getTarget();
 		f32 l_h = m_pp_time < g_pp_fade ? m_pp.duality_h * ((f32)m_pp_time / g_pp_fade) : m_pp.duality_h;
 		f32 l_v = m_pp_time < g_pp_fade ? m_pp.duality_v * ((f32)m_pp_time / g_pp_fade) : m_pp.duality_v;
-		T->set_duality_h		(l_h*sinf(1.f*Device.fTimeGlobal));
-		T->set_duality_v		(l_v*cosf(1.1f*Device.fTimeGlobal));
+		T->set_duality_h		(l_h*_sin(1.f*Device.fTimeGlobal));
+		T->set_duality_v		(l_v*_cos(1.1f*Device.fTimeGlobal));
 		T->set_blur				(m_pp_time < g_pp_fade ? m_pp.blur * ((f32)m_pp_time / g_pp_fade) : m_pp.blur);
 		T->set_gray				(m_pp_time < g_pp_fade ? m_pp.gray * ((f32)m_pp_time / g_pp_fade) : m_pp.gray);
 		T->set_noise			(m_pp_time < g_pp_fade ? m_pp.noise * ((f32)m_pp_time / g_pp_fade) : m_pp.noise);
 		//T->set_noise			(m_pp.noise);
 		T->set_noise_scale		(m_pp.noise_scale);
-		T->set_noise_color		(color_rgba(m_pp.r,m_pp.g,m_pp.b,m_pp.a) );
+		T->set_noise_color		(color_rgba(m_pp.r,m_pp.g,m_pp.b,m_pp.a));
 		T->set_noise_fps		(10.f);
 	}
 	inherited::UpdateCL();

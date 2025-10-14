@@ -325,6 +325,8 @@ void CAI_Rat::UnderFire()
 	if ((Level().timeServer() - m_dwLastRangeSearch > TIME_TO_GO) || !m_dwLastRangeSearch)
 		m_tGoalDir = m_tSpawnPosition;
 	
+	m_fSpeed = m_fAttackSpeed;
+
 	if (bfComputeNewPosition(true,true))
 		SWITCH_TO_NEW_STATE_THIS_UPDATE(aiRatTurn);
 }
@@ -694,7 +696,7 @@ void CAI_Rat::vfUpdateSpawnPosition()
 			m_tNextGP					= getAI().m_tpaCrossTable[AI_NodeID].tGraphIndex;
 			vfChooseNextGraphPoint		();
 			m_tSafeSpawnPosition.set	(getAI().m_tpaGraph[m_tNextGP].tLocalPoint);
-			Msg("Next graph point %d",m_tNextGP);
+//.			Msg("Next graph point %d",m_tNextGP);
 		}
 
 	}

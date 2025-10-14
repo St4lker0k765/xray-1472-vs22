@@ -1,11 +1,25 @@
+#pragma once
+
+typedef void __stdcall BoneCallbackFun(CBoneInstance* B);
+typedef  void __stdcall ContactCallbackFun(CDB::TRI* T,dContactGeom* c);
+typedef	 void __stdcall ObjectContactCallbackFun(bool& do_colide,dContact& c);
+struct Fcylinder;
 #include "StdAfx.h"
-#include <ode/ode.h>
 #include "PHDynamicData.h"
 #include "Physics.h"
 #include "tri-colliderknoopc/dTriList.h"
-#include "ExtendedGeom.h"
+///////////////////////////////////////////////////////////////
+#pragma warning(disable:4995)
+#include "..\ode\src\collision_kernel.h"
+#include <..\ode\src\joint.h>
+#include <..\ode\src\objects.h>
 
+#pragma warning(default:4995)
+///////////////////////////////////////////////////////////////////
+//#include "dRay/include/dRay.h"
+#include "ExtendedGeom.h"
 Shader* CPHElement::hWallmark=NULL;
+
 // #include "contacts.h"
 
 
@@ -17,6 +31,7 @@ Shader* CPHElement::hWallmark=NULL;
 //static bool isShooting;
 //static dVector3 RayD;
 //static dVector3 RayO;
+void BodyCutForce(dBodyID body);
 
 dWorldID phWorld;
 /////////////////////////////////////
@@ -99,7 +114,7 @@ void CPHMesh ::Destroy(){
 ///////////////////////////////////////////////////////////////////////////
 
 void CPHJeep::Create1(dSpaceID space, dWorldID world){
-	
+	if(bActive) return;
 	static const dReal scaleParam=1.f;
 	static const dVector3 scaleBox={scaleParam, scaleParam, scaleParam};
 	//jeepBox={scaleBox[0],scaleBox[0],scaleBox[0]};
@@ -197,12 +212,15 @@ void CPHJeep::Create1(dSpaceID space, dWorldID world){
 
 	//dynamic data
 CreateDynamicData();
-
+bActive=true;
 }
 
+void __stdcall CarHitCallback(bool& do_colide,dContact& c);
 /////////////////////////////////////////////////////////////////////////////
+dReal car_spring_factor=1.f;
+dReal car_damping_factor=1.f;
 void CPHJeep::Create(dSpaceID space, dWorldID world){
-	
+	if(bActive) return;
 	static const dReal scaleParam=1.f;
 	static const dVector3 scaleBox={scaleParam, scaleParam, scaleParam};
 	//jeepBox={scaleBox[0],scaleBox[0],scaleBox[0]};
@@ -222,13 +240,13 @@ void CPHJeep::Create(dSpaceID space, dWorldID world){
 	//static const dReal weelSepX=scaleBox[0]*2.74f/2.f,weelSepZ=scaleBox[2]*1.7f/2.f,weelSepY=scaleBox[1]*0.6f;
 	static const dReal weelSepXF=scaleBox[0]*1.32f,weelSepXB=scaleBox[0]*1.155f,weelSepZ=scaleBox[2]*1.53f/2.f,weelSepY=scaleBox[1]*0.463f;
 	static const dReal cabinSepX=scaleBox[0]*0.61f,cabinSepY=scaleBox[1]*0.55f;
-	MassShift=0.25f;
+	//MassShift=0.25f;
 	dMass m;
 
 	// car body
 	//dMass m;
 	dMassSetBox(&m, 1.f, jeepBox[0], jeepBox[1]/4.f, jeepBox[2]); // density,lx,ly,lz
-	dMassAdjust(&m, 800.f); // mass
+	dMassAdjust(&m, 400.f); // mass//800
 	//dMassTranslate(&m,0.f,-1.f,0.f);
 	Bodies[0] = dBodyCreate(world);
 	dBodySetMass(Bodies[0], &m);
@@ -246,6 +264,16 @@ void CPHJeep::Create(dSpaceID space, dWorldID world){
 	dGeomCreateUserData(Geoms[6]);
 	dGeomGetUserData(Geoms[0])->material=GMLib.GetMaterialIdx("materials\\car_cabine");
 	dGeomGetUserData(Geoms[6])->material=GMLib.GetMaterialIdx("materials\\car_cabine");
+	
+	dGeomUserDataSetObjectContactCallback(Geoms[0],CarHitCallback);
+	dGeomUserDataSetObjectContactCallback(Geoms[6],CarHitCallback);
+	dGeomUserDataSetContactCallback(Geoms[0],ContactShotMark);
+	dGeomUserDataSetContactCallback(Geoms[6],ContactShotMark);
+	if(m_ref_object)
+	{
+	dGeomUserDataSetPhysicsRefObject(Geoms[0],m_ref_object);
+	dGeomUserDataSetPhysicsRefObject(Geoms[6],m_ref_object);
+	}
 	//dGeomGetUserData(Geoms[5])->friction=500.f;
 	//dGeomGetUserData(Geoms[7])->friction=500.f;
 
@@ -265,7 +293,7 @@ void CPHJeep::Create(dSpaceID space, dWorldID world){
 
 	// wheel bodies
 	dMassSetSphere(&m, 1, wheelRadius); // density, radius
-	dMassAdjust(&m, 20); // mass
+	dMassAdjust(&m, 100); // mass 20
 	dQuaternion q;
 	dQFromAxisAndAngle(q, 1, 0, 0, M_PI * 0.5);
 	u32 i;
@@ -308,13 +336,19 @@ void CPHJeep::Create(dSpaceID space, dWorldID world){
 
 		dJointSetHinge2Param(Joints[i], dParamVel2, 0.f);
 		dJointSetHinge2Param(Joints[i], dParamFMax2, 500.f);
-		dReal k_p=20000000.f;//20000.f;
-		dReal k_d=10.f;//1000.f;
-		dReal h=0.02222f;
+		dReal k_p=20000.f*car_spring_factor;
+		dReal k_d=1000.f*car_damping_factor;
+		dReal h=fixed_step;
 			
 
 		dJointSetHinge2Param(Joints[i], dParamSuspensionERP, h*k_p / (h*k_p + k_d));
 		dJointSetHinge2Param(Joints[i], dParamSuspensionCFM, 1.f / (h*k_p + k_d));
+
+#ifndef   ODE_SLOW_SOLVER
+
+		dJointSetHinge2Param(Joints[i], dParamStopERP, 1.f);
+		dJointSetHinge2Param(Joints[i], dParamStopCFM,0.f);// world_cfm/100.f
+#endif
 
 	}
 
@@ -327,20 +361,20 @@ void CPHJeep::Create(dSpaceID space, dWorldID world){
 
 	//dynamic data
 CreateDynamicData();
-
+bActive=true;
 }
 ////////////////////////////////////////////////////////////////
 void CPHJeep::JointTune(dReal step){
-const	dReal k_p=30000.f;//30000.f;
+const	dReal k_p=15000.f;//30000.f;
 const	dReal k_d=1000.f;//1000.f;
-	for(u32 i = 0; i < 4; ++i)
-	{
+	//for(u32 i = 0; i < 4; ++i)
+	//{
 
 		
-		dJointSetHinge2Param(Joints[i], dParamSuspensionERP, step*k_p / (step*k_p + k_d));
-		dJointSetHinge2Param(Joints[i], dParamSuspensionCFM, 1.f / (step*k_p + k_d));
+	//	dJointSetHinge2Param(Joints[i], dParamSuspensionERP, step*k_p / (step*k_p + k_d));
+	//	dJointSetHinge2Param(Joints[i], dParamSuspensionCFM, 1.f / (step*k_p + k_d));
 
-	}
+	//}
 	static const dReal w_limit = M_PI/16.f/0.02f;
 	const dReal* rot = dBodyGetAngularVel(Bodies[0]);
 	dReal mag=_sqrt(rot[0]*rot[0]+rot[1]*rot[1]+rot[2]*rot[2]);
@@ -351,6 +385,7 @@ const	dReal k_d=1000.f;//1000.f;
 }
 /////////
 void CPHJeep::Destroy(){
+	if(!bActive) return;
 	for(u32 i=0;i<NofGeoms;i++) dGeomDestroyUserData(Geoms[i]);
 	DynamicData.Destroy();
 	
@@ -368,12 +403,14 @@ void CPHJeep::Destroy(){
 	dGeomDestroy(Geoms[6]);
 //	dGeomDestroy(Geoms[5]);
 	dGeomDestroy(Geoms[7]);
-	dSpaceDestroy(GeomsGroup);
+	dGeomDestroy(GeomsGroup);
 
+	bActive=false;
 }
 
 void CPHJeep::Steer1(const char& velocity, const char& steering)
 {
+	if(!bActive) return;
 	static const dReal steeringRate = M_PI * 4 / 3;
 	static const dReal steeringLimit = M_PI / 6;
 	static const dReal wheelVelocity = 1.f * M_PI;
@@ -446,11 +483,12 @@ DynamicData.SetZeroTransform(Translate);
 
 }
 
-
+dReal steeringRate = M_PI * 4 / 5;
+dReal steeringLimit = M_PI / 4;
 void CPHJeep::Steer(const char& steering)
 {
-	static const dReal steeringRate = M_PI * 4 / 5;
-	static const dReal steeringLimit = M_PI / 4;
+	if(!bActive) return;
+
 	
 	ULONG i;
 	switch(steering)
@@ -494,6 +532,7 @@ void CPHJeep::Steer(const char& steering)
 
 void CPHJeep::LimitWeels()
 {
+if(!bActive) return;
 if(weels_limited) return;
 
 	for(int i = 2; i < 4; ++i)
@@ -513,6 +552,7 @@ if(weels_limited) return;
 ////////////////////////////////////////////////////////////////
 void CPHJeep::Drive(const char& velocity,dReal force)
 {
+	if(!bActive) return;
 
 	static const dReal wheelVelocity = 12.f * M_PI;//3*18.f * M_PI;
 	ULONG i;
@@ -539,10 +579,14 @@ void CPHJeep::Drive(const char& velocity,dReal force)
 			dJointSetHinge2Param(Joints[i], dParamFMax2, force);
 }
 //////////////////////////////////////////////////////////
+
+dReal car_neutral_drive_resistance=100.f;
+dReal car_breaks_resistance		  =5000.f;
+
 void CPHJeep::Drive()
 {
 
-	static const dReal wheelVelocity = 12.f * M_PI;//3*18.f * M_PI;
+//	static const dReal wheelVelocity = 12.f * M_PI;//3*18.f * M_PI;
 	ULONG i;
 
 if(!Breaks)
@@ -560,14 +604,14 @@ if(!Breaks)
 	case 0:
 		for(i = 0; i < 4; ++i){
 			dJointSetHinge2Param(Joints[i], dParamVel2, 0.f);
-			dJointSetHinge2Param(Joints[i], dParamFMax2, 100);
+			dJointSetHinge2Param(Joints[i], dParamFMax2, car_neutral_drive_resistance);
 		}
 		return;
 	}
 	else {
 		for(i = 0; i < 2; ++i){
 
-			dJointSetHinge2Param(Joints[i], dParamFMax2, 5000);
+			dJointSetHinge2Param(Joints[i], dParamFMax2,car_breaks_resistance);
 			dJointSetHinge2Param(Joints[i], dParamVel2, 0);
 			}
 		/////////////
@@ -599,17 +643,31 @@ if(!Breaks)
 			dJointSetHinge2Param(Joints[i], dParamFMax2, DriveForce);
 }
 /////////////////////////////////////////
+
 void CPHJeep::NeutralDrive(){
+if(!bActive) return;
 	//////////////////
 	for(u32 i = 0; i < 4; ++i){
-			dJointSetHinge2Param(Joints[i], dParamFMax2, 10);
+			dJointSetHinge2Param(Joints[i], dParamFMax2, 10.f);
 			dJointSetHinge2Param(Joints[i], dParamVel2, 0);
 			}
 }
 //////////////////////////////////////////////////////////
 void CPHJeep::Revert(){
+if(!bActive) return;
 dBodyAddForce(Bodies[0], 0, 2*9000, 0);
 dBodyAddRelTorque(Bodies[0], 300, 0, 0);
+}
+
+
+void CPHJeep::SetPhRefObject(CPhysicsRefObject * ref_object)
+{
+	m_ref_object=ref_object;
+	if(bActive)
+	{
+			dGeomUserDataSetPhysicsRefObject(Geoms[0],m_ref_object);
+			dGeomUserDataSetPhysicsRefObject(Geoms[6],m_ref_object);
+	}
 }
 ////////////////////////////////////////////////////////////////////////////
 ///////////CPHWorld/////////////////////////////////////////////////////////
@@ -662,7 +720,7 @@ void CPHWorld::Step(dReal step)
 
 	// compute contact joints and forces
 
-	std::list<CPHObject*>::iterator iter;
+	xr_list<CPHObject*>::iterator iter;
 	//step+=astep;
 
 	//const  dReal k_p=24000000.f;//550000.f;///1000000.f;
@@ -715,10 +773,12 @@ void CPHWorld::Step(dReal step)
 		dSpaceCollide		(Space, 0, &NearCallback); 
 		Device.Statistic.ph_collision.End	();
 
+
+
+		Device.Statistic.ph_core.Begin		();
 		for(iter=m_objects.begin();iter!=m_objects.end();iter++)
 			(*iter)->PhTune(fixed_step);	
 
-		Device.Statistic.ph_core.Begin		();
 		dWorldStep			(phWorld, fixed_step);
 		Device.Statistic.ph_core.End		();
 
@@ -738,7 +798,7 @@ void CPHWorld::Step(dReal step)
 }
 
 static void NearCallback(void* /*data*/, dGeomID o1, dGeomID o2){
-const ULONG N = 100;
+const ULONG N = 300;
 dContact contacts[N];
 
 		// get the contacts up to a maximum of N contacts
@@ -746,8 +806,8 @@ dContact contacts[N];
 	
 		n = dCollide(o1, o2, N, &contacts[0].geom, sizeof(dContact));	
 		
-	if(n>N)
-		n=N;
+	if(n>N-1)
+		n=N-1;
 	ULONG i;
 
 
@@ -767,6 +827,7 @@ dContact contacts[N];
 											contacts[i].surface.soft_erp=1.f;//ERP(world_spring,world_damping);
 											contacts[i].surface.soft_cfm=1.f;//CFM(world_spring,world_damping);
 											contacts[i].surface.bounce = 0.01f;//0.1f;
+											contacts[i].surface.mode=0;
 											}
 
 
@@ -798,6 +859,12 @@ dContact contacts[N];
 					//dJointID c = dJointCreateContact(phWorld, ContactGroup, &contacts[i]);
 					//dJointAttach(c, dGeomGetBody(contacts[i].geom.g1), dGeomGetBody(contacts[i].geom.g2));
 					//continue;
+
+			}
+			if(usr_data_2->object_callback){
+				bool do_colide=true;
+				usr_data_2->object_callback(do_colide,contacts[i]);
+				if(!do_colide) continue;
 			}
 		}
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -810,22 +877,38 @@ dContact contacts[N];
 				contacts[i].surface.soft_erp*=GMLib.GetMaterial(usr_data_1->material)->fPHDamping;
 			if(usr_data_1->ph_object){
 					usr_data_1->ph_object->InitContact(&contacts[i]);
+
 					//if(pushing_neg) contacts[i].surface.mu=dInfinity;
 					//dJointID c = dJointCreateContact(phWorld, ContactGroup, &contacts[i]);
 					//dJointAttach(c, dGeomGetBody(contacts[i].geom.g1), dGeomGetBody(contacts[i].geom.g2));
 					//continue;
 				}
-
+			if(usr_data_1->object_callback){
+				bool do_colide=true;
+				usr_data_1->object_callback(do_colide,contacts[i]);
+				if(!do_colide) continue;
+			}
 		}
 
 		contacts[i].surface.mode =dContactBounce|dContactApprox1|dContactSoftERP|dContactSoftCFM;
+		dReal cfm=1.f/(world_spring*contacts[i].surface.soft_cfm*fixed_step+world_damping*contacts[i].surface.soft_erp);
+		
+		
+		//contacts[i].surface.soft_erp=ERP(world_spring*contacts[i].surface.soft_cfm,
+		//								 world_damping*contacts[i].surface.soft_erp);
+		//contacts[i].surface.soft_cfm=CFM(world_spring*contacts[i].surface.soft_cfm,
+		//								 world_damping*contacts[i].surface.soft_erp);
 
-		contacts[i].surface.soft_erp=ERP(world_spring*contacts[i].surface.soft_cfm,
-										 world_damping*contacts[i].surface.soft_erp);
-		contacts[i].surface.soft_cfm=CFM(world_spring*contacts[i].surface.soft_cfm,
-										 world_damping*contacts[i].surface.soft_erp);
+
+
+			//dReal erp1=ERP(world_spring,world_damping);//0.54545456
+			//dReal cfm1=CFM(world_spring,world_damping);//1.1363636e-006
+
+		
+		contacts[i].surface.soft_erp=fixed_step*world_spring*contacts[i].surface.soft_cfm*cfm;
+		contacts[i].surface.soft_cfm=cfm;
 		contacts[i].surface.bounce_vel =1.5f;//0.005f;
-
+		
 
 		if(pushing_neg) 
 			contacts[i].surface.mu=dInfinity;
@@ -900,6 +983,11 @@ dContact contacts[N];
 					//dJointAttach(c, dGeomGetBody(contacts[i].geom.g1), dGeomGetBody(contacts[i].geom.g2));
 					//continue;
 			}
+			if(usr_data_2->object_callback){
+				bool do_colide=true;
+				usr_data_2->object_callback(do_colide,contacts[i]);
+				if(!do_colide) continue;
+			}
 		}
 ///////////////////////////////////////////////////////////////////////////////////////
 		if(usr_data_1){ 
@@ -916,15 +1004,31 @@ dContact contacts[N];
 					//dJointAttach(c, dGeomGetBody(contacts[i].geom.g1), dGeomGetBody(contacts[i].geom.g2));
 					//continue;
 				}
+			if(usr_data_1->object_callback){
+				bool do_colide=true;
+				usr_data_1->object_callback(do_colide,contacts[i]);
+				if(!do_colide) continue;
+			}
 
 		}
 
 		contacts[i].surface.mode =dContactBounce|dContactApprox1|dContactSoftERP|dContactSoftCFM;
+		dReal cfm=1.f/(world_spring*contacts[i].surface.soft_cfm*fixed_step+world_damping*contacts[i].surface.soft_erp);
+		
+		
+		//contacts[i].surface.soft_erp=ERP(world_spring*contacts[i].surface.soft_cfm,
+		//								 world_damping*contacts[i].surface.soft_erp);
+		//contacts[i].surface.soft_cfm=CFM(world_spring*contacts[i].surface.soft_cfm,
+		//								 world_damping*contacts[i].surface.soft_erp);
 
-		contacts[i].surface.soft_erp=ERP(world_spring*contacts[i].surface.soft_cfm,
-										 world_damping*contacts[i].surface.soft_erp);
-		contacts[i].surface.soft_cfm=CFM(world_spring*contacts[i].surface.soft_cfm,
-										 world_damping*contacts[i].surface.soft_erp);
+
+
+		//dReal erp1=ERP(world_spring,world_damping);//0.54545456
+		//dReal cfm1=CFM(world_spring,world_damping);//1.1363636e-006
+
+
+		contacts[i].surface.soft_erp=fixed_step*world_spring*contacts[i].surface.soft_cfm*cfm;
+		contacts[i].surface.soft_cfm=cfm;
 		contacts[i].surface.bounce_vel =1.5f;//0.005f;
 
 
@@ -940,270 +1044,313 @@ dContact contacts[N];
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////Implementation for CPhysicsElement
 void CPHElement::			add_Box		(const Fobb&		V){
-	m_boxes_data.push_back(V);
+Fobb box;
+box=V;
+if(box.m_halfsize.x<0.005f) box.m_halfsize.x=0.005f;
+if(box.m_halfsize.y<0.005f) box.m_halfsize.y=0.005f;
+if(box.m_halfsize.z<0.005f) box.m_halfsize.z=0.005f;
+	m_boxes_data.push_back(box);
 }
 
-dGeomID CPHElement::create_Box(const Fobb& V)
-{
-    dVector3 local_position = {
-        V.m_translate.x - m_mass_center.x,
-        V.m_translate.y - m_mass_center.y,
-        V.m_translate.z - m_mass_center.z
-    };
+void CPHElement::			create_Box	(const Fobb&		V){
+														dGeomID geom,trans;
 
-    dGeomID box = dCreateBox(0,
-        V.m_halfsize.x * 2.f,
-        V.m_halfsize.y * 2.f,
-        V.m_halfsize.z * 2.f);
+														dVector3 local_position={
+															V.m_translate.x-m_mass_center.x,
+															V.m_translate.y-m_mass_center.y,
+															V.m_translate.z-m_mass_center.z};
 
-    m_geoms.push_back(box);
+														if(dDOT(local_position,local_position)>0.0001||
+															m_spheras_data.size()+m_boxes_data.size()>1
+															){
+														geom=dCreateBox(0,
+																		V.m_halfsize.x*2.f,
+																		V.m_halfsize.y*2.f,
+																		V.m_halfsize.z*2.f);
+														
+														m_geoms.push_back(geom);
+														dGeomSetPosition(geom,
+															local_position[0],
+															local_position[1],
+															local_position[2]);
+														dMatrix3 R;
+														PHDynamicData::FMX33toDMX(V.m_rotate,R);
+														dGeomSetRotation(geom,R);
+														trans=dCreateGeomTransform(0);
 
-    dMatrix3 Rloc;
-    PHDynamicData::FMX33toDMX(V.m_rotate, Rloc);
-    dGeomSetRotation(box, Rloc);
-    dGeomSetPosition(box, local_position[0], local_position[1], local_position[2]);
+														dGeomTransformSetGeom(trans,geom);
+														dGeomSetBody(trans,m_body);
+														m_trans.push_back(trans);
+														/////////////////////////////////////////////////////////
+														dGeomGroupAdd(m_group,trans);
+														/////////////////////////////////////////////////////////
+														dGeomTransformSetInfo(trans,1);
+														dGeomCreateUserData(geom);
+														dGeomGetUserData(geom)->material=ul_material;
+														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
+														if(object_contact_callback)dGeomUserDataSetObjectContactCallback(geom,object_contact_callback);
+															}
+														else{
+													  geom=dCreateBox(0,
+																		V.m_halfsize.x*2.f,
+																		V.m_halfsize.y*2.f,
+																		V.m_halfsize.z*2.f);
+														
+														m_geoms.push_back(geom);
 
-    dGeomID trans = dCreateGeomTransform(0);
-    dGeomTransformSetGeom(trans, box);
-    dGeomTransformSetInfo(trans, 1);
-    dGeomSetBody(trans, m_body);
+														
+														dGeomSetPosition(geom,
+															local_position[0],
+															local_position[1],
+															local_position[2]);
 
-    m_trans.push_back(trans);
+														dMatrix3 R;
+														PHDynamicData::FMX33toDMX(V.m_rotate,R);
+														dGeomSetRotation(geom,R);
 
-    dGeomCreateUserData(box);
-    dGeomGetUserData(box)->material = ul_material;
-    if (contact_callback)
-        dGeomUserDataSetContactCallback(box, contact_callback);
 
-    return trans;
-}
+														trans=dCreateGeomTransform(0);
+														dGeomTransformSetInfo(trans,1);
+														dGeomTransformSetGeom(trans,geom);
+														dGeomSetBody(trans,m_body);
+														m_trans.push_back(trans);
+
+														dGeomCreateUserData(geom);
+														dGeomGetUserData(geom)->material=ul_material;
+
+														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
+														if(object_contact_callback)dGeomUserDataSetObjectContactCallback(geom,object_contact_callback);
+														}
+
+														
+														}
 
 void CPHElement::			add_Sphere	(const Fsphere&	V){
 	m_spheras_data.push_back(V);
 }
 
-dGeomID CPHElement::create_Sphere(const Fsphere& V)
-{
-	dVector3 local_position = {
-		V.P.x - m_mass_center.x,
-		V.P.y - m_mass_center.y,
-		V.P.z - m_mass_center.z
-	};
-
-	const bool need_transform =
-		(dDOT(local_position, local_position) > 1e-4f) ||
-		((m_spheras_data.size() + m_boxes_data.size()) > 1);
-
-	dGeomID sphere = dCreateSphere(0, V.R);
-	m_geoms.push_back(sphere);
-
-	if (need_transform)
-	{
-		dGeomSetPosition(sphere, local_position[0], local_position[1], local_position[2]);
-
-		dGeomID trans = dCreateGeomTransform(0);
-		dGeomTransformSetGeom(trans, sphere);
-		dGeomTransformSetInfo(trans, 1);
-		dGeomSetBody(trans, m_body);
-
-		m_trans.push_back(trans);
-
-		dGeomCreateUserData(sphere);
-		dGeomGetUserData(sphere)->material = 0;
-		if (contact_callback)
-			dGeomUserDataSetContactCallback(sphere, contact_callback);
-
-		return trans;
-	}
-	else
-	{
-
-		dGeomSetPosition(sphere, m_mass_center.x, m_mass_center.y, m_mass_center.z);
-		dGeomSetBody(sphere, m_body);
-
-		dGeomCreateUserData(sphere);
-		dGeomGetUserData(sphere)->material = 0;
-		if (contact_callback)
-			dGeomUserDataSetContactCallback(sphere, contact_callback);
-
-		return sphere;
-	}
-}
-
+void CPHElement::			create_Sphere	(const Fsphere&	V){
+														dGeomID geom,trans;
+														dVector3 local_position={
+															V.P.x-m_mass_center.x,
+															V.P.y-m_mass_center.y,
+															V.P.z-m_mass_center.z};
+														if(dDOT(local_position,local_position)>0.0001||
+															m_spheras_data.size()+m_boxes_data.size()>1
+															)
+														{
+														geom=dCreateSphere(0,V.R);
+														m_geoms.push_back(geom);
+														dGeomSetPosition(geom,local_position[0],local_position[1],local_position[2]);
+														trans=dCreateGeomTransform(0);
+														dGeomTransformSetGeom(trans,geom);
+														dGeomSetBody(trans,m_body);
+														m_trans.push_back(trans);
+														dGeomGroupAdd(m_group,trans);
+														dGeomTransformSetInfo(trans,1);		
+														dGeomCreateUserData(geom);
+														//dGeomGetUserData(geom)->material=GMLib.GetMaterialIdx("box_default");
+														dGeomGetUserData(geom)->material=0;
+														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
+														if(object_contact_callback)dGeomUserDataSetObjectContactCallback(geom,object_contact_callback);
+														}
+														else
+														{
+														geom=dCreateSphere(0,V.R);
+														m_geoms.push_back(geom);
+														dGeomSetPosition(geom,
+															m_mass_center.x,
+															m_mass_center.y,
+															m_mass_center.z);
+														dGeomSetBody(geom,m_body);
+														dGeomCreateUserData(geom);
+														//dGeomGetUserData(geom)->material=GMLib.GetMaterialIdx("box_default");
+														dGeomGetUserData(geom)->material=0;
+														if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
+														if(object_contact_callback)dGeomUserDataSetObjectContactCallback(geom,object_contact_callback);
+														}
+														};
 void CPHElement::add_Cylinder(const Fcylinder& V)
 {
 	m_cylinders_data.push_back(V);
 }
 
-dGeomID CPHElement::create_Cylinder(const Fcylinder& V)
+void CPHElement::create_Cylinder(const Fcylinder& V)
 {
-    dVector3 local_position = {
-        V.m_translate.x - m_mass_center.x,
-        V.m_translate.y - m_mass_center.y,
-        V.m_translate.z - m_mass_center.z
-    };
+	dGeomID geom,trans;
 
-    dGeomID cyl = dCreateCylinder(0, V.m_radius, V.m_halflength * 2.f);
-    m_geoms.push_back(cyl);
-
-    dMatrix3 Rloc;
-    PHDynamicData::FMX33toDMX(V.m_rotate, Rloc);
-    dGeomSetRotation(cyl, Rloc);
-    dGeomSetPosition(cyl, local_position[0], local_position[1], local_position[2]);
-
-    dGeomID trans = dCreateGeomTransform(0);
-    dGeomTransformSetGeom(trans, cyl);
-    dGeomTransformSetInfo(trans, 1);
-    dGeomSetBody(trans, m_body);
-
-    m_trans.push_back(trans);
-
-    dGeomCreateUserData(cyl);
-    dGeomGetUserData(cyl)->material = ul_material;
-    if (contact_callback)
-        dGeomUserDataSetContactCallback(cyl, contact_callback);
-
-    return trans;
-}
-
-void CPHElement::build(dSpaceID space)
-{
-    m_body = dBodyCreate(phWorld);
-    m_saved_contacts = dJointGroupCreate(0);
-    b_contacts_saved = false;
-    dBodyDisable(m_body);
-
-    dBodySetMass(m_body, &m_mass);
-
-    if (m_spheras_data.size() + m_boxes_data.size() > 1)
+	dVector3 local_position=
 	{
-        m_group = dSimpleSpaceCreate(space);
-    }
-	else
-	{
-        m_group = 0;
-    }
+			V.m_translate.x-m_mass_center.x,
+			V.m_translate.y-m_mass_center.y,
+			V.m_translate.z-m_mass_center.z
+	};
 
-    Fvector mc = get_mc_data();
+		if(m_group){
+				geom=dCreateCylinder
+					(
+					0,
+					V.m_halflength*2.f,
+					V.m_radius
+					);
 
-    m_inverse_local_transform.identity();
-    m_inverse_local_transform.c.set(mc);
-    m_inverse_local_transform.invert();
-    dBodySetPosition(m_body, mc.x, mc.y, mc.z);
+				m_geoms.push_back(geom);
+				dGeomSetPosition(geom,
+					local_position[0],
+					local_position[1],
+					local_position[2]);
+				dMatrix3 R;
+				PHDynamicData::FMX33toDMX(V.m_rotate,R);
+				dGeomSetRotation(geom,R);
+				trans=dCreateGeomTransform(0);
 
-    for (auto it = m_boxes_data.begin(); it != m_boxes_data.end(); ++it) {
-        dGeomID g = create_Box(*it);
-        if (g) {
-            if (m_group) dSpaceAdd(m_group, g);
-            else         dSpaceAdd(space, g);
-        }
-    }
+				dGeomTransformSetGeom(trans,geom);
+				dGeomSetBody(trans,m_body);
+				m_trans.push_back(trans);
+				/////////////////////////////////////////////////////////
+				dGeomGroupAdd(m_group,trans);
+				/////////////////////////////////////////////////////////
+				dGeomTransformSetInfo(trans,1);
+				dGeomCreateUserData(geom);
+				dGeomGetUserData(geom)->material=ul_material;
+				if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
+				if(object_contact_callback)dGeomUserDataSetObjectContactCallback(geom,object_contact_callback);
+			}
+		else{
+				geom=dCreateCylinder
+					(
+					0,
+					V.m_halflength*2.f,
+					V.m_radius
+					);
 
-    for (auto it = m_spheras_data.begin(); it != m_spheras_data.end(); ++it) {
-        dGeomID g = create_Sphere(*it);
-        if (g) {
-            if (m_group) dSpaceAdd(m_group, g);
-            else         dSpaceAdd(space, g);
-        }
-    }
+			m_geoms.push_back(geom);
 
-    for (auto it = m_cylinders_data.begin(); it != m_cylinders_data.end(); ++it) {
-        dGeomID g = create_Cylinder(*it);
-        if (g) {
-            if (m_group) dSpaceAdd(m_group, g);
-            else         dSpaceAdd(space, g);
-        }
-    }
+
+			dGeomSetPosition(geom,
+				local_position[0],
+				local_position[1],
+				local_position[2]);
+
+			dMatrix3 R;
+			PHDynamicData::FMX33toDMX(V.m_rotate,R);
+			dGeomSetRotation(geom,R);
+
+
+			trans=dCreateGeomTransform(0);
+			dGeomTransformSetInfo(trans,1);
+			dGeomTransformSetGeom(trans,geom);
+			dGeomSetBody(trans,m_body);
+			m_trans.push_back(trans);
+
+			dGeomCreateUserData(geom);
+			dGeomGetUserData(geom)->material=ul_material;
+
+			if(contact_callback)dGeomUserDataSetContactCallback(geom,contact_callback);
+			if(object_contact_callback)dGeomUserDataSetObjectContactCallback(geom,object_contact_callback);
+
+		}
 }
+void CPHElement::			build	(dSpaceID space){
 
+m_body=dBodyCreate(phWorld);
+m_saved_contacts=dJointGroupCreate (0);
+b_contacts_saved=false;
+dBodyDisable(m_body);
+//dBodySetFiniteRotationMode(m_body,1);
+//dBodySetFiniteRotationAxis(m_body,0,0,0);
+
+dBodySetMass(m_body,&m_mass);
+
+if(m_spheras_data.size()+m_boxes_data.size()>1)
+//m_group=dCreateGeomGroup(space);
+m_group=dCreateGeomGroup(0);
+
+Fvector mc=get_mc_data();
+//m_start=mc;
+
+m_inverse_local_transform.identity();
+m_inverse_local_transform.c.set(mc);
+m_inverse_local_transform.invert();
+dBodySetPosition(m_body,mc.x,mc.y,mc.z);
+///////////////////////////////////////////////////////////////////////////////////////
+	xr_vector<Fobb>::iterator i_box;
+	for(i_box=m_boxes_data.begin();i_box!=m_boxes_data.end();i_box++){
+	create_Box(*i_box);
+	}
+///////////////////////////////////////////////////////////////////////////////////////
+	xr_vector<Fsphere>::iterator i_sphere;
+	for(i_sphere=m_spheras_data.begin();i_sphere!=m_spheras_data.end();i_sphere++){
+		create_Sphere(*i_sphere);
+		}
+///////////////////////////////////////////////////////////////////////////////////////
+	xr_vector<Fcylinder>::iterator i_cylinder;
+	for(i_cylinder=m_cylinders_data.begin();i_cylinder!=m_cylinders_data.end();i_cylinder++){
+		create_Cylinder(*i_cylinder);
+	}
+/////////////////////////////////////////////////////////////////////////////////////////
+}
 
 void CPHElement::RunSimulation()
 {
-    dSpaceID parent = m_shell->GetSpace();
+if(push_untill)
+	push_untill+=Device.dwTimeGlobal;
 
-    if (m_group)
+	if(m_phys_ref_object)
 	{
-        dSpaceAdd(parent, (dGeomID)m_group);
-    }
-	else
-	{
-        if (m_boxes_data.empty())
-		{
-            if (!m_geoms.empty())
-                dSpaceAdd(parent, *m_geoms.begin());
-        }
-		else
-		{
-            if (!m_trans.empty())
-                dSpaceAdd(parent, *m_trans.begin());
-        }
-    }
+		xr_vector<dGeomID>::iterator i;
+		for(i=m_geoms.begin();i!=m_geoms.end();i++)
+			dGeomUserDataSetPhysicsRefObject(*i,m_phys_ref_object);
+	}
 
-    dBodyEnable(m_body);
+if(m_group)
+dSpaceAdd(m_shell->GetSpace(),m_group);
+else
+if(m_boxes_data.size()==0)
+dSpaceAdd(m_shell->GetSpace(),*m_geoms.begin());
+else
+dSpaceAdd(m_shell->GetSpace(),*m_trans.begin());
+
+dBodyEnable(m_body);
 }
 
-void CPHElement::destroy()
-{
-    m_attached_elements.clear();
+void CPHElement::			destroy	(){
+	m_attached_elements.clear();
+	dJointGroupDestroy(m_saved_contacts);
+	xr_vector<dGeomID>::iterator i;
 
-    if (m_saved_contacts)
-	{
-        dJointGroupDestroy(m_saved_contacts);
-        m_saved_contacts = 0;
-    }
 
-    for (auto it = m_trans.begin(); it != m_trans.end(); ++it) {
-        dGeomID trans = *it;
-        if (!trans) continue;
+	for(i=m_geoms.begin();i!=m_geoms.end();i++){
+	dGeomDestroyUserData(*i);
+	dGeomDestroy(*i);
+	}
+	for(i=m_trans.begin();i!=m_trans.end();i++){
+	dGeomDestroyUserData(*i);
 
-        dGeomID inner = dGeomTransformGetGeom(trans);
-        if (inner)
+	
+	//if(!attached)
+	dGeomDestroy(*i);
+
+
+
+	if(m_body && !attached)
 		{
-            dGeomDestroyUserData(inner);
+		dBodyDestroy(m_body);
+		m_body=NULL;
+		}
 
-            dSpaceID sp = dGeomGetSpace(trans);
-            if (sp) dSpaceRemove(sp, trans);
 
-            dGeomDestroy(trans);
-        }
-		else
-		{
-            dSpaceID sp = dGeomGetSpace(trans);
-            if (sp) dSpaceRemove(sp, trans);
-            dGeomDestroy(trans);
-        }
-    }
-    m_trans.clear();
 
-    for (auto it = m_geoms.begin(); it != m_geoms.end(); ++it) {
-        dGeomID g = *it;
-        if (!g) continue;
 
-        dGeomDestroyUserData(g);
+	if(m_group){
+				dGeomDestroy(m_group);
+				m_group=NULL;
+				}
+	}
 
-        dSpaceID sp = dGeomGetSpace(g);
-        if (sp) dSpaceRemove(sp, g);
-
-        dGeomDestroy(g);
-    }
-    m_geoms.clear();
-
-    if (m_body && !attached)
-	{
-        dBodyDestroy(m_body);
-        m_body = 0;
-    }
-
-    if (m_group)
-	{
-        dSpaceID parent = dGeomGetSpace((dGeomID)m_group);
-        if (parent) dSpaceRemove(parent, (dGeomID)m_group);
-
-        dSpaceDestroy(m_group);
-        m_group = 0;
-    }
+	m_geoms.clear();
+	m_trans.clear();
 }
-
 
 Fvector CPHElement::			get_mc_data	(){
 	Fvector mc,s;
@@ -1244,11 +1391,27 @@ Fvector mc;
 mc.set(0.f,0.f,0.f);
 return mc;
 }
+void CPHElement::set_BoxMass(const Fobb& box, float mass)
+{
+
+	dMassSetZero(&m_mass);
+	
+		m_mass_center.set(box.m_translate);
+		const Fvector& hside=box.m_halfsize;
+		dMassSetBox(&m_mass,1,hside.x*2.f,hside.y*2.f,hside.z*2.f);
+		dMassAdjust(&m_mass,mass);
+		dMatrix3 DMatx;
+		PHDynamicData::FMX33toDMX(box.m_rotate,DMatx);
+		dMassRotate(&m_mass,DMatx);
+
+		
+
+}
 
 void CPHElement::calculate_it_data(const Fvector& mc,float mas){
 	dMass m;
 	dMassSetZero(&m_mass);
-	std::vector<Fobb>::iterator i_box;
+	xr_vector<Fobb>::iterator i_box;
 	for(i_box=m_boxes_data.begin();i_box!=m_boxes_data.end();i_box++){
 	Fvector& hside=(*i_box).m_halfsize;
 	Fvector& pos=(*i_box).m_translate;
@@ -1264,7 +1427,7 @@ void CPHElement::calculate_it_data(const Fvector& mc,float mas){
 	
 	}
 
-	std::vector<Fsphere>::iterator i_sphere;
+	xr_vector<Fsphere>::iterator i_sphere;
 	for(i_sphere=m_spheras_data.begin();i_sphere!=m_spheras_data.end();i_sphere++){
 	Fvector& pos=(*i_sphere).P;
 	Fvector l;
@@ -1275,7 +1438,7 @@ void CPHElement::calculate_it_data(const Fvector& mc,float mas){
 
 	}
 
-	std::vector<Fcylinder>::iterator i_cylinder;
+	xr_vector<Fcylinder>::iterator i_cylinder;
 	for(i_cylinder=m_cylinders_data.begin();i_cylinder!=m_cylinders_data.end();i_cylinder++){
 		Fvector& pos=(*i_cylinder).m_translate;
 		Fvector l;
@@ -1322,7 +1485,7 @@ void CPHElement::calculate_it_data_use_density(const Fvector& mc,float density){
 	
 	}
 
-	std::vector<Fsphere>::iterator i_sphere;
+	xr_vector<Fsphere>::iterator i_sphere;
 	for(i_sphere=m_spheras_data.begin();i_sphere!=m_spheras_data.end();i_sphere++){
 	Fvector& pos=(*i_sphere).P;
 	Fvector l;
@@ -1334,7 +1497,7 @@ void CPHElement::calculate_it_data_use_density(const Fvector& mc,float density){
 
 	}
 
-	std::vector<Fcylinder>::iterator i_cylinder;
+	xr_vector<Fcylinder>::iterator i_cylinder;
 	for(i_cylinder=m_cylinders_data.begin();i_cylinder!=m_cylinders_data.end();i_cylinder++){
 		Fvector& pos=(*i_cylinder).m_translate;
 		Fvector l;
@@ -1353,10 +1516,19 @@ void CPHElement::calculate_it_data_use_density(const Fvector& mc,float density){
 
 
 
-void		CPHElement::	setMass		(float M){
+void		CPHElement::	setDensity		(float M){
+
 //calculate_it_data(get_mc_data(),M);
 
 calculate_it_data_use_density(get_mc_data(),M);
+
+}
+
+void		CPHElement::	setMass		(float M){
+
+	calculate_it_data(get_mc_data(),M);
+
+//calculate_it_data_use_density(get_mc_data(),M);
 
 }
 
@@ -1364,6 +1536,7 @@ void		CPHElement::Start(){
 	//mXFORM.set(m0);
 	build(m_space);
 	RunSimulation();
+
 	//dBodySetPosition(m_body,m_m0.c.x,m_m0.c.y,m_m0.c.z);
 	//Fmatrix33 m33;
 	//m33.set(m_m0);
@@ -1374,6 +1547,12 @@ void		CPHElement::Start(){
 
 void		CPHElement::Deactivate(){
 	if(!bActive) return;
+	if(push_untill)
+	{
+			push_untill-=Device.dwTimeGlobal;
+			if(push_untill<=0)
+				unset_Pushout();
+	}
 	destroy();
 	bActive=false;
 	bActivating=false;
@@ -1398,18 +1577,46 @@ CPHElement::~CPHElement	(){
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void CPHShell::setDensity(float M){
+	xr_vector<CPHElement*>::iterator i;
+	//float volume=0.f;
+	//for(i=elements.begin();i!=elements.end();i++)	volume+=(*i)->get_volume();
+
+	for(i=elements.begin();i!=elements.end();i++)
+	(*i)->setDensity(M);
+}
+
+
 void CPHShell::setMass(float M){
 	xr_vector<CPHElement*>::iterator i;
 	float volume=0.f;
 	for(i=elements.begin();i!=elements.end();i++)	volume+=(*i)->get_volume();
 
 	for(i=elements.begin();i!=elements.end();i++)
-	(*i)->setMass(
-				(*i)->get_volume()/volume*M
-				);
+		(*i)->setMass(
+						(*i)->get_volume()/volume*M
+					);
 }
 
+void CPHShell::setMass1(float M){
+	xr_vector<CPHElement*>::iterator i;
+	
+	
+	for(i=elements.begin();i!=elements.end();i++)
+		(*i)->setMass(
+		M/elements.size()
+		);
+}
+float CPHShell::getMass()
+{
+float m=0.f;
 
+xr_vector<CPHElement*>::iterator i;
+
+for(i=elements.begin();i!=elements.end();i++)	m+=(*i)->getMass();
+
+return m;
+}
 void CPHShell::Activate(const Fmatrix &m0,float dt01,const Fmatrix &m2,bool disable){
 	if(bActive)
 		return;
@@ -1425,12 +1632,13 @@ void CPHShell::Activate(const Fmatrix &m0,float dt01,const Fmatrix &m2,bool disa
 														//(*i)->SetTransform(m0);
 														(*i)->Activate(m0,dt01, m2, disable);
 			}
+	//SetPhObjectInElements();
 	bActive=true;
 }
 
 
 
-void CPHShell::Activate(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel){
+void CPHShell::Activate(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel,bool disable){
 	if(bActive)
 		return;
 	m_ident=ph_world->AddObject(this);
@@ -1445,6 +1653,7 @@ void CPHShell::Activate(const Fmatrix &transform,const Fvector& lin_vel,const Fv
 		//(*i)->SetTransform(m0);
 		(*i)->Activate(transform,lin_vel, ang_vel);
 	}
+	//SetPhObjectInElements();
 	bActive=true;
 }
 
@@ -1493,7 +1702,7 @@ void CPHElement::Activate(const Fmatrix &m0,float dt01,const Fmatrix &m2,bool di
 	bActive=true;
 }
 
-void CPHElement::Activate(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel){
+void CPHElement::Activate(const Fmatrix &transform,const Fvector& lin_vel,const Fvector& ang_vel,bool disable){
 	mXFORM.set(transform);
 	Start();
 	SetTransform(transform);
@@ -1536,7 +1745,7 @@ void CPHElement::Activate(const Fmatrix &transform,const Fvector& lin_vel,const 
 
 	m_body_interpolation.SetBody(m_body);
 	//previous_f[0]=dInfinity;
-	//if(disable) dBodyDisable(m_body);
+	if(disable) dBodyDisable(m_body);
 	bActive=true;
 }
 
@@ -1560,6 +1769,9 @@ bActive=false;
 bActivating=false;
 }
 
+static const dReal w_limit = M_PI/16.f/fixed_step;
+static const dReal l_limit = 3.f/fixed_step;
+
 void CPHShell::PhDataUpdate(dReal step){
 
 xr_vector<CPHElement*>::iterator i;
@@ -1582,7 +1794,9 @@ void CPHElement::PhDataUpdate(dReal step){
 
 ///////////////skip for disabled elements////////////////////////////////////////////////////////////
 	if( !dBodyIsEnabled(m_body)) {
-					if(previous_p[0]!=dInfinity) previous_p[0]=dInfinity;//disable
+				//	if(previous_p[0]!=dInfinity) previous_p[0]=dInfinity;//disable
+					m_body_interpolation.UpdatePositions();
+					m_body_interpolation.UpdateRotations();
 					return;
 				}
 
@@ -1603,8 +1817,7 @@ void CPHElement::PhDataUpdate(dReal step){
 //////////////////limit velocity & secure /////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 				static const dReal u = -0.1f;
-				static const dReal w_limit = M_PI/16.f/fixed_step;
-				static const dReal l_limit = 3.f/fixed_step;
+
 ////////////////limit linear vel////////////////////////////////////////////////////////////////////////////////////////
 				const dReal* pos = dBodyGetLinearVel(m_body);
 				dReal mag;
@@ -1744,9 +1957,9 @@ void	CPHElement::Disabling(){
 										   deviation_v[2]*deviation_v[2]);
 
 					deviation/=dis_count_f;
-					if(mag_v<0.001f* dis_frames && deviation<0.00001f*dis_frames)
+					if(mag_v<0.005f* dis_frames && deviation<0.00005f*dis_frames)
 						Disable();//dBodyDisable(m_body);//
-					if((previous_dev>deviation&&previous_v>mag_v)
+					if((!(previous_dev<deviation)&&!(previous_v<mag_v))//
 					  ) 
 					{
 					dis_count_f++;
@@ -1758,8 +1971,10 @@ void	CPHElement::Disabling(){
 					previous_dev=0;
 					previous_v=0;
 					dis_count_f=1;
+					dis_count_f1=0;
 					Memory.mem_copy(previous_p,current_p,sizeof(dVector3));
 					Memory.mem_copy(previous_r,current_r,sizeof(dMatrix3));
+					previous_p[0]=dInfinity;
 					}
 
 					{
@@ -1785,7 +2000,7 @@ void	CPHElement::Disabling(){
 										   deviation_v[2]*deviation_v[2]);
 
 					deviation/=dis_count_f;
-					if(mag_v<0.04* dis_frames && deviation<0.01*dis_frames)
+					if(mag_v<0.16* dis_frames && deviation<0.06*dis_frames)
 						dis_count_f1++;
 					else{
 						Memory.mem_copy(previous_p1,current_p,sizeof(dVector3));
@@ -1820,32 +2035,49 @@ void CPHElement::Enable(){
 	}
 
 
-void CPHElement::Disable()
-{
-    if (!dBodyIsEnabled(m_body)) return;
+void CPHElement::Disable(){
+	//return;
+	/*
+	if(!b_contacts_saved){
+		int num=dBodyGetNumJoints(m_body);
+		for(int i=0;i<num;i++){
+			dJointID joint=	dBodyGetJoint (m_body, i);
+			if(dJointGetType (joint)==dJointTypeContact){
+				dxJointContact* contact=(dxJointContact*) joint;
+				dBodyID b1=dGeomGetBody(contact->contact.geom.g1);
+				dBodyID b2=dGeomGetBody(contact->contact.geom.g2);
+				if(b1==0 || b2==0){
+					dJointID c = dJointCreateContact(phWorld, m_saved_contacts, &(contact->contact));
+					dJointAttach(c, b1, b2);
+					b_contacts_saved=true;
+				}
 
-    dGeomID mesh = ph_world->GetMeshGeom();
+			}
 
-    if (m_group)
-        SaveContacts(mesh, (dGeomID)m_group, m_saved_contacts);
-    else if (!m_trans.empty())
-        SaveContacts(mesh, m_trans[0], m_saved_contacts);
-    else if (!m_geoms.empty())
-        SaveContacts(mesh, m_geoms[0], m_saved_contacts);
+		}
+	}
+	
+*/
+if(!dBodyIsEnabled(m_body)) return;
+if(m_group)
+	 SaveContacts(ph_world->GetMeshGeom(),m_group,m_saved_contacts);
+else 
+	SaveContacts(ph_world->GetMeshGeom(),m_trans[0],m_saved_contacts);
 
-    for (auto* el : m_attached_elements) {
-        if (!el) continue;
+xr_vector<CPHElement*>::iterator i;
+for(i=m_attached_elements.begin();i!=m_attached_elements.end();i++){
 
-        if (el->m_group)
-            SaveContacts(mesh, (dGeomID)el->m_group, m_saved_contacts);
-        else if (!el->m_trans.empty())
-            SaveContacts(mesh, el->m_trans[0], m_saved_contacts);
-        else if (!el->m_geoms.empty())
-            SaveContacts(mesh, el->m_geoms[0], m_saved_contacts);
-    }
 
-    dBodyDisable(m_body);
+if((*i)->m_group)
+	 SaveContacts(ph_world->GetMeshGeom(),(*i)->m_group,m_saved_contacts);
+else 
+	SaveContacts(ph_world->GetMeshGeom(),(*i)->m_trans[0],m_saved_contacts);
+
 }
+			
+	dBodyDisable(m_body);
+}
+
 
 void CPHElement::ReEnable(){
 	//if(b_contacts_saved && dBodyIsEnabled(m_body))
@@ -1859,6 +2091,7 @@ void CPHShell::PhTune(dReal step){
 }
 
 void CPHShell::Update(){
+	if(!bActive) return;
 	xr_vector<CPHElement*>::iterator i;
 	for(i=elements.begin();i!=elements.end();i++)
 	(*i)->Update();
@@ -1866,6 +2099,7 @@ void CPHShell::Update(){
 }
 
 void CPHElement::Update(){
+if(!bActive) return;
 if( !dBodyIsEnabled(m_body)) return;
 				
 		//		PHDynamicData::DMXPStoFMX(dBodyGetRotation(m_body),
@@ -1877,6 +2111,9 @@ if( !dBodyIsEnabled(m_body)) return;
 
 
 				mXFORM.mulB(m_inverse_local_transform);
+
+				if(push_untill)//temp_for_push_out||(!temp_for_push_out&&object_contact_callback)
+							if(push_untill<Device.dwTimeGlobal) unset_Pushout();
 
 }
 
@@ -1900,7 +2137,10 @@ void	CPHElement::	applyImpulseTrace		(const Fvector& pos, const Fvector& dir, fl
 	val/=fixed_step;
 	Fvector body_pos;
 	body_pos.sub(pos,m_inverse_local_transform.c);
+
 	dBodyAddForceAtRelPos       (m_body, dir.x*val,dir.y*val,dir.z*val,body_pos.x, body_pos.y, body_pos.z);
+
+	BodyCutForce(m_body);
 }
 
 void __stdcall CPHShell:: BonesCallback				(CBoneInstance* B){
@@ -1976,23 +2216,33 @@ void CPHElement::CallBack(CBoneInstance* B){
 
 
 	
-	//if(!dBodyIsEnabled(m_body)){}
+//	if(!dBodyIsEnabled(m_body))
+//	{
+//		B->mTransform.set(mXFORM);
+//		return;
+//	}
 
 	if(m_parent_element){
-	InterpolateGlobalTransform(&B->mTransform);
+	InterpolateGlobalTransform(&mXFORM);
+	
 	parent.set(m_shell->mXFORM);
 	parent.invert();
-	B->mTransform.mulA(parent);
+	mXFORM.mulA(parent);
+	B->mTransform.set(mXFORM);
 	}
 	else{
 
 		InterpolateGlobalTransform(&m_shell->mXFORM);
-		B->mTransform.identity();
+		mXFORM.identity();
+		B->mTransform.set(mXFORM);
 		//parent.set(B->mTransform);
 		//parent.invert();
 		//m_shell->mXFORM.mulB(parent);
 		
 	}
+
+	if(push_untill)//temp_for_push_out||(!temp_for_push_out&&object_contact_callback)
+		if(push_untill<Device.dwTimeGlobal) unset_Pushout();
 }
 
 void CPHElement::InterpolateGlobalTransform(Fmatrix* m){
@@ -2004,127 +2254,105 @@ void CPHElement::InterpolateGlobalTransform(Fmatrix* m){
 
 void CPHElement::DynamicAttach(CPHElement* E)
 {
-    const dReal* p1 = dBodyGetPosition(m_body);
-    const dReal* R1 = dBodyGetRotation(m_body);
+	dVector3 p1;
+	dMatrix3 R1;
+	Memory.mem_copy(p1,dBodyGetPosition(m_body),sizeof(dVector3));
+	const dReal* p2=dBodyGetPosition(E->m_body);
+	Memory.mem_copy( R1,dBodyGetRotation(m_body),sizeof(dMatrix3));
+	const dReal* R2=dBodyGetRotation(E->m_body);
+	dVector3 pp={p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]};
+	dMatrix3 RR;
+	dMULTIPLY1_333(RR,R1,R2);
+	dVector3 ppr;
+	dMULTIPLY1_331(ppr,R1,pp);
+	xr_vector<dGeomID>::iterator i;
+	Fmatrix RfRf;
+	PHDynamicData::DMXPStoFMX(RR,ppr,RfRf);
+	E->m_inverse_local_transform.mulA(RfRf);
+	//E->fixed_position.set(RfRf);
+	for(i=E->m_trans.begin();i!=E->m_trans.end();i++){
+	//	if(!m_group) {
+	//		m_group=dCreateGeomGroup(0);
+	//		dSpaceRemove (ph_world->GetSpace(), m_trans[0]);
+	//		dGeomGroupAdd(m_group,m_trans[0]);
+	//	}
+	//	dSpaceRemove (ph_world->GetSpace(), *i);
+	//	dGeomGroupAdd(m_group,*i);
+		dGeomID geom=dGeomTransformGetGeom(*i);
+		const dReal* pos=dGeomGetPosition(geom);
+		const dReal* rot=dGeomGetRotation(geom);
+		dMatrix3 rr;
+		dMULTIPLY0_333(rr,RR,rot);
 
-    const dReal* p2 = dBodyGetPosition(E->m_body);
-    const dReal* R2 = dBodyGetRotation(E->m_body);
+		dGeomSetRotation(geom,rr);
+		dGeomSetPosition(geom,pos[0]+ppr[0],pos[1]+ppr[1],pos[2]+ppr[2]);
 
-    dVector3 dp = { p2[0] - p1[0], p2[1] - p1[1], p2[2] - p1[2] };
+		dGeomSetBody(*i,m_body);
+		dBodySetPosition(m_body,p1[0],p1[1],p1[2]);
+		dBodySetRotation(m_body,R1);
 
-    dMatrix3 RR;
-    dMULTIPLY1_333(RR, R1, R2);
+		}
+	for(i=E->m_geoms.begin();i!=E->m_geoms.end();i++)
+		if(dGeomGetBody(*i)){
+		dGeomID trans=dCreateGeomTransform(0);
+		dGeomSetBody((*i),0);
+		dGeomSetPosition((*i),pp[0],pp[1],pp[2]);
+		dGeomSetRotation((*i),RR);
+		dGeomTransformSetGeom(trans,(*i));
+		dGeomTransformSetInfo(trans,1);
+		dGeomSetBody(trans,m_body);
+		dBodySetPosition(m_body,p1[0],p1[1],p1[2]);
+		dBodySetRotation(m_body,R1);
+		E->m_trans.push_back(trans);
+		}
 
-    dVector3 ppr;
-    dMULTIPLY1_331(ppr, R1, dp);
 
-    {
-        Fmatrix RfRf;
-        PHDynamicData::DMXPStoFMX(RR, ppr, RfRf);
-        E->m_inverse_local_transform.mulA(RfRf);
-    }
 
-    for (auto it = E->m_trans.begin(); it != E->m_trans.end(); ++it)
-    {
-        dGeomID trans = *it;
-        dGeomID geom  = dGeomTransformGetGeom(trans);
-        if (!geom) continue;
+		dMass m1,m2;
+		dBodyGetMass(E->m_body,&m1);
+		dBodyGetMass(m_body,&m2);
+		dMassAdd(&m1,&m2);
+		dBodySetMass(m_body,&m1);
+		dBodyDestroy(E->m_body);
+		E->m_body=m_body;
+		E->m_body_interpolation.SetBody(m_body);
+		E->attached=true;
+		m_attached_elements.push_back(E);
+	//E->m_body;
 
-        const dReal* gpos = dGeomGetPosition(geom);
-        const dReal* grot = dGeomGetRotation(geom);
-
-        // grot' = RR * grot
-        dMatrix3 grot_local;
-        dMULTIPLY0_333(grot_local, RR, grot);
-
-        // gpos' = gpos + ppr
-        dVector3 gpos_local = { gpos[0] + ppr[0], gpos[1] + ppr[1], gpos[2] + ppr[2] };
-
-        dGeomSetRotation(geom, grot_local);
-        dGeomSetPosition(geom, gpos_local[0], gpos_local[1], gpos_local[2]);
-
-        dGeomSetBody(trans, m_body);
-    }
-
-    // голые бляди
-    for (auto it = E->m_geoms.begin(); it != E->m_geoms.end(); ++it)
-    {
-        dGeomID g = *it;
-        if (!g) continue;
-
-        if (dGeomGetBody(g))
-        {
-            dGeomSetBody(g, 0);
-            dGeomSetRotation(g, RR);
-            dGeomSetPosition(g, ppr[0], ppr[1], ppr[2]);
-
-            dGeomID trans = dCreateGeomTransform(0);
-            dGeomTransformSetGeom(trans, g);
-            dGeomTransformSetInfo(trans, 1);
-            dGeomSetBody(trans, m_body);
-
-            E->m_trans.push_back(trans);
-        }
-    }
-
-    {
-        dMass mE{}, mM{};
-        dBodyGetMass(E->m_body, &mE);
-        dBodyGetMass(m_body,   &mM);
-        dMassAdd(&mM, &mE);
-        dBodySetMass(m_body, &mM);
-    }
-
-    dBodyDestroy(E->m_body);
-    E->m_body = m_body;
-    E->m_body_interpolation.SetBody(m_body);
-    E->attached = true;
-
-    m_attached_elements.push_back(E);
 }
 
-
-void CPHShell::Activate(){
+void CPHShell::Activate(bool place_current_forms,bool disable){
 	if(bActive)
 		return;
-	m_ident=ph_world->AddObject(this);
 
-		//xr_vector<CPHElement*>::iterator i;
-
-		//for(i=elements.begin();i!=elements.end();i++){
+		m_ident=ph_world->AddObject(this);
+		{
+		xr_vector<CPHElement*>::iterator i;
+		if(place_current_forms)
+		for(i=elements.begin();i!=elements.end();i++)	{
 														//(*i)->Start();
 														//(*i)->SetTransform(m0);
-											//			(*i)->Activate();
-			//}
-		xr_vector<CPHJoint*>::iterator i;
+														(*i)->Activate(mXFORM,disable);
+														}
+		}
 
-		for(i=joints.begin();i!=joints.end();i++){
-														(*i)->Activate();
-										
-			}
+		{
+		
+		xr_vector<CPHJoint*>::iterator i;
+		for(i=joints.begin();i!=joints.end();i++) (*i)->Activate();
+		}
+	//SetPhObjectInElements();/////////////////////////////////////////////////////////////////////
 	bActive=true;
 	bActivating=true;
 }
-void CPHElement::Activate(){
-	//mXFORM.set(m0);
-	Start();
-	//SetTransform(m0);
-	//i=elements.begin();
-	//m_body=(*i)->get_body();
-	//m_inverse_local_transform.set((*i)->m_inverse_local_transform);
-	//Fmatrix33 m33;
-	//Fmatrix m,m1;
-	//m1.set(m0);
-	//m1.identity();
-	//m1.invert();
-	//m.mul(m1,m2);
-	//m.mul(1.f/dt01);
-	//m33.set(m);
-	//dMatrix3 R;
-	//PHDynamicData::FMX33toDMX(m33,R);
-	//dBodySetLinearVel(m_body,m2.c.x-m0.c.x,m2.c.y-m0.c.y,m2.c.z-m0.c.z);
-	//dBodySetPosition(m_body,m0.c.x,m0.c.y+1.,m0.c.z);
+void CPHElement::Activate(bool place_current_forms,bool disable){
 
+	Start();
+	if(place_current_forms)
+	{
+	SetTransform(mXFORM);
+	}
 	Memory.mem_copy(m_safe_position,dBodyGetPosition(m_body),sizeof(dVector3));
 	Memory.mem_copy(m_safe_velocity,dBodyGetLinearVel(m_body),sizeof(dVector3));
 
@@ -2139,26 +2367,98 @@ void CPHElement::Activate(){
 
 	m_body_interpolation.SetBody(m_body);
 	//previous_f[0]=dInfinity;
-//	if(disable) dBodyDisable(m_body);
+	if(disable) dBodyDisable(m_body);
 
 
 }
 
+void CPHElement::Activate(const Fmatrix& start_from,bool disable){
+
+	Start();
+//	if(place_current_forms)
+	{
+		Fmatrix globe;
+		globe.mul(mXFORM,start_from);
+		SetTransform(globe);
+	}
+	Memory.mem_copy(m_safe_position,dBodyGetPosition(m_body),sizeof(dVector3));
+	Memory.mem_copy(m_safe_velocity,dBodyGetLinearVel(m_body),sizeof(dVector3));
+
+
+	//////////////////////////////////////////////////////////////
+	//initializing values for disabling//////////////////////////
+	//////////////////////////////////////////////////////////////
+
+	previous_p[0]=dInfinity;
+	previous_r[0]=0.f;
+	dis_count_f=0;
+
+	m_body_interpolation.SetBody(m_body);
+	//previous_f[0]=dInfinity;
+	if(disable) dBodyDisable(m_body);
+
+
+}
 void CPHJoint::CreateBall()
 {
 
 m_joint=dJointCreateBall(phWorld,0);
 Fvector pos;
-Fmatrix location;
+Fmatrix first_matrix,second_matrix;
 CPHElement* first=dynamic_cast<CPHElement*>(pFirst_element);
 CPHElement* second=dynamic_cast<CPHElement*>(pSecond_element);
-first->InterpolateGlobalTransform(&location);
 
-location.transform_tiny(pos,anchor);
-dJointSetBallAnchor(m_joint,pos.x,pos.y,pos.z);
-dJointAttach(m_joint,first->get_body(),second->get_body());
+
+
+dBodyID body1=0;
+dBodyID body2=0;
+
+if(first)
+{
+	first->InterpolateGlobalTransform(&first_matrix);
+	body1=first->get_body();
+}
+else
+{
+	first_matrix.identity();
+}
+
+if(second)
+{
+	second->InterpolateGlobalTransform(&second_matrix);
+	body2=second->get_body();
+}
+else
+{
+	second_matrix.identity();
 
 }
+
+switch(vs_anchor){
+case vs_first :first_matrix.transform_tiny(pos,anchor); break;
+case vs_second:second_matrix.transform_tiny(pos,anchor); break;
+case vs_global:					
+default:pos.set(anchor);	
+}
+
+if(!(body1&&body2)) 
+{
+
+	m_joint=dJointCreateBall(phWorld,0);
+	dJointAttach(m_joint,body1,body2);
+
+
+	dJointSetBallAnchor(m_joint,pos.x,pos.y,pos.z);
+
+	return;
+}
+
+dJointAttach(m_joint,first->get_body(),second->get_body());
+dJointSetBallAnchor(m_joint,pos.x,pos.y,pos.z);
+
+
+}
+
 
 void CPHJoint::CreateCarWeel()
 {
@@ -2259,6 +2559,10 @@ if(axes[0].force>0.f){
 dJointSetHingeParam(m_joint,dParamFMax ,axes[0].force);
 dJointSetHingeParam(m_joint,dParamVel ,axes[0].velocity);
 }
+dJointSetAMotorParam(m_joint,dParamStopERP ,axes[0].erp);
+dJointSetAMotorParam(m_joint,dParamStopCFM ,axes[0].cfm);
+
+dJointSetAMotorParam(m_joint,dParamCFM ,cfm);
 }
 
 
@@ -2430,16 +2734,38 @@ dynamic_cast<CPHElement*>(pFirst_element)
 
 void CPHJoint::CreateFullControl()
 {
-	m_joint=dJointCreateBall(phWorld,0);
-	m_joint1=dJointCreateAMotor(phWorld,0);
+
 	
 Fvector pos;
 Fmatrix first_matrix,second_matrix;
 Fvector axis;
 CPHElement* first=dynamic_cast<CPHElement*>(pFirst_element);
 CPHElement* second=dynamic_cast<CPHElement*>(pSecond_element);
-first->InterpolateGlobalTransform(&first_matrix);
-second->InterpolateGlobalTransform(&second_matrix);
+dBodyID body1=0;
+dBodyID body2=0;
+if(first)
+{
+	first->InterpolateGlobalTransform(&first_matrix);
+	body1=first->get_body();
+}
+else
+{
+	first_matrix.identity();
+}
+
+if(second)
+{
+	second->InterpolateGlobalTransform(&second_matrix);
+	body2=second->get_body();
+}
+else
+{
+	second_matrix.identity();
+
+}
+
+
+
 
 switch(vs_anchor){
 case vs_first :first_matrix.transform_tiny(pos,anchor); break;
@@ -2449,16 +2775,62 @@ default:pos.set(anchor);
 }
 //////////////////////////////////////
 
+if(!(body1&&body2)) 
+{
+	m_joint=dJointCreateHinge(phWorld,0);
+	
+	dJointAttach(m_joint,body1,body2);
 
+#ifndef ODE_SLOW_SOLVER
+	dJointSetHingeAnchor(m_joint,pos.x-1.f,pos.y,pos.z);
+#else
+	dJointSetHingeAnchor(m_joint,pos.x,pos.y,pos.z);
+#endif
+
+	dJointSetHingeAxis(m_joint,0.f,0.f,1.f);
+	dJointSetHingeParam(m_joint,dParamLoStop ,0.00f);
+	dJointSetHingeParam(m_joint,dParamHiStop ,0.00f);
+
+	dJointSetHingeParam(m_joint,dParamCFM,world_cfm);
+	dJointSetHingeParam(m_joint,dParamStopERP,world_erp);
+	dJointSetHingeParam(m_joint,dParamStopCFM,world_cfm);
+
+
+#ifndef ODE_SLOW_SOLVER
+
+	m_joint1=dJointCreateHinge(phWorld,0);
+
+	dJointAttach(m_joint1,body1,body2);
+
+	dJointSetHingeAnchor(m_joint1,pos.x+1.f,pos.y,pos.z);
+	dJointSetHingeAxis(m_joint1,0.f,0.f,1.f);
+
+	dJointSetHingeParam(m_joint1,dParamLoStop ,0.00f);
+	dJointSetHingeParam(m_joint1,dParamHiStop ,0.00f);
+
+	dJointSetHingeParam(m_joint1,dParamCFM,world_cfm);
+	dJointSetHingeParam(m_joint1,dParamStopERP,world_erp);
+	dJointSetHingeParam(m_joint1,dParamStopCFM,world_cfm);
+#endif
+
+	return;
+}
+
+m_joint=dJointCreateBall(phWorld,0);
+dJointAttach(m_joint,body1,body2);
+dJointSetBallAnchor(m_joint,pos.x,pos.y,pos.z);
+
+
+
+m_joint1=dJointCreateAMotor(phWorld,0);
 
 //dJointSetAMotorMode (m_joint1, dAMotorUser);
 dJointSetAMotorMode (m_joint1, dAMotorEuler);
 dJointSetAMotorNumAxes (m_joint1, 3);
 
-dJointAttach(m_joint,first->get_body(),second->get_body());
-dJointSetBallAnchor(m_joint,pos.x,pos.y,pos.z);
 
-dJointAttach(m_joint1,first->get_body(),second->get_body());
+
+dJointAttach(m_joint1,body1,body2);
 
 /////////////////////////////////////////////
 
@@ -2626,6 +2998,18 @@ dJointSetAMotorParam(m_joint1,dParamFMax3 ,axes[2].force);
 dJointSetAMotorParam(m_joint1,dParamVel3 ,axes[2].velocity);
 }
 
+dJointSetAMotorParam(m_joint1,dParamStopERP ,axes[0].erp);
+dJointSetAMotorParam(m_joint1,dParamStopCFM ,axes[0].cfm);
+
+dJointSetAMotorParam(m_joint1,dParamStopERP2 ,axes[1].erp);
+dJointSetAMotorParam(m_joint1,dParamStopCFM2 ,axes[1].cfm);
+
+dJointSetAMotorParam(m_joint1,dParamStopERP3 ,axes[2].erp);
+dJointSetAMotorParam(m_joint1,dParamStopCFM3 ,axes[2].cfm);
+
+dJointSetAMotorParam(m_joint1,dParamCFM ,cfm);
+dJointSetAMotorParam(m_joint1,dParamCFM2 ,cfm);
+dJointSetAMotorParam(m_joint1,dParamCFM3 ,cfm);
 }
 
 
@@ -2738,6 +3122,8 @@ void CPHJoint::SetAxisVsSecondElement(const float x,const float y,const float z,
 
 void CPHJoint::SetLimits(const float low, const float high, const int axis_num)
 {
+	if(!(pFirst_element&&pSecond_element))return;
+
 	int ax=axis_num;
 
 	switch(eType){
@@ -2800,6 +3186,15 @@ pFirst_element=first;
 pSecond_element=second; 
 eType=type;
 bActive=false;
+
+#ifndef ODE_SLOW_SOLVER
+erp=world_erp;
+cfm=world_cfm;
+#else
+erp=world_erp;
+cfm=world_cfm;
+#endif
+
 SPHAxis axis,axis2,axis3;
 axis2.set_direction(1,0,0);
 axis3.direction.crossproduct(axis.direction,axis3.direction);
@@ -2970,6 +3365,182 @@ void CPHJoint::SetForceAndVelocity		(const float force,const float velocity,cons
 }
 
 
+
+
+void CPHJoint::SetForce		(const float force,const int axis_num){
+	int ax;
+	ax=axis_num;
+	if(ax<-1) ax=-1;
+
+	if(ax==-1) 
+		switch(eType){
+					case welding:				; 
+					case ball:					break;
+					case hinge:					
+						axes[0].force=force;
+						break;
+					case hinge2:				;
+					case universal_hinge:		;
+					case shoulder1:				;
+					case shoulder2:				;
+					case car_wheel:				
+						axes[0].force=force;
+						axes[1].force=force;
+						break;
+
+					case full_control:			
+						axes[0].force=force;
+						axes[1].force=force;
+						axes[2].force=force;
+						break;
+		}
+
+	else{
+		switch(eType){
+
+						case welding:				; 
+						case ball:					break;
+						case hinge:					ax=0;
+							break;
+						case hinge2:				;
+						case universal_hinge:		;
+						case shoulder1:				;
+						case shoulder2:				;
+						case car_wheel:				ax= axis_num>1 ? 1 : axis_num; 
+							break;
+
+						case full_control:			ax= axis_num>2 ? 2 : axis_num; 
+							break;
+		}
+		axes[ax].force=force;
+	}
+
+	if(bActive)
+	{
+		switch(eType){
+
+						case hinge2:switch(ax)
+									{
+						case -1:
+							dJointSetHinge2Param(m_joint,dParamFMax ,axes[0].force);
+							dJointSetHinge2Param(m_joint,dParamFMax2 ,axes[1].force);
+						case 0:		dJointSetHinge2Param(m_joint,dParamFMax ,axes[0].force);break;
+						case 1:		dJointSetHinge2Param(m_joint,dParamFMax2 ,axes[1].force);break;
+									}
+									break;
+						case universal_hinge:		;
+						case shoulder1:				;
+						case shoulder2:				;
+						case car_wheel:				;
+						case welding:				; 
+						case ball:					break;
+						case hinge:					dJointSetHingeParam(m_joint,dParamFMax ,axes[0].force);
+							break;
+
+
+
+						case full_control:
+							switch(ax){
+						case -1:
+							dJointSetAMotorParam(m_joint1,dParamFMax ,axes[0].force);
+							dJointSetAMotorParam(m_joint1,dParamFMax2 ,axes[1].force);
+							dJointSetAMotorParam(m_joint1,dParamFMax3 ,axes[2].force);
+						case 0:dJointSetAMotorParam(m_joint1,dParamFMax ,axes[0].force);break;
+						case 1:dJointSetAMotorParam(m_joint1,dParamFMax2 ,axes[1].force);break;
+						case 2:dJointSetAMotorParam(m_joint1,dParamFMax3 ,axes[2].force);break;
+							}
+							break;
+		}
+	}
+}
+
+void CPHJoint::SetVelocity		(const float velocity,const int axis_num){
+	int ax;
+	ax=axis_num;
+	if(ax<-1) ax=-1;
+
+	if(ax==-1) 
+		switch(eType){
+					case welding:				; 
+					case ball:					break;
+					case hinge:					
+						axes[0].velocity=velocity;
+						break;
+					case hinge2:				;
+					case universal_hinge:		;
+					case shoulder1:				;
+					case shoulder2:				;
+					case car_wheel:	
+						axes[0].velocity=velocity;
+						axes[1].velocity=velocity;
+						break;
+
+					case full_control:			
+						axes[0].velocity=velocity;
+						axes[1].velocity=velocity;
+						axes[2].velocity=velocity;
+						break;
+		}
+
+	else{
+		switch(eType){
+
+						case welding:				; 
+						case ball:					break;
+						case hinge:					ax=0;
+							break;
+						case hinge2:				;
+						case universal_hinge:		;
+						case shoulder1:				;
+						case shoulder2:				;
+						case car_wheel:				ax= axis_num>1 ? 1 : axis_num; 
+							break;
+
+						case full_control:			ax= axis_num>2 ? 2 : axis_num; 
+							break;
+		}
+		axes[ax].velocity=velocity;
+	}
+
+	if(bActive)
+	{
+		switch(eType){
+
+						case hinge2:switch(ax)
+									{
+						case -1:
+							dJointSetHinge2Param(m_joint,dParamVel ,axes[0].velocity);
+							dJointSetHinge2Param(m_joint,dParamVel2 ,axes[1].velocity);
+						case 0:		dJointSetHinge2Param(m_joint,dParamVel ,axes[0].velocity);break;
+						case 1:		dJointSetHinge2Param(m_joint,dParamVel2 ,axes[1].velocity);break;
+									}
+									break;
+						case universal_hinge:		;
+						case shoulder1:				;
+						case shoulder2:				;
+						case car_wheel:				;
+						case welding:				; 
+						case ball:					break;
+						case hinge:					dJointSetHingeParam(m_joint,dParamVel ,axes[0].velocity);
+							break;
+
+
+
+						case full_control:
+							switch(ax){
+						case -1:
+							dJointSetAMotorParam(m_joint1,dParamVel ,axes[0].velocity);
+							dJointSetAMotorParam(m_joint1,dParamVel2 ,axes[1].velocity);
+							dJointSetAMotorParam(m_joint1,dParamVel3 ,axes[2].velocity);
+						case 0:dJointSetAMotorParam(m_joint1,dParamVel ,axes[0].velocity);break;
+						case 1:dJointSetAMotorParam(m_joint1,dParamVel2 ,axes[1].velocity);break;
+						case 2:dJointSetAMotorParam(m_joint1,dParamVel3 ,axes[2].velocity);break;
+							}
+							break;
+		}
+	}
+}
+
 void CPHShell::SetTransform(Fmatrix m){
 Fmatrix init;
 xr_vector<CPHElement*>::iterator i=elements.begin();
@@ -3002,9 +3573,10 @@ if(!bActive)
 
 void CPHElement::set_ContactCallback(ContactCallbackFun* callback)
 {
+contact_callback=callback;
+push_untill=0;
 if(!bActive)
 	{
-	contact_callback=callback;
 	return;
 	}
 	xr_vector<dGeomID>::iterator i;
@@ -3014,11 +3586,57 @@ if(!bActive)
 	}
 }
 
+void CPHElement::set_PhysicsRefObject(CPhysicsRefObject* ref_object)
+{
+	m_phys_ref_object=ref_object;
+	if(!bActive)
+	{
+		return;
+	}
+	xr_vector<dGeomID>::iterator i;
+	for(i=m_geoms.begin();i!=m_geoms.end();i++)
+	{
+		dGeomUserDataSetPhysicsRefObject(*i,ref_object);
+	}
+}
+
+void CPHShell::set_PhysicsRefObject	 (CPhysicsRefObject* ref_object)
+{
+	xr_vector<CPHElement*>::iterator i;
+	for(i=elements.begin();i!=elements.end();i++)
+	{
+		(*i)->set_PhysicsRefObject(ref_object);
+	}
+}
+
+void CPHElement::set_ObjectContactCallback(ObjectContactCallbackFun* callback)
+{
+	object_contact_callback= callback;
+	if(!bActive)
+	{
+		return;
+	}
+	xr_vector<dGeomID>::iterator i;
+	for(i=m_geoms.begin();i!=m_geoms.end();i++)
+	{
+		dGeomUserDataSetObjectContactCallback(*i,callback);
+	}
+}
+
+
 void CPHShell::set_ContactCallback(ContactCallbackFun* callback)
 {
 	xr_vector<CPHElement*>::iterator i;
 	for(i=elements.begin();i!=elements.end();i++)
 					(*i)->set_ContactCallback(callback);
+}
+
+
+void CPHShell::set_ObjectContactCallback(ObjectContactCallbackFun* callback)
+{
+	xr_vector<CPHElement*>::iterator i;
+	for(i=elements.begin();i!=elements.end();i++)
+		(*i)->set_ObjectContactCallback(callback);
 }
 
 void __stdcall ContactShotMark(CDB::TRI* T,dContactGeom* c)
@@ -3076,5 +3694,272 @@ dBodyGetMass(b,&m);
 
 float CPHJeep::GetSteerAngle()
 {
+	if(!bActive) return 0;
 	return dJointGetHinge2Angle1 (Joints[2]);
+}
+
+void CPHElement::SetPhObjectInGeomData(CPHObject* O)
+{
+	if(!bActive) return;
+	xr_vector<dGeomID>::iterator i;
+	for(i=m_geoms.begin();i!=m_geoms.end();i++)
+				dGeomGetUserData(*i)->ph_object=O;
+}
+
+void CPHShell::SetPhObjectInElements()
+{
+if(!bActive) return;
+xr_vector<CPHElement*>::iterator i;
+for(i=elements.begin();i!=elements.end();i++ )
+		(*i)->SetPhObjectInGeomData((CPHObject*)this);
+}
+
+void CPHElement::SetMaterial(u32 m)
+{
+	ul_material=m;
+	if(!bActive) return;
+	xr_vector<dGeomID>::iterator i;
+	for(i=m_geoms.begin();i!=m_geoms.end();i++)
+					dGeomGetUserData(*i)->material=m;
+}
+
+void CPHShell::SetMaterial(LPCSTR m)
+{
+	xr_vector<CPHElement*>::iterator i;
+	for(i=elements.begin();i!=elements.end();i++)
+	{
+		(*i)->SetMaterial(m);
+	}
+}
+
+void CPHShell::SetMaterial(u32 m)
+{
+	xr_vector<CPHElement*>::iterator i;
+	for(i=elements.begin();i!=elements.end();i++)
+	{
+		(*i)->SetMaterial(m);
+	}
+}
+
+void CPHElement::get_LinearVel(Fvector& velocity)
+{
+	if(!bActive)
+	{
+		velocity.set(0,0,0);
+		return;
+	}
+	Memory.mem_copy(&velocity,dBodyGetLinearVel(m_body),sizeof(Fvector));
+}
+
+void CPHShell::get_LinearVel(Fvector& velocity)
+{
+
+(*elements.begin())->get_LinearVel(velocity);
+}
+
+void CPHShell::set_PushOut(u32 time)
+{
+	xr_vector<CPHElement*>::iterator i;
+	for(i=elements.begin();i!=elements.end();i++)
+	{
+		(*i)->set_PushOut(time);
+	}
+}
+
+void CPHElement::set_PushOut(u32 time)
+{
+	temp_for_push_out=object_contact_callback;
+
+	set_ObjectContactCallback(PushOutCallback);
+	if(bActive) push_untill=Device.dwTimeGlobal+time;
+	else		push_untill=time;
+
+}
+
+void CPHElement::unset_Pushout()
+{
+	object_contact_callback=temp_for_push_out;
+	temp_for_push_out=NULL;
+	set_ObjectContactCallback(object_contact_callback);
+	push_untill=0;
+}
+
+
+void CPHShell::SmoothElementsInertia(float k)
+{
+dMass m_avrg;
+dReal krc=1.f-k;
+dMassSetZero(&m_avrg);
+	xr_vector<CPHElement*>::iterator i;
+	for(i=elements.begin();i!=elements.end();i++)
+	{
+		
+		dMassAdd(&m_avrg,(*i)->GetMass());
+
+	}
+	int n=elements.size();
+	m_avrg.mass/=n*k;
+	for(int j=0;j<4*3;j++) m_avrg.I[j]/=n*k;
+	
+	for(i=elements.begin();i!=elements.end();i++)
+	{
+		dVector3 tmp;
+		dMass* m=(*i)->GetMass();
+		Memory.mem_copy(tmp,m->c,sizeof(dVector3));
+
+		m->mass*=krc;
+		for(int j=0;j<4*3;j++) m->I[j]*=krc;
+		dMassAdd(m,&m_avrg);
+
+		Memory.mem_copy(m->c,tmp,sizeof(dVector3));
+	}
+}
+
+
+
+
+//half square time
+
+/*
+void BodyCutForce(dBodyID body)
+{
+	dReal linear_limit=l_limit;
+//applyed force
+const dReal* force=	dBodyGetForce(body);
+
+//body mass
+dMass m;
+dBodyGetMass(body,&m);
+
+//accceleration correspondent to the force
+dVector3 a={force[0]/m.mass,force[1]/m.mass,force[2]/m.mass};
+
+//current velocity
+const dReal* start_vel=dBodyGetLinearVel(body);
+
+//velocity adding during one step
+dVector3 add_vel={a[0]*fixed_step,a[1]*fixed_step,a[2]*fixed_step};
+
+//result velocity
+dVector3 vel={start_vel[0]+add_vel[0],start_vel[1]+add_vel[1],start_vel[2]+add_vel[2]};
+
+//result velocity magnitude
+dReal speed=dSqrt(dDOT(vel,vel));
+
+if(speed>linear_limit) //then we need to cut applied force
+{
+//solve the triangle - cutted velocity - current veocity - add velocity 
+//to find cutted adding velocity
+
+//add_vell magnitude
+dReal add_speed=dSqrt(dDOT(add_vel,add_vel));
+
+//current velocity magnitude
+dReal start_speed=dSqrt(dDOT(start_vel,start_vel));
+
+//cosinus of the angle between vel ang add_vell
+dReal cosinus1=dFabs(dDOT(add_vel,start_vel)/start_speed/add_speed);
+
+dReal cosinus1_2=cosinus1*cosinus1;
+if(cosinus1_2>1.f)
+		cosinus1_2=1.f;
+dReal cutted_add_speed;
+if(cosinus1_2==1.f)
+  cutted_add_speed=linear_limit-start_speed;
+else
+{
+//sinus 
+dReal sinus1_2=1.f-cosinus1_2;
+
+
+dReal sinus1=dSqrt(sinus1_2);
+
+
+//sinus of the angle between cutted velocity and adding velociity (sinus theorem)
+dReal sinus2=sinus1/linear_limit*start_speed;
+dReal sinus2_2=sinus2*sinus2;
+if(sinus2_2>1.f)sinus2_2=1.f;
+
+dReal cosinus2_2=1.f-sinus2_2;
+dReal cosinus2=dSqrt(cosinus2_2);
+
+//sinus of 180-ang1-ang2
+dReal sinus3=sinus1*cosinus2+cosinus1*sinus2;
+
+//cutted adding velocity magnitude (sinus theorem)
+
+cutted_add_speed=linear_limit/sinus1*sinus3;
+}
+//substitude force
+
+dBodyAddForce(body,
+			  cutted_add_speed/add_speed/fixed_step*m.mass*add_vel[0]-force[0],
+			  cutted_add_speed/add_speed/fixed_step*m.mass*add_vel[1]-force[1],
+			  cutted_add_speed/add_speed/fixed_step*m.mass*add_vel[2]-force[2]	  
+			  );
+}
+
+}
+*/
+//limit for angular accel
+const dReal wa_limit=w_limit/fixed_step;
+
+void BodyCutForce(dBodyID body)
+{
+
+	const dReal* force=	dBodyGetForce(body);
+	dReal force_mag=dSqrt(dDOT(force,force));
+
+	//body mass
+	dMass m;
+	dBodyGetMass(body,&m);
+
+	dReal force_limit =l_limit/fixed_step*m.mass;
+
+	if(force_mag>force_limit)
+	{
+	dBodySetForce(body,
+				  force[0]/force_mag*force_limit,
+				  force[1]/force_mag*force_limit,
+				  force[2]/force_mag*force_limit
+				  );
+	}
+
+
+	const dReal* torque=dBodyGetTorque(body);
+	dReal torque_mag=dSqrt(dDOT(torque,torque));
+
+	if(torque_mag<0.001f) return;
+
+    dMatrix3 tmp,invI,I;
+
+   // compute inertia tensor in global frame
+	dMULTIPLY2_333 (tmp,m.I,body->R);
+	dMULTIPLY0_333 (I,body->R,tmp);
+
+	// compute inverse inertia tensor in global frame
+	dMULTIPLY2_333 (tmp,body->invI,body->R);
+	dMULTIPLY0_333 (invI,body->R,tmp);
+
+	//angular accel
+	dVector3 wa;
+	dMULTIPLY0_331(wa,invI,torque);
+	dReal wa_mag=dSqrt(dDOT(wa,wa));
+
+	if(wa_mag>wa_limit)
+	{
+		//scale w 
+		for(int i=0;i<3;i++)wa[i]*=wa_limit/wa_mag;
+		dVector3 new_torqu;
+
+		dMULTIPLY0_331(new_torqu,I,wa);
+
+		 dBodySetTorque 
+			(
+			body,
+			new_torqu[0],
+			new_torqu[1],
+			new_torqu[2]
+			);
+	}
 }

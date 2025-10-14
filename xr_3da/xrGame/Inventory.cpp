@@ -17,7 +17,7 @@ CInventoryItem::CInventoryItem() {
 CInventoryItem::~CInventoryItem() {}
 
 void CInventoryItem::Load(LPCSTR section) {
-	inherited::Load(section);
+	CObject::Load(section);
 
 	m_name = pSettings->r_string(section, "inv_name");
 	m_nameShort = pSettings->r_string(section, "inv_name_short");
@@ -95,6 +95,7 @@ void CInventoryItem::Deactivate() {
 
 void CInventoryItem::Drop() {
 	if(m_pInventory) m_drop = true;
+
 }
 
 s32 CInventoryItem::Sort(PIItem pIItem) {
@@ -231,6 +232,15 @@ bool CInventory::Drop(CGameObject *pObj) {
 	return false;
 }
 
+bool CInventory::DropAll() {
+	PSPIItem l_it;
+	for(l_it = m_all.begin(); l_it != m_all.end(); l_it++) {
+		PIItem l_pIItem = *l_it;
+		Ruck(l_pIItem); l_pIItem->Drop();
+	}
+	return true;
+}
+
 bool CInventory::Slot(PIItem pIItem) {
 	if(pIItem->m_slot < m_slots.size()) {
 		//if(m_slots[pIItem->m_slot].m_pIItem && !Belt(m_slots[pIItem->m_slot].m_pIItem)) Ruck(m_slots[pIItem->m_slot].m_pIItem);
@@ -290,7 +300,7 @@ bool CInventory::Activate(u32 slot) {
 	return false;
 }
 
-PIItem CInventory::ActiveItem() {
+PIItem CInventory::ActiveItem()const{
 	return m_activeSlot < m_slots.size() ? m_slots[m_activeSlot].m_pIItem : NULL;
 }
 
@@ -386,6 +396,15 @@ PIItem CInventory::Get(const char *name, bool bSearchRuck) {
 	for(PPIItem l_it = l_list.begin(); l_it != l_list.end(); l_it++) {
 		PIItem l_pIItem = *l_it;
 		if(!strcmp(l_pIItem->cNameSect(), name) && l_pIItem->Useful()) return l_pIItem;
+	}
+	return NULL;
+}
+
+PIItem CInventory::Get(const u16 id, bool bSearchRuck) {
+	TIItemList &l_list = bSearchRuck ? m_ruck : m_belt;
+	for(PPIItem l_it = l_list.begin(); l_it != l_list.end(); l_it++) {
+		PIItem l_pIItem = *l_it;
+		if(l_pIItem->ID() == id) return l_pIItem;
 	}
 	return NULL;
 }

@@ -11,7 +11,6 @@
 #include "ai_alife_server_objects.h"
 #include "ai_alife_predicates.h"
 #include "ai_alife_a_star.h"
-//#include "ai_space.h"
 
 using namespace ALife;
 
@@ -87,12 +86,12 @@ public:
 		}
 	};
 
-	IC bool bfCheckIfTaskCompleted(CALifeHumanParams &tHumanParams, CALifeHumanAbstract *tpALifeHumanAbstract, OBJECT_IT &I)
+	IC bool bfCheckIfTaskCompleted(xrServerEntity &tServerEntity, CALifeHumanAbstract *tpALifeHumanAbstract, OBJECT_IT &I)
 	{
 		if (tpALifeHumanAbstract->m_dwCurTask >= tpALifeHumanAbstract->m_tpTasks.size())
 			return(false);
-		I = tHumanParams.m_tpItemIDs.begin();
-		OBJECT_IT	E = tHumanParams.m_tpItemIDs.end();
+		I = tServerEntity.children.begin();
+		OBJECT_IT	E = tServerEntity.children.end();
 		CALifePersonalTask	&tPersonalTask = *(tpALifeHumanAbstract->m_tpTasks[tpALifeHumanAbstract->m_dwCurTask]);
 		for ( ; I != E; I++) {
 			switch (tPersonalTask.m_tTaskType) {
@@ -207,9 +206,16 @@ public:
 	ALIFE_ENTITY_P_VECTOR			*m_tpCurrentLevel;
 	GRAPH_POINT_VECTOR				m_tpGraphObjects;		// по точке графа получить все 
 	GRAPH_VECTOR_SVECTOR			m_tpTerrain[LOCATION_TYPE_COUNT];			// массив списков: по идетнификатору 
-															//	местности получить список точек 
+    														//	местности получить список точек 
 															//  графа
+	game_sv_GameState				*m_tpGame;
 
+									CALifeGraphRegistry(game_sv_GameState *tpGame) : CALifeAStar()
+	{
+		VERIFY(tpGame);
+		m_tpGame = tpGame;
+	}
+	
 	void							Init()
 	{
 		inherited::Init				();
@@ -278,16 +284,22 @@ public:
 	{
 		ALIFE_ENTITY_P_IT				I = m_tpGraphObjects[tGraphID].tpObjects.begin();
 		ALIFE_ENTITY_P_IT				E = m_tpGraphObjects[tGraphID].tpObjects.end();
+		bool							bOk = false;
 		for ( ; I != E; I++)
 			if ((*I) == tpALifeDynamicObject) {
 				m_tpGraphObjects[tGraphID].tpObjects.erase(I);
+				bOk = true;
 				break;
 			}
+		VERIFY							(bOk);
+//.		Msg("ALife : removing object %s from graph point %d",tpALifeDynamicObject->s_name_replace,tGraphID);
 	};
 	
 	IC void vfAddObjectToGraphPoint(CALifeDynamicObject *tpALifeDynamicObject, _GRAPH_ID tNextGraphPointID)
 	{
 		m_tpGraphObjects[tNextGraphPointID].tpObjects.push_back(tpALifeDynamicObject);
+		tpALifeDynamicObject->m_tGraphID = tNextGraphPointID;
+//.		Msg("ALife : adding object %s to graph point %d",tpALifeDynamicObject->s_name_replace,tNextGraphPointID);
 	};
 
 	IC void vfChangeObjectGraphPoint(CALifeDynamicObject *tpALifeDynamicObject, _GRAPH_ID tGraphPointID, _GRAPH_ID tNextGraphPointID)
@@ -322,25 +334,38 @@ public:
 		vfAddEventToGraphPoint		(tpEvent,tNextGraphPointID);
 	};
 
-	IC void vfAttachItem(CALifeHumanParams &tHumanParams, CALifeItem *tpALifeItem, _GRAPH_ID tGraphID)
+	IC void vfAttachItem(xrServerEntity &tServerEntity, CALifeItem *tpALifeItem, _GRAPH_ID tGraphID, bool bAddChild = true)
 	{
-		tHumanParams.m_tpItemIDs.push_back(tpALifeItem->m_tObjectID);
-		tpALifeItem->ID_Parent = tHumanParams.ID;
-		ALIFE_ENTITY_P_IT		I = m_tpGraphObjects[tGraphID].tpObjects.begin();
-		ALIFE_ENTITY_P_IT		E = m_tpGraphObjects[tGraphID].tpObjects.end();
-		for ( ; I != E; I++)
-			if (*I == tpALifeItem) {
-				m_tpGraphObjects[tGraphID].tpObjects.erase(I);
-				break;
-			}
-		tHumanParams.m_fCumulativeItemMass += tpALifeItem->m_fMass;
+		if (bAddChild) {
+//.			Msg("ALife : (OFFLINE) Attaching item %s to object %s",tpALifeItem->s_name_replace,tServerEntity.s_name_replace);
+			tServerEntity.children.push_back(tpALifeItem->ID);
+			tpALifeItem->ID_Parent = tServerEntity.ID;
+		}
+//.		else
+//.			Msg("ALife : (ONLINE) Attaching item %s to object %s",tpALifeItem->s_name_replace,tServerEntity.s_name_replace);
+
+		vfRemoveObjectFromGraphPoint(tpALifeItem,tGraphID);
+		
+		CALifeTraderParams *tpALifeTraderParams = dynamic_cast<CALifeTraderParams*>(&tServerEntity);
+		VERIFY(tpALifeTraderParams);
+		tpALifeTraderParams->m_fCumulativeItemMass += tpALifeItem->m_fMass;
 	}
 
-	IC void vfDetachItem(CALifeHumanParams &tHumanParams, CALifeItem *tpALifeItem, _GRAPH_ID tGraphID)
+	IC void vfDetachItem(xrServerEntity &tServerEntity, CALifeItem *tpALifeItem, _GRAPH_ID tGraphID, bool bRemoveChild = true)
 	{
-		tpALifeItem->ID = 65535;
-		m_tpGraphObjects[tGraphID].tpObjects.push_back(tpALifeItem);
-		tHumanParams.m_fCumulativeItemMass -= tpALifeItem->m_fMass;
+		if (bRemoveChild) {
+			xr_vector<u16>				&tChildren = tServerEntity.children;
+			xr_vector<u16>::iterator	I = find	(tChildren.begin(),tChildren.end(),tpALifeItem->ID);
+			VERIFY					(I != tChildren.end());
+			tChildren.erase			(I);
+			tpALifeItem->ID_Parent	= 0xffff;
+		}
+
+		vfAddObjectToGraphPoint(tpALifeItem,tGraphID);
+		
+		CALifeTraderParams *tpTraderParams = dynamic_cast<CALifeTraderParams*>(&tServerEntity);
+		VERIFY(tpTraderParams);
+		tpTraderParams->m_fCumulativeItemMass -= tpALifeItem->m_fMass;
 	}
 };
 
@@ -424,6 +449,8 @@ public:
 			E->UPDATE_Read			(tNetPacket);
 			
 			E->Init					(E->s_name);
+			CALifeObject			*tpALifeObject = dynamic_cast<CALifeObject*>(E);
+			VERIFY(tpALifeObject);
 
 			R_ASSERT				((E->s_gameid == GAME_SINGLE) || (E->s_gameid == GAME_ANY));
 			R_ASSERT				((*I = dynamic_cast<CALifeDynamicObject*>(E)) != 0);

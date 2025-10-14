@@ -402,7 +402,7 @@ BOOL CWeapon::net_Spawn		(LPVOID DC)
 		m_pPhysicsShell						= P_create_Shell	();
 		R_ASSERT							(m_pPhysicsShell);
 		m_pPhysicsShell->add_Element		(E);
-		m_pPhysicsShell->setMass			(500.f);//400 - плотность т.е. - масса 1 м^3!
+		m_pPhysicsShell->setDensity			(500.f);//400 - плотность т.е. - масса 1 м^3!
 		m_pPhysicsShell->Activate			(svXFORM(),0,svXFORM());
 		m_pPhysicsShell->mDesired.identity	();
 		m_pPhysicsShell->fDesiredStrength	= 0.f;
@@ -734,10 +734,17 @@ BOOL CWeapon::FireTrace		(const Fvector& P, const Fvector& Peff, Fvector& D)
 
 				// bone-space
 				CKinematics* V = PKinematics(RQ.O->Visual());
+				if(V)
+				{
 				Fmatrix& m_bone = (V->LL_GetInstance(RQ.element)).mTransform;
 				Fmatrix  m_inv_bone;
 				m_inv_bone.invert(m_bone);
 				m_inv_bone.transform_tiny(position_in_bone_space, p_in_object_space);
+				}
+				else
+				{
+				position_in_bone_space.set(p_in_object_space);
+				}
 
 				//  
 				NET_Packet		P;
@@ -897,7 +904,7 @@ bool CWeapon::Detach(PIItem pIItem, bool force) {
 
 void CWeapon::SpawnAmmo(u32 boxCurr, LPCSTR ammoSect) {
 	if(!m_ammoTypes.size()) return;
-	static int l_type = 0;
+	static int l_type = 0; l_type %= m_ammoTypes.size();
 	if(!ammoSect) ammoSect = m_ammoTypes[l_type/*m_ammoType*/]; //m_ammoType++; m_ammoType %= m_ammoTypes.size();
 	l_type++; l_type %= m_ammoTypes.size();
 

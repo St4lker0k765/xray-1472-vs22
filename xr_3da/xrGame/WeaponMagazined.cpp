@@ -9,6 +9,7 @@
 #include "actor.h"
 #include "xr_weapon_list.h"
 #include "actor.h"
+#include "..\PGObject.h"
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -172,7 +173,7 @@ void CWeaponMagazined::UnloadMagazine() {
 
 void CWeaponMagazined::ReloadMagazine() {
 	SwitchState(eIdle);
-	static int l_lockType = false;
+	static bool l_lockType = false;
 	if(!l_lockType) m_ammoName = NULL;
 	if(m_pInventory) {
 		m_pAmmo = dynamic_cast<CWeaponAmmo*>(m_pInventory->Get(m_ammoTypes[m_ammoType],!dynamic_cast<CActor*>(H_Parent())));
@@ -407,6 +408,13 @@ void CWeaponMagazined::OnShot		()
 	
 	// Shell Drop
 	OnShellDrop					();
+
+	CPGObject* pStaticPG;/* s32 l_c = m_effects.size();*/
+	pStaticPG = xr_new<CPGObject>("weapons\\generic_shoot",Sector());
+	Fmatrix l_pos; l_pos.set(svTransform); l_pos.c.set(vLastFP);
+	Fvector l_vel; l_vel.sub(vPosition,ps_Element(0).vPosition); l_vel.div((Device.dwTimeGlobal-ps_Element(0).dwTime)/1000.f);
+	pStaticPG->UpdateParent(l_pos, l_vel); pStaticPG->Play();
+	//pStaticPG->SetTransform(l_pos); pStaticPG->Play();
 }
 
 void CWeaponMagazined::OnShotmark	(const Fvector &vDir, const Fvector &vEnd, Collide::ray_query& R)
@@ -439,6 +447,8 @@ void CWeaponMagazined::OnShotmark	(const Fvector &vDir, const Fvector &vEnd, Col
 void CWeaponMagazined::OnEmptyClick	()
 {
 	Sound->play_at_pos	(sndEmptyClick,H_Root(),vLastFP);
+	if (sndEmptyClick.feedback)
+		sndEmptyClick.feedback->set_volume(.2f);
 }
 void CWeaponMagazined::OnAnimationEnd() {
 	switch(STATE) {
@@ -460,6 +470,8 @@ void CWeaponMagazined::switch2_Empty()
 void CWeaponMagazined::switch2_Reload()
 {
 	Sound->play_at_pos		(sndReload,H_Root(),vLastFP);
+	if (sndReload.feedback)
+		sndReload.feedback->set_volume(.2f);
 	m_pHUD->animPlay		(mhud_reload[Random.randI(mhud_reload.size())],FALSE,this);
 }
 void CWeaponMagazined::switch2_Hiding()
@@ -467,6 +479,8 @@ void CWeaponMagazined::switch2_Hiding()
 	CWeapon::FireEnd					();
 	bPending				= TRUE;
 	Sound->play_at_pos		(sndHide,H_Root(),vLastFP);
+	if (sndHide.feedback)
+		sndHide.feedback->set_volume(.2f);
 	m_pHUD->animPlay		(mhud_hide[Random.randI(mhud_hide.size())],FALSE,this);
 	if (Local())			Level().Cameras.RemoveEffector	(cefShot);
 }
@@ -478,6 +492,8 @@ void CWeaponMagazined::switch2_Showing()
 {
 	setVisible				(TRUE);
 	Sound->play_at_pos		(sndShow,H_Root(),vLastFP);
+	if (sndShow.feedback)
+		sndShow.feedback->set_volume(.3f);
 	m_pHUD->animPlay		(mhud_show[Random.randI(mhud_show.size())],FALSE,this);
 }
 
