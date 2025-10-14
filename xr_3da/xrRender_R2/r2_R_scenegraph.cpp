@@ -31,7 +31,7 @@ void __fastcall mapNormal_Render	(mapNormalItems& N)
 	N.sorted.clear			();
 
 	// DIRECT:UNSORTED
-	std::vector<IVisual*>&	L			= N.unsorted;
+	xr_vector<IVisual*>&	L			= N.unsorted;
 	IVisual **I=&*L.begin(), **E = &*L.end();
 	for (; I!=E; I++)
 	{
@@ -57,7 +57,7 @@ void __fastcall mapMatrix_Render	(mapMatrixItems& N)
 	N.sorted.clear			();
 
 	// DIRECT:UNSORTED
-	std::vector<_MatrixItem>&	L			= N.unsorted;
+	xr_vector<_MatrixItem>&	L			= N.unsorted;
 	_MatrixItem *it =&*L.begin(), *end	= &*L.end();
 	for (; it!=end; it++)
 	{
@@ -240,6 +240,8 @@ void		sort_tlist_mat
 
 void CRender::render_scenegraph	()
 {
+	Device.Statistic.RenderDUMP.Begin		();
+
 	// **************************************************** NORMAL
 	// Perform sorting based on ScreenSpaceArea
 	// Sorting by SSA and changes minimizations
@@ -388,4 +390,6 @@ void CRender::render_scenegraph	()
 		matVS.clear				();
 		vs.clear				();
 	}
+
+	Device.Statistic.RenderDUMP.End	();
 }

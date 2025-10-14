@@ -53,10 +53,21 @@ public:
 class	ENGINE_API	IRender_Light
 {
 public:
+	enum LT
+	{
+		POINT	= 0,
+		SPOT	= 1
+	};
+public:
+	virtual void					set_type			(LT type)							= 0;
 	virtual void					set_active			(bool)								= 0;
+	virtual bool					get_active			()									= 0;
 	virtual void					set_shadow			(bool)								= 0;
 	virtual void					set_position		(const Fvector& P)					= 0;
+	virtual void					set_direction		(const Fvector& P)					= 0;
+	virtual void					set_cone			(float angle)						= 0;
 	virtual void					set_range			(float R)							= 0;
+	virtual void					set_texture			(LPCSTR name)						= 0;
 	virtual void					set_color			(const Fcolor& C)					= 0;
 	virtual void					set_color			(float r, float g, float b)			= 0;
 	virtual ~IRender_Light()		{};
@@ -116,6 +127,7 @@ public:
 	CObject*						val_pObject;
 	Fmatrix*						val_pTransform;
 	BOOL							val_bHUD;
+	BOOL							val_bInvisible;
 	CFrustum						ViewBase;
 	CFrustum*						View;
 	u32								marker;
@@ -141,6 +153,8 @@ public:
 	IC		void					set_Transform			(Fmatrix*	M	)				{ VERIFY(M);	val_pTransform = M;	}
 	IC		void					set_HUD					(BOOL 		V	)				{ val_bHUD		= V;				}
 	IC		BOOL					get_HUD					()								{ return val_bHUD;					}
+	IC		void					set_Invisible			(BOOL 		V	)				{ val_bInvisible= V;				}
+	IC		BOOL					get_Invisible			()								{ return val_bInvisible;			}
 	virtual void					flush					()								= 0;	
 	virtual void					set_Object				(CObject*	O	)				= 0;
 	virtual void					add_Visual				(IVisual*	V	)				= 0;	// add visual leaf	(no culling performed at all)
@@ -180,7 +194,7 @@ public:
 	virtual void					Calculate				()										= 0;
 	virtual void					Render					()										= 0;
 	virtual void					RenderBox				(IRender_Sector* S, Fbox& BB, int sh)	= 0;
-	virtual void					Screenshot				(BOOL bSquare=FALSE)					= 0;
+	virtual void					Screenshot				(LPCSTR postfix=0, BOOL bSquare=FALSE)	= 0;
 
 	// Render mode
 	virtual void					rmNear					()										= 0;

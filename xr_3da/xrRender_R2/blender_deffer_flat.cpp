@@ -6,45 +6,60 @@
 CBlender_deffer_flat::CBlender_deffer_flat	()	{	description.CLS		= B_DEFAULT;	}
 CBlender_deffer_flat::~CBlender_deffer_flat	()	{	}
 
-void	CBlender_deffer_flat::Save	(	IWriter& fs )
+void	CBlender_deffer_flat::Save	(	IWriter& FS )
 {
-	CBlender::Save	(fs);
+	CBlender::Save	(FS);
 }
-void	CBlender_deffer_flat::Load	(	IReader& fs, WORD version )
+void	CBlender_deffer_flat::Load	(	IReader& FS, WORD version )
 {
-	CBlender::Load	(fs,version);
+	CBlender::Load	(FS,version);
 }
-
-class cl_chpos	: public R_constant_setup 
-{
-	u32			dwFrame;
-	Fvector4	c_hpos;
-
-	virtual void setup (R_constant* C) 
-	{ 
-		Fvector& P		= Device.vCameraPosition;
-		RCache.set_c	(C,P.x,P.y,P.z,0);
-	}
-};
-static cl_chpos	binder_chpos;
 
 void	CBlender_deffer_flat::Compile(CBlender_Compile& C)
 {
 	CBlender::Compile		(C);
 
+	// codepath is the same, only the shaders differ
 	switch(C.iElement) 
 	{
 	case 0: 	// deffer
-		C.r2_Pass			("r2_deffer_base_flat","r2_deffer_base_flat");
-		C.r2_Sampler		("s_base",C.L_textures[0]);
-		C.r2_End			();
+		{
+			char				fname	[_MAX_PATH];
+			strcpy				(fname,C.L_textures[0]); if (strext(fname)) *strext(fname)=0;
+			strcat				(fname,"_bump.dds");
+			if (FS.exist("$game_textures$",	fname))
+			{
+				// bump found
+				C.r2_Pass			(r2v("r2_deffer_base_bump"),r2p("r2_deffer_base_bump"));
+				C.r2_Sampler		("s_base",C.L_textures[0]);
+				if (ps_r2_ls_flags.test(R2FLAG_BUMP_AF))	C.r2_Sampler		("s_bump",fname,D3DTADDRESS_WRAP,D3DTEXF_ANISOTROPIC);
+				else										C.r2_Sampler		("s_bump",fname);
+				C.r2_End			();
+			} else {
+				// flat
+				C.r2_Pass			(r2v("r2_deffer_base_flat"),r2p("r2_deffer_base_flat"));
+				C.r2_Sampler		("s_base",C.L_textures[0]);
+				C.r2_End			();
+			}
+		}
 		break;
 	case 1:		// smap-direct
-		C.r2_Pass			("r2_shadow_direct_base","r2_shadow_direct_base");
+		if (RImplementation.b_nv3x)	C.r2_Pass			(r2v("r2_shadow_direct_base"),r2p("r2_shadow_direct_base"),TRUE,TRUE,TRUE,D3DBLEND_ZERO,D3DBLEND_ONE);
+		else						C.r2_Pass			(r2v("r2_shadow_direct_base"),r2p("r2_shadow_direct_base"));
 		C.r2_Sampler		("s_base",C.L_textures[0]);
 		C.r2_End			();
 		break;
 	case 2:		// smap-point
+		C.r2_Pass			(r2v("r2_shadow_point_base"),r2p("r2_shadow_point_base"));
+		C.r2_Sampler		("s_base",			C.L_textures[0]);
+		C.r2_Constant		("light_position",	&RImplementation.Binders.l_position);
+		C.r2_End			();
+		break;
+	case 3:		// smap-spot
+		if (RImplementation.b_nv3x)	C.r2_Pass			(r2v("r2_shadow_spot_base"),r2p("r2_shadow_direct_base"),TRUE,TRUE,TRUE,D3DBLEND_ZERO,D3DBLEND_ONE);
+		else						C.r2_Pass			(r2v("r2_shadow_spot_base"),r2p("r2_shadow_direct_base"));
+		C.r2_Sampler		("s_base",C.L_textures[0]);
+		C.r2_End			();
 		break;
 	}
 }

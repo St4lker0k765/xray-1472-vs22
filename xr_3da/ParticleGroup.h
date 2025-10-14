@@ -113,11 +113,17 @@ class ENGINE_API CParticleGroup: public IVisual
 protected:
 	CPGDef*				m_Def;
 
-    BOOL				m_bPlaying;
+    enum{
+    	flPlaying		= (1<<0),
+        flDefferedStop	= (1<<1)
+    };
+    Flags32				m_Flags;
     s32					m_ElapsedLimit;
 
 	int					m_HandleGroup;
 	int					m_HandleActionList;
+
+	s32					m_MemDT;
 protected:
 	void				ResetParticles		();
 
@@ -137,15 +143,15 @@ public:
     void 				OnDeviceCreate		();
     void 				OnDeviceDestroy		();
 
+    void				SetTransform		(const Fmatrix& m);
     void				UpdateParent		(const Fmatrix& m, const Fvector& velocity);
 
     BOOL				Compile				(CPGDef* def);
 
 	CPGDef*				GetDefinition		(){return m_Def;}
 
-	void				Play				(){m_bPlaying=TRUE;}
-    void				Pause				(){m_bPlaying=!m_bPlaying;}
-    void				Stop				(){m_bPlaying=FALSE;}
+	void				Play				();
+    void				Stop				(bool bFinishPlaying=true);
 };
 DEFINE_VECTOR			(PS::CPGDef*,PGVec,PGIt);
 }

@@ -121,6 +121,88 @@ void CSector::Render_objects	(CFrustum& F)
 	}
 }
 
+void CSector::Render_objects_s	(CFrustum& F, Fvector& __P, Fmatrix& __X)
+{
+	// Render everything
+	{
+		Fvector	Tpos;
+		RImplementation.set_Frustum		(&F);
+		RImplementation.add_Geometry	(pRoot);
+
+		// Persistant models
+		xr_vector<CObject*>::iterator I=Objects.begin(), E=Objects.end();
+		for (; I!=E; I++) {
+			CObject* O = *I;
+			if (O->getVisible()) 
+			{
+				vis_data&	vis				= O->Visual	()->vis;
+				O->clXFORM().transform_tiny	(Tpos, vis.sphere.P);
+				if (F.testSphere_dirty(Tpos,vis.sphere.R))	
+				{
+					RImplementation.set_Object	(O);
+					O->OnVisible				();
+					RImplementation.set_Object	(0);
+				}
+			}
+		}
+	}
+
+	// Search visible portals and go through them
+	CSector*	pLastSector		= (CSector*)RImplementation.getSectorActive();
+	for (u32 I=0; I<Portals.size(); I++)
+	{
+		sPoly	S,D;
+		if (Portals[I]->dwFrame != RImplementation.marker) {
+			CPortal* PORTAL = Portals[I];
+			CSector* pSector;
+
+			if (PORTAL->bDualRender) {
+				pSector = PORTAL->getSector			(this);
+			} else {
+				pSector = PORTAL->getSectorBack		(__P);
+				if (pSector==this)			continue;
+				if (pSector==pLastSector)	continue;
+			}
+
+			// SSA
+			Fvector	dir2portal;
+			dir2portal.sub		(PORTAL->S.P,__P);
+			float R				=	PORTAL->S.R;
+			float distSQ		=	dir2portal.square_magnitude();
+			float ssa			=	R*R/distSQ;
+			dir2portal.div		(_sqrt(distSQ));
+			ssa					*=	_abs(PORTAL->P.n.dotproduct(dir2portal));
+			if (ssa<r_ssaDISCARD)	continue;
+
+			// Clip by frustum
+			xr_vector<Fvector> &	POLY = PORTAL->getPoly();
+			S.assign			(&*POLY.begin(),POLY.size()); D.clear();
+			sPoly* P			= F.ClipPoly(S,D);
+			if (0==P)			continue;
+
+			// Cull by HOM
+			if (!RImplementation.occ_visible(*P))	continue;
+
+			// Create _new_ frustum and recurse
+			CFrustum			Clip;
+			Clip.CreateFromPortal(P,__P,__X);
+			PORTAL->dwFrame		= RImplementation.marker;
+			PORTAL->bDualRender	= FALSE;
+			pSector->Render_objects_s(Clip,__P,__X);
+		}
+	}
+}
+
+void CSector::Render_prepare	(CFrustum &F)
+{
+	// Render prepare
+	// Ётот кусочек переехал временно из ф-ции Render
+	// дл€ того чтобы показать ѕрофу что отрисовать тень в 
+	// принципе возможно(но не нужно - выгл€дит хреново)
+	// св€зано с тем что лайты нужно заполнить чуть раньше
+	RImplementation.add_Lights	(Lights);
+}
+
 void CSector::Render			(CFrustum &F)
 {
 	// Render everything
@@ -130,7 +212,37 @@ void CSector::Render			(CFrustum &F)
 		RImplementation.add_Glows		(Glows);
 		RImplementation.add_Lights		(Lights);
 		RImplementation.add_Geometry	(pRoot);
-		
+
+		// R2-lights/spots
+#if RENDER==R_R2
+		{
+			xr_vector<light*>::iterator I=tempLights.begin(), E=tempLights.end();
+			for (; I!=E; I++) {
+				light* O = *I;
+				if (!O->get_active())	continue;
+				if (F.testSphere_dirty(O->position,O->range))
+					RImplementation.Lights.add_sector_dlight(O);
+				/*
+				switch	(O->flags.type)
+				{
+				case IRender_Light::POINT:
+					if (F.testSphere_dirty(O->position,O->range))
+						RImplementation.Lights.add_sector_dlight(O);
+					break;
+				case IRender_Light::SPOT:
+					{
+						Fvector P;
+						P.mad	(O->position,O->direction,O->range/2);
+						if (F.testSphere_dirty(P,O->range/2))
+							RImplementation.Lights.add_sector_dlight(O);
+					}
+					break;
+				}
+				*/
+			}
+		}
+#endif
+
 		// 1 sorting-pass on objects
 		for (int s=0; s<int(Objects.size())-1; s++)
 		{

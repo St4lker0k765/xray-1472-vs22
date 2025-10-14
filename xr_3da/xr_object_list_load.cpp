@@ -6,32 +6,30 @@
 void CObjectList::Load()
 {
 	R_ASSERT			(map_POOL.empty() && map_NETID.empty() && objects.empty() && destroy_queue.empty());
+	if (strstr(Core.Params,"-noprefetch"))	return;
 
 	u32	mem_0			= Memory.mem_usage();
 	CTimer T;			T.Start		();
 
 	CInifile::Root&	R	= pSettings->sections();
 	int	p_count			= 0;
-	for (CInifile::RootIt S = R.begin(); S != R.end(); ++S)
+	for (CInifile::RootIt	S	= R.begin(); S!=R.end(); S++)
 	{
-		if (pSettings->line_exist(S->Name, "$prefetch"))
+		if (pSettings->line_exist(S->Name,"$prefetch"))
 		{
-			const int count = pSettings->r_s32(S->Name, "$prefetch");
-			R_ASSERT2(count > 0 && count <= 128, "Too many objects for prefetching");
-			const CLASS_ID CLS = pSettings->r_clsid(S->Name, "class");
-			p_count += count;
+			int		count		=	pSettings->r_s32(S->Name,"$prefetch");
+			R_ASSERT2			((count>0) && (count<=128), "Too many objects for prefetching");
+			CLASS_ID CLS		=	pSettings->r_clsid(S->Name,"class");
+			p_count				+=	count;
 
-			for (int c = 0; c < count; ++c)
+			for (int c=0; c<count; c++)
 			{
-				CObject* pObject = (CObject*)NEW_INSTANCE(CLS);
-				pObject->Load(S->Name.c_str());
-				map_POOL.emplace(pObject->cNameSect(), pObject);
+				CObject* pObject	= (CObject*) NEW_INSTANCE(CLS);
+				pObject->Load		(S->Name.c_str());
+				map_POOL.insert		(std::make_pair(pObject->cNameSect(),pObject));
 			}
 		}
 	}
-
-
-
 
 	float	p_time		= 1000.f*T.GetElapsed_sec();
 	u32		p_mem		= Memory.mem_usage() - mem_0;
@@ -49,11 +47,11 @@ void CObjectList::Load()
 void CObjectList::Unload	( )
 {
 	// Destroy objects
-	Msg	("!!!------------- Unload, %d objects",objects.size());
+	// Msg	("!!!------------- Unload, %d objects",objects.size());
 	while (objects.size())
 	{
 		CObject*	O	= objects.back();
-		Msg	("!!!------------- Unload: %s",O->cName());
+		// Msg	("!!!------------- Unload: %s",O->cName());
 		O->net_Destroy	(   );
 		Destroy			( O );
 	}

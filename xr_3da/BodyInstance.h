@@ -2,8 +2,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_BODYINSTANCE_H__68A83E66_CEC3_4207_84A0_B7997A253B87__INCLUDED_)
-#define AFX_BODYINSTANCE_H__68A83E66_CEC3_4207_84A0_B7997A253B87__INCLUDED_
+#ifndef BodyInstanceH
+#define BodyInstanceH
 #pragma once
 
 #include "skeletonX.h"
@@ -80,7 +80,7 @@ public:
 	float			speed;
 
 	BOOL			playing;
-	BOOL			noloop;
+	BOOL			stop_at_end;
 
 	PlayCallback	Callback;
 	void*			CallbackParam;
@@ -198,7 +198,8 @@ public:
 	void		Load		(CKinematics* P, CInifile* INI, LPCSTR section, BOOL bCycle);
 	void		Load		(CKinematics* P, IReader* MP, u32 fl);
 	CBlend*		PlayCycle	(CKinematics* P, BOOL bMixIn, PlayCallback Callback, LPVOID Callback_Param);
-	CBlend*		PlayFX		(CKinematics* P);
+	CBlend*		PlayCycle	(CKinematics* P, int part, BOOL bMixIn, PlayCallback Callback, LPVOID Callback_Param);
+	CBlend*		PlayFX		(CKinematics* P, float power_scale);
 };
 
 //*** Shared partition Data ***********************************************************************
@@ -223,7 +224,7 @@ class ENGINE_API CKinematics	: public FHierrarhyVisual
 	friend class					CMotionDef;
 	friend class					CSkeletonX;
 private:
-	struct str_pred
+	struct str_pred : public std::binary_function<char*, char*, bool> 
 	{	
 		IC bool operator()(const char* x, const char* y) const
 		{	return strcmp(x,y)<0;	}
@@ -260,13 +261,7 @@ private:
 	void									IBoneInstances_Create	();
 	void									IBoneInstances_Destroy	();
 
-	IC void									IBlend_Startup	()
-	{
-		CBlend B; ZeroMemory(&B,sizeof(B));
-		B.blend = CBlend::eFREE_SLOT;
-		for (int i=0; i<MAX_BLENDED_POOL; i++)
-			blend_pool.push_back(B);
-	}
+	void									IBlend_Startup	();
 	IC CBlend*								IBlend_Create	()
 	{
 		Update();
@@ -328,9 +323,9 @@ public:
 	// fx'es
 	CMotionDef*					ID_FX			(LPCSTR  N);
 	CMotionDef*					ID_FX_Safe		(LPCSTR  N);
-	CBlend*						PlayFX			(LPCSTR  N);
-	CBlend*						PlayFX			(CMotionDef* M)
-	{	VERIFY(M); return M->PlayFX(this);	}
+	CBlend*						PlayFX			(LPCSTR  N, float power_scale);
+	CBlend*						PlayFX			(CMotionDef* M, float power_scale)
+	{	VERIFY(M); return M->PlayFX(this,power_scale);	}
 
 
 	// debug
@@ -340,9 +335,10 @@ public:
 	virtual void				Copy			(IVisual *pFrom);
 	virtual void				Load			(const char* N, IReader *data, u32 dwFlags);
 	virtual void				Release			();
+	virtual void				Spawn			();
 	virtual						~CKinematics	();
 };
 IC CKinematics* PKinematics		(IVisual* V) { return dynamic_cast<CKinematics*>(V); }
 
 
-#endif // !defined(AFX_BODYINSTANCE_H__68A83E66_CEC3_4207_84A0_B7997A253B87__INCLUDED_)
+#endif // BodyInstanceH

@@ -7,18 +7,18 @@ class CLight_DB
 {
 public:
 	Fvector3				sun_dir;
-	Fvector4				sun_color;
-
+	Fvector3				sun_color;
 private:
 	xr_vector<xrLIGHT_control>	v_static_controls;
 	xr_vector<light*>			v_static;
-	std::set<light*>				v_dynamic_active;
-	std::set<light*>				v_dynamic_inactive;
-
+	std::set<light*>			v_dynamic_active;
+	std::set<light*>			v_dynamic_inactive;
+public:
 	xr_vector<light*>			v_selected_shadowed;
 	xr_vector<light*>			v_selected_unshadowed;
 public:
-	void					add_sector_lights	(xr_vector<WORD> &L);
+	void					add_sector_lights	(xr_vector<WORD> &	L);
+	void					add_sector_dlight	(light*			L);
 
 	void					Load				(IReader* fs);
 	void					Unload				();
@@ -28,6 +28,7 @@ public:
 
 	light*					Create				();
 	void					Destroy				(light*);
+	void					Update				();
 
 	CLight_DB				();
 	~CLight_DB				();

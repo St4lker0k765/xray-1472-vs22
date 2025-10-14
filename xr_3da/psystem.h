@@ -304,11 +304,13 @@ namespace PAPI{
 	struct ParticleAction
 	{
 		enum{
-			ALLOW_PARENT	= (1<<0)
+			ALLOW_TRANSLATE	= (1<<0),
+			ALLOW_ROTATE	= (1<<1)
 		};
 		static float	dt;	// This is copied to here from global state.
-		Flags32			flags;
+		Flags32			m_Flags;
 		PActionEnum		type;	// Type field
+		ParticleAction	(){m_Flags.zero();}
 	};
 
 	// This Methods actually does the particle's action.
@@ -526,6 +528,10 @@ namespace PAPI{
 
 	struct PASource : public ParticleAction
 	{
+		enum{
+			flVertexB_tracks	= (1<<31),// True to get positionB from position.
+			flSilent			= (1<<30),
+		};
 		pDomain positionL;	// Choose a position in this domain. (local_space)
 		pDomain velocityL;	// Choose a velocity in this domain. (local_space)
 		pDomain position;	// Choose a position in this domain.
@@ -537,7 +543,6 @@ namespace PAPI{
 		float particle_rate;// Particles to generate per unit time
 		float age;			// Initial age of the particles
 		float age_sigma;	// St. dev. of initial age of the particles
-		BOOL vertexB_tracks;// True to get positionB from position.
 		pVector parent_vel;	
 		float parent_motion;
 
@@ -606,13 +611,13 @@ namespace PAPI{
 
 		// These are static because all threads access the same groups.
 		// All accesses to these should be locked.
-		static ParticleGroup **group_list;
-		static PAHeader **alist_list;
-		static int group_count;
-		static int alist_count;
+		DEFINE_VECTOR(ParticleGroup*,ParticleGroupVec,ParticleGroupVecIt);
+		DEFINE_VECTOR(PAHeader*,PAHeaderVec,PAHeaderVecIt);
+		static ParticleGroupVec	group_vec;
+		static PAHeaderVec		alist_vec;
 
 		// state part
-		BOOL	vertexB_tracks;
+		Flags32	flags;
 		pDomain Size;
 		pDomain Vel;
 		pDomain VertexB;
@@ -704,6 +709,10 @@ namespace PAPI{
 
 	PARTICLEDLL_API void pAddActionToList(PAHeader *S);		
 
+	PARTICLEDLL_API void pStopPlaying(int action_list_num);
+
+	PARTICLEDLL_API void pStartPlaying(int action_list_num);
+
 	// Particle Group Calls
 
 	PARTICLEDLL_API void pCopyGroup(int p_src_group_num, int index = 0, int copy_count = P_MAXINT);
@@ -734,13 +743,13 @@ namespace PAPI{
 		PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pBounce(float friction, float resilience, float cutoff,
 		PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pCopyVertexB(BOOL copy_pos = TRUE, BOOL copy_vel = FALSE);
 
@@ -748,16 +757,16 @@ namespace PAPI{
 		float vlow = 0.0f, float vhigh = P_MAXFLOAT);
 
 	PARTICLEDLL_API void pExplosion(float center_x, float center_y, float center_z, float velocity,
-		float magnitude, float stdev, float epsilon = P_EPS, float age = 0.0f, BOOL allow_parent=TRUE);
+		float magnitude, float stdev, float epsilon = P_EPS, float age = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pFollow(float magnitude = 1.0f, float epsilon = P_EPS, float max_radius = P_MAXFLOAT);
 
 	PARTICLEDLL_API void pGravitate(float magnitude = 1.0f, float epsilon = P_EPS, float max_radius = P_MAXFLOAT);
 
-	PARTICLEDLL_API void pGravity(float dir_x, float dir_y, float dir_z, BOOL allow_parent=TRUE);
+	PARTICLEDLL_API void pGravity(float dir_x, float dir_y, float dir_z, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pJet(float center_x, float center_y, float center_z, float magnitude = 1.0f,
-		float epsilon = P_EPS, float max_radius = P_MAXFLOAT, BOOL allow_parent=TRUE);
+		float epsilon = P_EPS, float max_radius = P_MAXFLOAT, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pKillOld(float age_limit, BOOL kill_less_than = FALSE);
 
@@ -768,43 +777,43 @@ namespace PAPI{
 
 	PARTICLEDLL_API void pOrbitLine(float p_x, float p_y, float p_z,
 		float axis_x, float axis_y, float axis_z, float magnitude = 1.0f,
-		float epsilon = P_EPS, float max_radius = P_MAXFLOAT, BOOL allow_parent=TRUE);
+		float epsilon = P_EPS, float max_radius = P_MAXFLOAT, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pOrbitPoint(float center_x, float center_y, float center_z,
 		float magnitude = 1.0f, float epsilon = P_EPS,
-		float max_radius = P_MAXFLOAT, BOOL allow_parent=TRUE);
+		float max_radius = P_MAXFLOAT, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pRandomAccel(PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pRandomDisplace(PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pRandomVelocity(PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pRestore(float time);
 
 	PARTICLEDLL_API void pSink(BOOL kill_inside, PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pSinkVelocity(BOOL kill_inside, PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pSource(float particle_rate, PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pSpeedLimit(float min_speed, float max_speed = P_MAXFLOAT);
 
@@ -821,18 +830,18 @@ namespace PAPI{
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
 		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f);
 
-	PARTICLEDLL_API void pTargetVelocity(float vel_x, float vel_y, float vel_z, float scale, BOOL allow_parent=TRUE);
+	PARTICLEDLL_API void pTargetVelocity(float vel_x, float vel_y, float vel_z, float scale, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pTargetVelocityD(float scale, PDomainEnum dtype,
 		float a0 = 0.0f, float a1 = 0.0f, float a2 = 0.0f,
 		float a3 = 0.0f, float a4 = 0.0f, float a5 = 0.0f,
-		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_parent=TRUE);
+		float a6 = 0.0f, float a7 = 0.0f, float a8 = 0.0f, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 
 	PARTICLEDLL_API void pVertex(float x, float y, float z);
 
 	PARTICLEDLL_API void pVortex(float center_x, float center_y, float center_z,
 		float axis_x, float axis_y, float axis_z,
 		float magnitude = 1.0f, float epsilon = P_EPS,
-		float max_radius = P_MAXFLOAT, BOOL allow_parent=TRUE);
+		float max_radius = P_MAXFLOAT, BOOL allow_translate=TRUE, BOOL allow_rotate=TRUE);
 }
 #endif //PSystemH

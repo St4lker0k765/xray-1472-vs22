@@ -31,9 +31,6 @@
     <Filter Include="Shading templates\R1">
       <UniqueIdentifier>{483e5429-df78-4583-ab2d-0c7b5d09c468}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shading templates\Shaders">
-      <UniqueIdentifier>{9562641a-31a1-4134-9e0d-b0c22dee538c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Models">
       <UniqueIdentifier>{6d0f884d-f7f6-41de-8a5a-66265617d133}</UniqueIdentifier>
     </Filter>
@@ -134,6 +131,33 @@
     </ClInclude>
     <ClInclude Include="occRasterizer.h">
       <Filter>Visibility\HOM Occlusion</Filter>
+    </ClInclude>
+    <ClInclude Include="common_binders.h">
+      <Filter>Core</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_bloom_build.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_decompress.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_deffer_aref.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_deffer_model.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_light_mask.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_light_point.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_light_point_uns.h">
+      <Filter>Shading templates</Filter>
+    </ClInclude>
+    <ClInclude Include="blender_light_spot.h">
+      <Filter>Shading templates</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -274,6 +298,63 @@
     </ClCompile>
     <ClCompile Include="occRasterizer_core.cpp">
       <Filter>Visibility\HOM Occlusion</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_accum_point.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_accum_point_geom.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_accum_spot.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_accum_spot_geom.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_decompress.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_phase_accumulator_init.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_phase_bloom.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_phase_smap_P.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="r2_rendertarget_phase_smap_S.cpp">
+      <Filter>Core\R_Target</Filter>
+    </ClCompile>
+    <ClCompile Include="Light_Render_Direct_ComputeXFP.cpp">
+      <Filter>Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="Light_Render_Direct_ComputeXFS.cpp">
+      <Filter>Lights</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_bloom_build.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_decompress.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_deffer_aref.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_deffer_model.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_light_mask.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_light_point.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_light_point_uns.cpp">
+      <Filter>Shading templates</Filter>
+    </ClCompile>
+    <ClCompile Include="blender_light_spot.cpp">
+      <Filter>Shading templates</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

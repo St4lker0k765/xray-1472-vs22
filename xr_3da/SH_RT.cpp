@@ -24,12 +24,17 @@ void CRT::Create	(LPCSTR Name, u32 w, u32 h,	D3DFORMAT f)
 	if (w>caps.MaxTextureWidth)			return;
 	if (h>caps.MaxTextureHeight)		return;
 
+	// Select usage
+	u32 usage	= 0;
+	if (D3DFMT_D24X8==fmt)				usage = D3DUSAGE_DEPTHSTENCIL;
+	else								usage = D3DUSAGE_RENDERTARGET;
+
 	// Validate render-target usage
 	_hr = HW.pD3D->CheckDeviceFormat(
 		D3DADAPTER_DEFAULT,
 		HW.DevT,
 		HW.Caps.fTarget,
-		D3DUSAGE_RENDERTARGET,
+		usage,
 		D3DRTYPE_TEXTURE,
 		f
 		);
@@ -37,7 +42,7 @@ void CRT::Create	(LPCSTR Name, u32 w, u32 h,	D3DFORMAT f)
 
 	// Try to create texture/surface
 	Device.Shader.Evict					();
-	_hr = HW.pDevice->CreateTexture	(w, h, 1, D3DUSAGE_RENDERTARGET, f, D3DPOOL_DEFAULT, &pSurface,NULL);
+	_hr = HW.pDevice->CreateTexture		(w, h, 1, usage, f, D3DPOOL_DEFAULT, &pSurface,NULL);
 	if (FAILED(_hr) || (0==pSurface))	return;
 
 	// OK
@@ -51,5 +56,53 @@ void CRT::Destroy()
 	pTexture->surface_set				(0);
 	Device.Shader._DeleteTexture		(pTexture);
 	_RELEASE	(pRT		);
+	_RELEASE	(pSurface	);
+}
+
+void CRTC::Create	(LPCSTR Name, u32 size,	D3DFORMAT f)
+{
+	R_ASSERT	(HW.pDevice && Name && Name[0] && size && btwIsPow2(size));
+	HRESULT		_hr;
+
+	dwSize		= size;
+	fmt			= f;
+
+	// Get caps
+	D3DCAPS9	caps;
+	R_CHK		(HW.pDevice->GetDeviceCaps(&caps));
+
+	// Check width-and-height of render target surface
+	if (size>caps.MaxTextureWidth)		return;
+	if (size>caps.MaxTextureHeight)		return;
+
+	// Validate render-target usage
+	_hr = HW.pD3D->CheckDeviceFormat(
+		D3DADAPTER_DEFAULT,
+		HW.DevT,
+		HW.Caps.fTarget,
+		D3DUSAGE_RENDERTARGET,
+		D3DRTYPE_CUBETEXTURE,
+		f
+		);
+	if (FAILED(_hr))					return;
+
+	// Try to create texture/surface
+	Device.Shader.Evict					();
+	_hr = HW.pDevice->CreateCubeTexture	(size, 1, D3DUSAGE_RENDERTARGET, f, D3DPOOL_DEFAULT, &pSurface,NULL);
+	if (FAILED(_hr) || (0==pSurface))	return;
+
+	// OK
+	for (u32 face=0; face<6; face++)
+		R_CHK	(pSurface->GetCubeMapSurface	((D3DCUBEMAP_FACES)face, 0, pRT+face));
+	pTexture	= Device.Shader._CreateTexture	(Name);
+	pTexture->surface_set						(pSurface);
+}
+
+void CRTC::Destroy()
+{
+	pTexture->surface_set				(0);
+	Device.Shader._DeleteTexture		(pTexture);
+	for (u32 face=0; face<6; face++)
+		_RELEASE	(pRT[face]	);
 	_RELEASE	(pSurface	);
 }

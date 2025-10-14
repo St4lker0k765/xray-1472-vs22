@@ -38,6 +38,14 @@ float		ps_r2_ssaHZBvsTEX		= 256.f;
 
 // R2-specific
 float		ps_r2_ls_dynamic_range	= 2.f;	// r2-only
+float		ps_r2_ls_bloom_kernel	= 3.3f;	// r2-only
+float		ps_r2_ls_dsm_kernel		= .7f;	// r2-only
+float		ps_r2_ls_psm_kernel		= .7f;	// r2-only
+float		ps_r2_ls_ssm_kernel		= .7f;	// r2-only
+float		ps_r2_ls_bloom_threshold= .3f;	// r2-only
+float		ps_r2_ls_spower			= 64.f;
+Flags32		ps_r2_ls_flags			= { R2FLAG_SUN | R2FLAG_SKY | R2FLAG_SPOT_UNMASK };	// r2-only
+Fvector		ps_r2_ls_hemi			= { 1,1,1};											// r2-only
 
 #ifndef _EDITOR
 #include	"..\xr_ioconsole.h"
@@ -80,6 +88,19 @@ void		xrRender_initconsole	()
 	CMD4(CCC_Float,		"r2_ssa_hzb_vs_tex",	&ps_r2_ssaHZBvsTEX,			16,		512		);
 
 	// R2-specific
-	CMD4(CCC_Float,		"r2_ls_dynamic_range",	&ps_r2_ls_dynamic_range,	1.f,	3.f		);
+	tw_min.set			(0,0,0);
+	tw_max.set			(2,2,2);
+	CMD4(CCC_Float,		"r2_ls_dynamic_range",	&ps_r2_ls_dynamic_range,	.5f,	8.f		);
+	CMD4(CCC_Float,		"r2_ls_bloom_kernel",	&ps_r2_ls_bloom_kernel,		1.f,	7.f		);
+	CMD4(CCC_Float,		"r2_ls_bloom_threshold",&ps_r2_ls_bloom_threshold,	0.f,	1.f		);
+	CMD4(CCC_Float,		"r2_ls_dsm_kernel",		&ps_r2_ls_dsm_kernel,		.1f,	3.f		);
+	CMD4(CCC_Float,		"r2_ls_psm_kernel",		&ps_r2_ls_psm_kernel,		.1f,	3.f		);
+	CMD4(CCC_Float,		"r2_ls_ssm_kernel",		&ps_r2_ls_ssm_kernel,		.1f,	3.f		);
+	CMD4(CCC_Float,		"r2_ls_spower",			&ps_r2_ls_spower,			1.f,	512.f	);
+	CMD3(CCC_Mask,		"r2_sun",				&ps_r2_ls_flags,			R2FLAG_SUN);
+	CMD3(CCC_Mask,		"r2_sky",				&ps_r2_ls_flags,			R2FLAG_SKY);
+	CMD3(CCC_Mask,		"r2_bump_af",			&ps_r2_ls_flags,			R2FLAG_BUMP_AF);
+	CMD3(CCC_Mask,		"r2_spot_unmask",		&ps_r2_ls_flags,			R2FLAG_SPOT_UNMASK);
+	CMD4(CCC_Vector3,	"r2_ls_hemi",			&ps_r2_ls_hemi,				tw_min, tw_max	);
 }
 #endif

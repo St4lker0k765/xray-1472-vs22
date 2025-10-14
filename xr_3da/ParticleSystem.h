@@ -22,6 +22,10 @@ DEFINE_VECTOR	(SParticle,Particles,ParticleIt);
 
 #define PARTICLESYSTEM_VERSION		0x0011
 
+#ifdef _EDITOR
+class PropItemVec;
+#endif
+
 #pragma pack( push,1 )
 struct ENGINE_API SEmitterDef
 {
@@ -165,7 +169,7 @@ struct ENGINE_API SDef: public SParams
 
         m_Animation.InitDefault();
 
-        m_Flags.assign      (PS_RND_INIT_ANGLE);
+        m_Flags.assign		(PS_RND_INIT_ANGLE);
 
         m_fLife		 		= 5.600000f;
         m_fLifeVar 			= 0.100000f;

@@ -28,13 +28,13 @@ void CRenderDevice::_Create	(LPCSTR shName)
 			CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MINFILTER,	D3DTEXF_LINEAR 		));
 			CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MAGFILTER,	D3DTEXF_LINEAR 		));
 			CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MIPFILTER,	D3DTEXF_LINEAR		));
+			CHK_DX(HW.pDevice->SetSamplerState	( i, D3DSAMP_MAXANISOTROPY, 4				));
 		}
 		float fBias = -1.f;
 		CHK_DX(HW.pDevice->SetSamplerState		( i, D3DSAMP_MIPMAPLODBIAS, *((LPDWORD) (&fBias))));
 	}
 	CHK_DX(HW.pDevice->SetRenderState( D3DRS_DITHERENABLE,		TRUE				));
 	CHK_DX(HW.pDevice->SetRenderState( D3DRS_COLORVERTEX,		TRUE				));
-	CHK_DX(HW.pDevice->SetRenderState( D3DRS_STENCILENABLE,		FALSE				));
 	CHK_DX(HW.pDevice->SetRenderState( D3DRS_ZENABLE,			TRUE				));
 	CHK_DX(HW.pDevice->SetRenderState( D3DRS_SHADEMODE,			D3DSHADE_GOURAUD	));
 	CHK_DX(HW.pDevice->SetRenderState( D3DRS_CULLMODE,			D3DCULL_CCW			));

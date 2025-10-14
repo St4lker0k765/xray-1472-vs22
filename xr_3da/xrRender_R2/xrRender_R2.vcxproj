@@ -130,13 +130,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="blender_bloom_build.h" />
     <ClInclude Include="blender_combine.h" />
+    <ClInclude Include="blender_decompress.h" />
+    <ClInclude Include="blender_deffer_aref.h" />
     <ClInclude Include="blender_deffer_flat.h" />
+    <ClInclude Include="blender_deffer_model.h" />
     <ClInclude Include="Blender_detail_still.h" />
     <ClInclude Include="blender_light_direct.h" />
+    <ClInclude Include="blender_light_mask.h" />
+    <ClInclude Include="blender_light_point.h" />
+    <ClInclude Include="blender_light_point_uns.h" />
+    <ClInclude Include="blender_light_spot.h" />
     <ClInclude Include="Blender_Screen_SET.h" />
     <ClInclude Include="Blender_tree.h" />
     <ClInclude Include="cl_intersect.h" />
+    <ClInclude Include="common_binders.h" />
     <ClInclude Include="DetailFormat.h" />
     <ClInclude Include="DetailManager.h" />
     <ClInclude Include="DetailModel.h" />
@@ -160,10 +169,18 @@
     <ClInclude Include="xrStripify.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="blender_bloom_build.cpp" />
     <ClCompile Include="blender_combine.cpp" />
+    <ClCompile Include="blender_decompress.cpp" />
+    <ClCompile Include="blender_deffer_aref.cpp" />
     <ClCompile Include="blender_deffer_flat.cpp" />
+    <ClCompile Include="blender_deffer_model.cpp" />
     <ClCompile Include="Blender_detail_still.cpp" />
     <ClCompile Include="blender_light_direct.cpp" />
+    <ClCompile Include="blender_light_mask.cpp" />
+    <ClCompile Include="blender_light_point.cpp" />
+    <ClCompile Include="blender_light_point_uns.cpp" />
+    <ClCompile Include="blender_light_spot.cpp" />
     <ClCompile Include="Blender_Screen_SET.cpp" />
     <ClCompile Include="Blender_tree.cpp" />
     <ClCompile Include="DetailManager.cpp" />
@@ -178,6 +195,8 @@
     <ClCompile Include="Light_DB.cpp" />
     <ClCompile Include="Light_Render_Direct.cpp" />
     <ClCompile Include="Light_Render_Direct_ComputeXF1.cpp" />
+    <ClCompile Include="Light_Render_Direct_ComputeXFP.cpp" />
+    <ClCompile Include="Light_Render_Direct_ComputeXFS.cpp" />
     <ClCompile Include="ModelPool.cpp" />
     <ClCompile Include="NvTriStrip.cpp" />
     <ClCompile Include="NvTriStripObjects.cpp" />
@@ -189,10 +208,19 @@
     <ClCompile Include="r2_loader.cpp" />
     <ClCompile Include="r2_rendertarget.cpp" />
     <ClCompile Include="r2_rendertarget_accum_direct.cpp" />
+    <ClCompile Include="r2_rendertarget_accum_point.cpp" />
+    <ClCompile Include="r2_rendertarget_accum_point_geom.cpp" />
+    <ClCompile Include="r2_rendertarget_accum_spot.cpp" />
+    <ClCompile Include="r2_rendertarget_accum_spot_geom.cpp" />
+    <ClCompile Include="r2_rendertarget_decompress.cpp" />
     <ClCompile Include="r2_rendertarget_phase_accumulator.cpp" />
+    <ClCompile Include="r2_rendertarget_phase_accumulator_init.cpp" />
+    <ClCompile Include="r2_rendertarget_phase_bloom.cpp" />
     <ClCompile Include="r2_rendertarget_phase_combine.cpp" />
     <ClCompile Include="r2_rendertarget_phase_scene.cpp" />
     <ClCompile Include="r2_rendertarget_phase_smap_D.cpp" />
+    <ClCompile Include="r2_rendertarget_phase_smap_P.cpp" />
+    <ClCompile Include="r2_rendertarget_phase_smap_S.cpp" />
     <ClCompile Include="r2_R_calculate.cpp" />
     <ClCompile Include="r2_R_hud.cpp" />
     <ClCompile Include="r2_R_render.cpp" />

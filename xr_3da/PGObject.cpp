@@ -29,7 +29,7 @@ CPGObject::CPGObject(LPCSTR ps_name, IRender_Sector* S, BOOL bAutoRemove)
 
 	// sheduled
 	shedule_Min			= 20;
-	shedule_Max			= 100;
+	shedule_Max			= 50;
 }
 
 //----------------------------------------------------
@@ -81,11 +81,17 @@ void CPGObject::Update(u32 dt)
 	V->OnFrame			(dt);
 }
 
-void CPGObject::UpdateParent(const Fmatrix& m, const Fvector* vel)
+static const Fvector zero_vel	= {0.f,0.f,0.f};
+void CPGObject::SetTransform(const Fmatrix& m)
 {
 	PS::CParticleGroup* V	= dynamic_cast<PS::CParticleGroup*>(m_pVisual);	R_ASSERT(V);
-	Fvector zero_vel	= {0.f,0.f,0.f};
-	V->UpdateParent		(m,vel?*vel:zero_vel);
+	V->UpdateParent		(m,zero_vel);
+}
+
+void CPGObject::UpdateParent(const Fmatrix& m, const Fvector& vel)
+{
+	PS::CParticleGroup* V	= dynamic_cast<PS::CParticleGroup*>(m_pVisual);	R_ASSERT(V);
+	V->UpdateParent		(m,vel);
 }
 
 Fvector& CPGObject::Position()

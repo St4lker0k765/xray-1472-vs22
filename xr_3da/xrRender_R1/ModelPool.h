@@ -15,7 +15,7 @@ class CModelPool
 private:
 	friend class CRender;
 
-	struct str_pred : public binary_function<char*, char*, bool> 
+	struct str_pred : public std::binary_function<char*, char*, bool> 
 	{	
 		IC bool operator()(LPCSTR x, LPCSTR y) const
 		{	return strcmp(x,y)<0;	}
@@ -26,9 +26,9 @@ private:
 		IVisual*		model;
 	};
 
-	typedef multimap<LPCSTR,IVisual*,str_pred>		POOL;
+	typedef std::multimap<LPCSTR,IVisual*,str_pred>		POOL;
 	typedef POOL::iterator							POOL_IT;
-	typedef map<IVisual*,LPCSTR>					REGISTRY;
+	typedef xr_map<IVisual*,LPCSTR>					REGISTRY;
 	typedef REGISTRY::iterator						REGISTRY_IT;
 private:
 	xr_vector<ModelDef>	Models;				// Reference / Base

@@ -86,6 +86,7 @@ BOOL	R_constant_table::parse	(D3DXSHADER_CONSTANTTABLE* desc, u16 destination)
 				switch (T->Type)
 				{
 				case D3DXPT_SAMPLER:
+				case D3DXPT_SAMPLER1D:
 				case D3DXPT_SAMPLER2D:
 				case D3DXPT_SAMPLER3D:
 				case D3DXPT_SAMPLERCUBE:
@@ -177,4 +178,13 @@ void R_constant_table::merge(R_constant_table* T)
 
 	// Sort
 	std::sort		(table.begin(),table.end(),p_sort);
+}
+
+void R_constant_table::clear	()
+{
+	/*
+	for (u32 it=0; it<table.size(); it++)
+		g_constant_allocator.destroy(table[it]);
+	*/
+	table.clear();
 }

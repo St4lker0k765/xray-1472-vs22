@@ -22,16 +22,16 @@ CBlender_Tree::~CBlender_Tree()
 
 }
 
-void	CBlender_Tree::Save		(IWriter& FS )
+void	CBlender_Tree::Save		(IWriter& FS_ )
 {
-	CBlender::Save		(FS);
-	xrPWRITE_PROP		(FS,"Alpha-blend",	xrPID_BOOL,		oBlend);
+	CBlender::Save		(FS_);
+	xrPWRITE_PROP		(FS_,"Alpha-blend",	xrPID_BOOL,		oBlend);
 }
 
-void	CBlender_Tree::Load		(IReader& FS, WORD version )
+void	CBlender_Tree::Load		(IReader& FS_, WORD version )
 {
-	CBlender::Load		(FS,version);
-	xrPREAD_PROP		(FS,xrPID_BOOL,		oBlend);
+	CBlender::Load		(FS_,version);
+	xrPREAD_PROP		(FS_,xrPID_BOOL,		oBlend);
 }
 
 #if RENDER==R_R1

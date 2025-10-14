@@ -3,6 +3,8 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#pragma hdrstop
+
 #include "HW.h"
 
 ENGINE_API CHW HW;
@@ -54,7 +56,6 @@ D3DFORMAT CHW::selectDepthStencil	(D3DFORMAT fTarget)
 
 void	CHW::DestroyDevice	()
 {
-	_RELEASE				(pTempZB);
 	_RELEASE				(pBaseZB);
 	_RELEASE				(pBaseRT);
 	_RELEASE				(dwDebugSB);
@@ -80,6 +81,7 @@ u32 CHW::CreateDevice		(HWND m_hWnd,u32 &dwWidth,u32 &dwHeight)
 	// Select width/height
 	dwWidth	= psCurrentMode;
 	switch (dwWidth) {
+	case 320:	dwHeight = 240;		break;
 	case 512:	dwHeight = 384;		break;
 	case 640:	dwHeight = 480;		break;
 	case 800:	dwHeight = 600;		break;
@@ -156,7 +158,7 @@ u32 CHW::CreateDevice		(HWND m_hWnd,u32 &dwWidth,u32 &dwHeight)
 	P.MultiSampleQuality	= 0;
 
 	// Windoze
-    P.SwapEffect			= D3DSWAPEFFECT_DISCARD;
+    P.SwapEffect			= bWindowed?D3DSWAPEFFECT_COPY:D3DSWAPEFFECT_DISCARD;
 	P.hDeviceWindow			= m_hWnd;
     P.Windowed				= bWindowed;
 
@@ -196,11 +198,9 @@ u32 CHW::CreateDevice		(HWND m_hWnd,u32 &dwWidth,u32 &dwHeight)
 	}
 
 	// Capture misc data
-#pragma todo("R2 doesn't need pTempZB")
 	R_CHK	(pDevice->CreateStateBlock			(D3DSBT_ALL,&dwDebugSB));
 	R_CHK	(pDevice->GetRenderTarget			(0,&pBaseRT));
 	R_CHK	(pDevice->GetDepthStencilSurface	(&pBaseZB));
-	R_CHK	(pDevice->CreateDepthStencilSurface	(512,512,fDepth,D3DMULTISAMPLE_NONE,0,TRUE,&pTempZB,NULL));
 	u32	memory									= pDevice->GetAvailableTextureMem	();
 	Msg		("*     Texture memory: %d M",		memory/(1024*1024));
 	Msg		("*          DDI-level: %2.1f",		float(D3DXGetDriverLevel(pDevice))/100.f);

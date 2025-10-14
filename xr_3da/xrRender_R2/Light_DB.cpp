@@ -44,9 +44,12 @@ void CLight_DB::Load			(IReader *fs)
 		{
 			Flight		Ldata;
 			light*		L				= xr_new<light>		();
+			L->flags.type				= IRender_Light::POINT;
 			L->flags.bStatic			= true;
-			L->flags.bShadow			= true;
+			L->flags.bShadow			= false;
 			L->flags.bActive			= true;
+			L->direction.set			(-.5f,-1,0);L->direction.normalize	();
+			L->cone						= deg2rad	(75.f);
 			F->r						(&L->controller,4);
 			F->r						(&Ldata,sizeof(Flight));
 			if (Ldata.type==D3DLIGHT_DIRECTIONAL)
@@ -57,8 +60,17 @@ void CLight_DB::Load			(IReader *fs)
 				sun_dir.set			(Ldata.direction);
 				sun_dir.y			+= -1.f;
 				sun_dir.normalize	();
-				sun_color.set		(Ldata.diffuse.r,Ldata.diffuse.g,Ldata.diffuse.b,1.f);
-			}
+				sun_color.set		(Ldata.diffuse.r,Ldata.diffuse.g,Ldata.diffuse.b);
+				/*
+				sun_tm_next			=	0;
+				sun_dir_base		=	sun_dir;
+				sun_dir_0			=	sun_dir;
+				sun_dir_1			=	sun_dir;
+
+				sun_color_base		=	sun_color;
+				sun_color_0			=	sun_color;
+				sun_color_1			=	sun_color;
+				*/			}
 			else
 			{
 				// point
@@ -105,10 +117,10 @@ void			CLight_DB::Destroy	(light* L)
 	}
 
 	// 
-	it = v_dynamic_active.find	(L);
-	if (it!=v_dynamic_active.end())	
+	it = v_dynamic_inactive.find	(L);
+	if (it!=v_dynamic_inactive.end())	
 	{
-		v_dynamic_active.erase(it);
+		v_dynamic_inactive.erase(it);
 		xr_delete	(L);
 		return;
 	}
@@ -143,11 +155,49 @@ void			CLight_DB::add_sector_lights(xr_vector<WORD> &L)
 		light*  T	= v_static[ID];
 		if ((0==T) || (T->dwFrame==Device.dwFrame)) continue;
 		
-		if (RImplementation.View->testSphere_dirty	(T->sphere.P, T->sphere.R))
+		if (RImplementation.View->testSphere_dirty	(T->position, T->range))
 		{
 			T->dwFrame				=Device.dwFrame;
 			if (T->flags.bShadow)	v_selected_shadowed.push_back	(T);
 			else					v_selected_unshadowed.push_back	(T);
+		}
+	}
+}
+void			CLight_DB::add_sector_dlight(light* L)
+{
+	if (Device.dwFrame==L->dwFrame)	return;
+	L->dwFrame	=	Device.dwFrame;
+
+	if (L->flags.bShadow)	
+	{
+		//$$$ nv3x codepath doesn't implement shadowed point lights
+		if (RImplementation.b_nv3x && (IRender_Light::POINT==L->flags.type))
+			v_selected_unshadowed.push_back	(L);
+		else
+			v_selected_shadowed.push_back	(L);
+	}
+	else	v_selected_unshadowed.push_back	(L);
+}
+void			CLight_DB::Update()
+{
+	// Clear selection
+	v_selected_shadowed.clear	();
+	v_selected_unshadowed.clear	();
+
+	// move point/spot lights
+	if (0)
+	{
+		static float t		=	0;
+		t					+=	.01f;
+		for (u32 l=0; l<v_static.size(); l++)
+		{
+			light*  T	= v_static[l];
+			if (0==T)	continue;
+
+			Fvector move;
+			move.set		(_sin(t),_sin(t),_sin(t));
+			move.mul		(.005f);
+			T->position.add	(move);
 		}
 	}
 }

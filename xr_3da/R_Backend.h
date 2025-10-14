@@ -34,6 +34,14 @@ private:
 	IDirect3DStateBlock9*			state;
 	IDirect3DPixelShader9*			ps;
 	IDirect3DVertexShader9*			vs;
+	u32								stencil_enable;
+	u32								stencil_func;
+	u32								stencil_ref;
+	u32								stencil_mask;
+	u32								stencil_writemask;
+	u32								stencil_fail;
+	u32								stencil_pass;
+	u32								stencil_zfail;
 
 	// Lists
 	STextureList*					T;
@@ -116,6 +124,7 @@ public:
 	IC	void						set_Vertices		(IDirect3DVertexBuffer9* _vb, u32 _vb_stride);
 	IC	void						set_Indices			(IDirect3DIndexBuffer9* _ib);
 	IC  void						set_Geometry		(SGeometry* _geom);
+	IC  void						set_Stencil			(BOOL _enable, u32 _func=D3DCMP_ALWAYS, u32 _ref=0x00, u32 _mask=0x00, u32 _writemask=0x00, u32 _fail=D3DSTENCILOP_KEEP, u32 _pass=D3DSTENCILOP_KEEP, u32 _zfail=D3DSTENCILOP_KEEP);
 
 	// constants
 	IC	R_constant*					get_c				(LPCSTR n)															{ if (ctable)	return ctable->get(n);else return 0;}
@@ -144,14 +153,14 @@ public:
 	void							OnDeviceDestroy		();
 
 	// Debug render
-	IC void dbg_Draw				(D3DPRIMITIVETYPE T, FVF::L* pVerts, int vcnt, WORD* pIdx, int pcnt);
-	IC void dbg_Draw				(D3DPRIMITIVETYPE T, FVF::L* pVerts, int pcnt);
+	void dbg_Draw					(D3DPRIMITIVETYPE T, FVF::L* pVerts, int vcnt, WORD* pIdx, int pcnt);
+	void dbg_Draw					(D3DPRIMITIVETYPE T, FVF::L* pVerts, int pcnt);
 	IC void dbg_DrawAABB			(Fvector& T, float sx, float sy, float sz, u32 C)						{	Fvector half_dim;	half_dim.set(sx,sy,sz); Fmatrix	TM;	TM.translate(T); dbg_DrawOBB(TM,half_dim,C);	}
-	IC void dbg_DrawOBB				(Fmatrix& T, Fvector& half_dim, u32 C);
+	void dbg_DrawOBB				(Fmatrix& T, Fvector& half_dim, u32 C);
 	IC void dbg_DrawTRI				(Fmatrix& T, Fvector* p, u32 C)											{	dbg_DrawTRI(T,p[0],p[1],p[2],C);	}
-	IC void dbg_DrawTRI				(Fmatrix& T, Fvector& p1, Fvector& p2, Fvector& p3, u32 C);
-	IC void dbg_DrawLINE			(Fmatrix& T, Fvector& p1, Fvector& p2, u32 C);
-	IC void dbg_DrawEllipse			(Fmatrix& T, u32 C);
+	void dbg_DrawTRI				(Fmatrix& T, Fvector& p1, Fvector& p2, Fvector& p3, u32 C);
+	void dbg_DrawLINE				(Fmatrix& T, Fvector& p1, Fvector& p2, u32 C);
+	void dbg_DrawEllipse			(Fmatrix& T, u32 C);
 
 	CBackend()						{	Invalidate(); };
 };

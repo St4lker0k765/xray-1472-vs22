@@ -28,8 +28,8 @@ CFastSpriteRail::CFastSpriteRail(Fvector &vStart, Fvector &vEnd) : CFastSprite("
 		FSprite S;
 		float d = float(i)/float(NUM_SPRITES);
 		float r = (1-d)*RAIL_CIRCLE_SIZE;
-		S.pos.x = r*cosf(angle);
-		S.pos.y = r*sinf(angle);
+		S.pos.x = r*_cos(angle);
+		S.pos.y = r*_sin(angle);
 		S.pos.z = d;
 		S.alpha = 1.0f;
 		S.angle = angle; //rnd()*PI_MUL_2;

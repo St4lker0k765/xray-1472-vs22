@@ -174,9 +174,6 @@
     <ClInclude Include="Stats.h">
       <Filter>Interfaces\Execution &amp; 3D</Filter>
     </ClInclude>
-    <ClInclude Include="Stats_Timer.h">
-      <Filter>Interfaces\Execution &amp; 3D</Filter>
-    </ClInclude>
     <ClInclude Include="device.h">
       <Filter>Interfaces\Execution &amp; 3D</Filter>
     </ClInclude>
@@ -266,9 +263,6 @@
     </ClInclude>
     <ClInclude Include="xr_input.h">
       <Filter>Interfaces\Input</Filter>
-    </ClInclude>
-    <ClInclude Include="FTimer.h">
-      <Filter>Engine</Filter>
     </ClInclude>
     <ClInclude Include="Properties.h">
       <Filter>Engine</Filter>
@@ -510,6 +504,12 @@
     <ClInclude Include="GameFont.h">
       <Filter>Render\Font output</Filter>
     </ClInclude>
+    <ClInclude Include="EffectorPP.h">
+      <Filter>Game API\Cameras</Filter>
+    </ClInclude>
+    <ClInclude Include="LightAnimLibrary.h">
+      <Filter>Render\Lighting</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="defines.cpp">
@@ -543,9 +543,6 @@
       <Filter>Interfaces\Execution &amp; 3D</Filter>
     </ClCompile>
     <ClCompile Include="Stats.cpp">
-      <Filter>Interfaces\Execution &amp; 3D</Filter>
-    </ClCompile>
-    <ClCompile Include="Stats_Timer.cpp">
       <Filter>Interfaces\Execution &amp; 3D</Filter>
     </ClCompile>
     <ClCompile Include="device.cpp">
@@ -853,6 +850,12 @@
     </ClCompile>
     <ClCompile Include="GameFont.cpp">
       <Filter>Render\Font output</Filter>
+    </ClCompile>
+    <ClCompile Include="EffectorPP.cpp">
+      <Filter>Game API\Cameras</Filter>
+    </ClCompile>
+    <ClCompile Include="LightAnimLibrary.cpp">
+      <Filter>Render\Lighting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

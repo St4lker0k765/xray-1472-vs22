@@ -51,6 +51,7 @@ void CObject::setEnabled		(BOOL _enabled)
 void	CObject::svCenter			(Fvector& C)	const	{ VERIFY(pVisual); svTransform.transform_tiny(C,pVisual->vis.sphere.P);	}
 void	CObject::clCenter			(Fvector& C)	const	{ VERIFY(pVisual); clTransform.transform_tiny(C,pVisual->vis.sphere.P);	}
 float	CObject::Radius				()				const	{ VERIFY(pVisual); return pVisual->vis.sphere.R;						}
+const Fbox&	CObject::BoundingBox	()				const	{ VERIFY(pVisual); return pVisual->vis.box;								}
 
 //----------------------------------------------------------------------
 // Class	: CXR_Object
@@ -130,15 +131,18 @@ BOOL CObject::net_Spawn			(LPVOID data)
 	if (0==cfModel) 
 	{
 		if (pSettings->line_exist(cNameSect(),"cform")) {
-			LPCSTR cf				= pSettings->r_string(cNameSect(), "cform");
+			LPCSTR cf			= pSettings->r_string(cNameSect(), "cform");
 
-			if (strcmp(cf,"skeleton")==0) cfModel	= xr_new<CCF_Skeleton> (this);
+			if (strcmp(cf,"skeleton")==0) cfModel	= xr_new<CCF_Skeleton>	(this);
 			else {
-				cfModel					= xr_new<CCF_Polygonal> (this);
-				((CCF_Polygonal*)(cfModel))->LoadModel(pSettings, cNameSect());
+				if (strcmp(cf,"rigid")==0)cfModel	= xr_new<CCF_Rigid>		(this);
+				else{
+					cfModel							= xr_new<CCF_Polygonal> (this);
+					((CCF_Polygonal*)(cfModel))->LoadModel(pSettings, cNameSect());
+				}
 			}
 			pCreator->ObjectSpace.Object_Register	(this);
-			cfModel->OnMove();
+			cfModel->OnMove		();
 		}
 	}
 

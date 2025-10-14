@@ -3,31 +3,24 @@
 void	CRenderTarget::phase_accumulator()
 {
 	// Targets
-	dwWidth								= Device.dwWidth;
-	dwHeight							= Device.dwHeight;
-	RCache.set_RT						(rt_Accumulator->pRT,	0);
-	RCache.set_RT						(NULL,					1);
-	RCache.set_RT						(NULL,					2);
-	RCache.set_ZB						(HW.pBaseZB);
-	RImplementation.rmNormal			();
-
-	// Clear	- only once per frame
-	if (dwAccumulatorClearMark!=Device.dwFrame)
-	{
-		dwAccumulatorClearMark				= Device.dwFrame;
-		CHK_DX(HW.pDevice->Clear			( 0L, NULL, D3DCLEAR_TARGET, 0x00, 1.0f, 0L));
-	}
+	u_setrt								(rt_Accumulator,NULL,NULL,HW.pBaseZB);
 
 	// Stencil	- draw only where stencil >= 0x1
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILENABLE,		TRUE				));
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILFUNC,		D3DCMP_LESSEQUAL	));
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILREF,			0x01				));
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILMASK,		0xff				));
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILWRITEMASK,	0x00				));
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILFAIL,		D3DSTENCILOP_KEEP	));
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILPASS,		D3DSTENCILOP_KEEP	));
-	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_STENCILZFAIL,		D3DSTENCILOP_KEEP	));
+	RCache.set_Stencil					(TRUE,D3DCMP_LESSEQUAL,0x01,0xff,0x00);
 
 	// Misc		- draw everything (no culling)
 	CHK_DX(HW.pDevice->SetRenderState	( D3DRS_CULLMODE,			D3DCULL_NONE		)); 	
+
+	// Clear and mask	- only once per frame
+	// Assuming next usage will be for directional light - apply mask 
+	if (dwAccumulatorClearMark==Device.dwFrame)	return;
+	dwAccumulatorClearMark				= Device.dwFrame;
+	phase_accumulator_init				();
+
+	// Restore targets
+	u_setrt								(rt_Accumulator,NULL,NULL,HW.pBaseZB);
+
+	// Stencil	- draw only where stencil >= 0x1
+	RCache.set_Stencil					(TRUE,D3DCMP_LESSEQUAL,0x01,0xff,0x00);
+	CHK_DX								(HW.pDevice->SetRenderState	( D3DRS_COLORWRITEENABLE,	D3DCOLORWRITEENABLE_RED | D3DCOLORWRITEENABLE_GREEN | D3DCOLORWRITEENABLE_BLUE | D3DCOLORWRITEENABLE_ALPHA ));
 }

@@ -36,7 +36,23 @@ extern float		ps_r2_ssaLOD_B;
 extern float		ps_r2_ssaHZBvsTEX;
 
 // R2-specific
-extern float		ps_r2_ls_dynamic_range;	// r2-only
+extern float		ps_r2_ls_dynamic_range;		// r2-only
+extern float		ps_r2_ls_bloom_kernel;		// r2-only
+extern float		ps_r2_ls_bloom_threshold;	// r2-only
+extern float		ps_r2_ls_dsm_kernel;		// r2-only
+extern float		ps_r2_ls_psm_kernel;		// r2-only
+extern float		ps_r2_ls_ssm_kernel;		// r2-only
+extern float		ps_r2_ls_spower;			// r2-only
+extern Flags32		ps_r2_ls_flags;				// r2-only
+extern Fvector		ps_r2_ls_hemi;				// r2-only
+
+enum
+{
+	R2FLAG_SUN			= (1<<0),
+	R2FLAG_SKY			= (1<<1),
+	R2FLAG_BUMP_AF		= (1<<2),
+	R2FLAG_SPOT_UNMASK	= (1<<3)
+};
 
 extern void			xrRender_initconsole	();
 #endif

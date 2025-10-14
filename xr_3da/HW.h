@@ -15,7 +15,6 @@ public:
 
 	IDirect3DSurface9*		pBaseRT;
 	IDirect3DSurface9*		pBaseZB;
-	IDirect3DSurface9*		pTempZB;
 
 	CHWCaps					Caps;
 
@@ -27,7 +26,6 @@ public:
 		pDevice		= NULL;
 		pBaseRT		= NULL;
 		pBaseZB		= NULL;
-		pTempZB		= NULL;
 	};
 
 	void					CreateD3D				();

@@ -26,7 +26,6 @@ xr_token							snd_model_token							[ ]={
 	{ 0,							0											}
 };
 xr_token							vid_mode_token							[ ]={
-	{ "160x120",					160											},
 	{ "320x240",					320											},
 	{ "512x384",					512											},
 	{ "640x480",					640											},
@@ -364,7 +363,7 @@ void CCC_Register()
 	CMD3(CCC_Token,		"snd_model",			&psSoundModel,	snd_model_token		);
 	CMD1(CCC_SND_Restart,"snd_restart"			);
 	CMD3(CCC_Mask,		"snd_occlusion",		&psSoundFlags,	ssWaveTrace);
-	CMD4(CCC_Integer,	"snd_relaxtime",		&psSoundRelaxTime,1,10);
+	CMD4(CCC_Integer,	"snd_targets",			&psSoundTargets,4,24);
 	
 	// Mouse
 	CMD3(CCC_Mask,		"mouse_invert",			&psMouseInvert,1);

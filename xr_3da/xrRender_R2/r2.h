@@ -14,6 +14,8 @@
 #include "light_db.h"
 #include "light_render_direct.h"
 
+#include "common_binders.h"
+
 // definition
 class CRender	:	public IRender_interface
 {
@@ -22,9 +24,11 @@ public:
 	{
 		PHASE_NORMAL	= 0,	// E[0]
 		PHASE_SMAP_D	= 1,	// E[1]
-		PHASE_SMAP_P	= 2		// E[2]
+		PHASE_SMAP_P	= 2,	// E[2]
+		PHASE_SMAP_S	= 3		// E[3]
 	};
 	u32														phase;
+	BOOL													b_nv3x;
 
 	// Dynamic scene graph
 	SceneGraph::mapNormal_T									mapNormal;
@@ -69,7 +73,8 @@ public:
 
 	CRenderTarget											Target;			// Render-target
 	CLight_DB												Lights;
-	CLight_Render_Direct									LR_Direct;
+	CLight_Render_Direct									LR;
+	cl_binders												Binders;
 private:
 	// Loading / Unloading
 	void							LoadBuffers				(IReader	*fs);
@@ -93,6 +98,7 @@ public:
 	void							render_scenegraph		();
 	void							render_hud				();
 	void							render_smap_direct		(Fmatrix& mCombined);
+	void							render_smap_sector		(CSector* S, Fmatrix& mCombined, Fvector& C);
 public:
 	// Loading / Unloading
 	virtual	void					level_Load				();
@@ -152,7 +158,7 @@ public:
 	virtual void					Calculate				();
 	virtual void					Render					();
 	virtual void					RenderBox				(IRender_Sector* S, Fbox& BB, int sh);
-	virtual void					Screenshot				(BOOL bSquare=FALSE);
+	virtual void					Screenshot				(LPCSTR postfix, BOOL bSquare=FALSE);
 
 	// Render mode
 	virtual void					rmNear					();
@@ -169,3 +175,8 @@ public:
 };
 
 extern CRender						RImplementation;
+
+// shader name prefixed with codepath
+// MT unsafe
+extern LPCSTR						r2p(LPCSTR name);
+extern LPCSTR						r2v(LPCSTR name);

@@ -70,14 +70,26 @@ CBlend*	CMotionDef::PlayCycle(CKinematics* P, BOOL bMixIn, PlayCallback Callback
 		);
 }
 
-CBlend*	CMotionDef::PlayFX(CKinematics* P)
+CBlend*	CMotionDef::PlayCycle(CKinematics* P, int part, BOOL bMixIn, PlayCallback Callback, LPVOID Callback_Param)
+{
+	return P->LL_PlayCycle(
+		part,int(motion),bMixIn,
+		fAA*Dequantize(accrue),
+		fAA*Dequantize(falloff),
+		Dequantize(speed),
+		flags&esmStopAtEnd,
+		Callback,Callback_Param
+		);
+}
+
+CBlend*	CMotionDef::PlayFX(CKinematics* P, float power_scale)
 {
 	return P->LL_PlayFX(
 		int(bone_or_part),int(motion),
 		fAA*Dequantize(accrue),
 		fAA*Dequantize(falloff),
 		Dequantize(speed),
-		Dequantize(power) 
+		Dequantize(power)*power_scale
 		);
 }
 
@@ -162,16 +174,17 @@ CMotionDef*	CKinematics::ID_FX_Safe		(LPCSTR  N)
 	if(I==m_fx->end()) return 0;
 	return &I->second;
 }
-CBlend*	CKinematics::PlayFX			(LPCSTR  N)
+CBlend*	CKinematics::PlayFX			(LPCSTR  N, float power_scale)
 {
 	mdef::iterator I = m_fx->find(LPSTR(N));
-	if (I!=m_fx->end())		return I->second.PlayFX(this);
+	if (I!=m_fx->end())		return I->second.PlayFX(this,power_scale);
 	else					{ Debug.fatal("! MODEL: can't find FX: %s", N); return 0; }
 }
 
 CBlend*	CKinematics::LL_PlayFX(int bone, int motion, float blendAccrue, float blendFalloff, float Speed, float Power)
 {
 	if (motion<0)	return 0;
+//.	if (blend_fx.size()>=MAX_BLENDED) return 0;
 	if (bone<0)		bone = iRoot;
 	
 	CBlend*	B		= IBlend_Create();
@@ -190,7 +203,7 @@ CBlend*	CKinematics::LL_PlayFX(int bone, int motion, float blendAccrue, float bl
 	B->bone_or_part	= bone;
 	
 	B->playing		= TRUE;
-	B->noloop		= FALSE;
+	B->stop_at_end	= FALSE;
 	
 	blend_fx.push_back(B);
 	return			B;
@@ -205,11 +218,13 @@ void	CKinematics::LL_FadeCycle(int part, float falloff)
 		CBlend& B		= *Blend[I];
 		B.blend			= CBlend::eFalloff;
 		B.blendFalloff	= falloff;
-		if (!B.playing)	{
-			B.playing	= TRUE;
-			B.noloop	= FALSE;
-			B.blendAmount=EPS_S;
+//		if (!B.playing)	{
+		if (!B.playing&&!B.stop_at_end){ //.
+			B.playing		= TRUE;
+			B.stop_at_end	= FALSE;
+			B.blendAmount	= EPS_S;
 		}
+        if (B.stop_at_end)  B.playing = FALSE;  //.
 	}
 }
 
@@ -276,7 +291,7 @@ CBlend*	CKinematics::LL_PlayCycle(int part, int motion, BOOL  bMixing,	float ble
 	B->timeTotal	= Bone->Motions[motion].GetLength();
 	B->bone_or_part	= part;
 	B->playing		= TRUE;
-	B->noloop		= noloop;
+	B->stop_at_end	= noloop;
 	B->Callback		= Callback;
 	B->CallbackParam= CallbackParam;
 	return			B;
@@ -301,24 +316,26 @@ void CKinematics::Update ()
 		for (; I!=E; I++)
 		{
 			CBlend& B = *(*I);
-			if (!B.playing)					continue;
+//			if (!B.playing) continue;
+			if (!B.playing&&!B.stop_at_end)	continue; //.
 			if (B.dwFrame==Device.dwFrame)	continue;
 			B.dwFrame		=	Device.dwFrame;
-			B.timeCurrent	+=	dt*B.speed;
+//			B.timeCurrent += dt*B.speed;
+			if (B.playing) 	B.timeCurrent += dt*B.speed; //.
 			switch (B.blend) 
 			{
 			case CBlend::eFREE_SLOT: 
 				NODEFAULT;
 			case CBlend::eFixed:	
-				B.blendAmount = B.blendPower; 
-				if (B.noloop && (B.timeCurrent > (B.timeTotal-SAMPLE_SPF) )) {
+				B.blendAmount 		= B.blendPower; 
+				if (B.stop_at_end && (B.timeCurrent > (B.timeTotal-SAMPLE_SPF) )) {
 					B.timeCurrent	= B.timeTotal-SAMPLE_SPF;
 					B.playing		= FALSE;
 					if (B.Callback)	B.Callback(&B);
 				}
 				break;
 			case CBlend::eAccrue:	
-				B.blendAmount += dt*B.blendAccrue*B.blendPower;
+				B.blendAmount 		+= dt*B.blendAccrue*B.blendPower;
 				if (B.blendAmount>=B.blendPower) {
 					// switch to fixed
 					B.blendAmount	= B.blendPower;
@@ -326,17 +343,17 @@ void CKinematics::Update ()
 				}
 				break;
 			case CBlend::eFalloff:
-				B.blendAmount -= dt*B.blendFalloff*B.blendPower;
+				B.blendAmount 		-= dt*B.blendFalloff*B.blendPower;
 				if (B.blendAmount<=0) {
 					// destroy cycle
-					B.blend = CBlend::eFREE_SLOT;
+					B.blend 		= CBlend::eFREE_SLOT;
 
-					CPartDef& P	= (*partition)[B.bone_or_part];
+					CPartDef& P		= (*partition)[B.bone_or_part];
 					for (int i=0; i<int(P.bones.size()); i++)
 						(*bones)[P.bones[i]]->Motion_Stop(this,*I);
 
 					blend_cycles[part].erase(I);
-					E=blend_cycles[part].end(); I--; 
+					E				= blend_cycles[part].end(); I--; 
 				}
 				break;
 			default: 
@@ -356,28 +373,30 @@ void CKinematics::Update ()
 		{
 		case CBlend::eFREE_SLOT: 
 			NODEFAULT;
-		case CBlend::eFixed: 
+		case CBlend::eFixed:
 			{
-				B.blendAmount = B.blendPower; 
+/*				B.blendAmount = B.blendPower; 
 				// calc time to falloff
 				float time2falloff = B.timeTotal - 1/(B.blendFalloff*B.speed);
 				if (B.timeCurrent >= time2falloff) {
 					// switch to falloff
 					B.blend		= CBlend::eFalloff;
 				}
+*/
+				B.blend		= CBlend::eFalloff;
 			}
 			break;
-		case CBlend::eAccrue:	
-			B.blendAmount += dt*B.blendAccrue*B.blendPower;
+		case CBlend::eAccrue:
+            B.blendAmount 	+= dt*B.blendAccrue*B.blendPower*B.speed;
 			if (B.blendAmount>=B.blendPower) {
 				// switch to fixed
 				B.blendAmount	= B.blendPower;
 				B.blend			= CBlend::eFixed;
 			}
 			break;
-		case CBlend::eFalloff:	
-			B.blendAmount -= dt*B.blendFalloff*B.blendPower;
-			if (B.timeCurrent>=B.timeTotal || B.blendAmount<=0) {
+		case CBlend::eFalloff:
+			B.blendAmount 	-= dt*B.blendFalloff*B.blendPower*B.speed;
+			if (B.blendAmount<=0) {
 				// destroy fx
 				B.blend = CBlend::eFREE_SLOT;
 				(*bones)[B.bone_or_part]->Motion_Stop(this,*I);
@@ -528,6 +547,30 @@ void CKinematics::Copy(IVisual *P)
 	}
 
 	Update_ID		= ::Random.randI(psSkeletonUpdate);
+}
+
+void CKinematics::Spawn	()
+{
+	inherited::Spawn		();
+
+	IBlend_Startup			();
+
+	for (u32 i=0; i<bones->size(); i++)
+		bone_instances[i].construct();
+}
+
+void CKinematics::IBlend_Startup	()
+{
+	CBlend B; ZeroMemory(&B,sizeof(B));
+	B.blend				= CBlend::eFREE_SLOT;
+	blend_pool.clear	();
+	for (int i=0; i<MAX_BLENDED_POOL; i++)
+		blend_pool.push_back(B);
+
+	// cycles+fx clear
+	for (int i=0; i<MAX_PARTS; i++)
+		blend_cycles[i].clear();
+	blend_fx.clear		();
 }
 
 void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
@@ -689,52 +732,45 @@ void CKinematics::Load(const char* N, IReader *data, u32 dwFlags)
             CInifile DEF(def_N);
             CInifile::SectIt I;
 
+            // partitions
             CInifile::Sect& S = DEF.r_section("partition");
             int pid = 0;
-			for (I = S.begin(); I != S.end(); ++I, ++pid)
-			{
-				if (pid >= MAX_PARTS)
-					Debug.fatal("Too many partitions in motion description '%s'", def_N);
-
-				CPartDef& PART = (*partition)[pid];
-
-				const char* sect_name = I->first.c_str();
-				LPSTR N = _strlwr(xr_strdup(sect_name));
-				PART.Name = N;
-
-				CInifile::Sect& P = DEF.r_section(sect_name);
-
-				for (CInifile::SectIt B = P.begin(); B != P.end(); ++B)
-				{
-					const char* bone_name = B->first.c_str();
-					int bone = LL_BoneID(bone_name);
-					if (bone < 0)
-						Debug.fatal("Partition '%s' has incorrect bone name ('%s')", N, bone_name);
-					PART.bones.push_back(bone);
-				}
-			}
+            for (I=S.begin(); I!=S.end(); I++,pid++)
+            {
+                if (pid>=MAX_PARTS)	Debug.fatal("Too many partitions in motion description '%s'",def_N);
+                CPartDef&	PART		= (*partition)[pid];
+                LPSTR	N				= _strlwr(xr_strdup(I->first.c_str()));
+                PART.Name				= N;
+                CInifile::Sect&		P	= DEF.r_section(N);
+                CInifile::SectIt	B	= P.begin();
+                for (; B!=P.end(); B++)
+                {
+                    int bone			= LL_BoneID(B->first.c_str());
+                    if (bone<0)			Debug.fatal("Partition '%s' has incorrect bone name ('%s')",N,B->first.c_str());
+                    PART.bones.push_back(bone);
+                }
+            }
 
             // cycles
             {
                 CInifile::Sect& S = DEF.r_section("cycle");
-				for (I = S.begin(); I != S.end(); ++I)
-				{
-					const char* sect = I->first.c_str();
-					CMotionDef D; D.Load(this, &DEF, sect, TRUE);
-					m_cycle->insert(std::make_pair(_strlwr(xr_strdup(I->first.c_str())), D));
-				}
-
+                for (I=S.begin(); I!=S.end(); I++)
+                {
+                    CMotionDef	D;
+                    D.Load(this,&DEF,I->first.c_str(), true);
+                    m_cycle->insert(std::make_pair(_strlwr(xr_strdup(I->first.c_str())),D));
+                }
             }
 
             // FXes
             {
                 CInifile::Sect& F = DEF.r_section("fx");
-				for (I = F.begin(); I != F.end(); ++I)
-				{
-					const char* sect = I->first.c_str();
-					CMotionDef D; D.Load(this, &DEF, sect, FALSE); // fx
-					m_fx->insert(std::make_pair(_strlwr(xr_strdup(I->first.c_str())), D));
-				}
+                for (I=F.begin(); I!=F.end(); I++)
+                {
+                    CMotionDef	D;
+                    D.Load(this,&DEF,I->first.c_str(), false);
+                    m_fx->insert(std::make_pair(_strlwr(xr_strdup(I->first.c_str())),D));
+                }
             }
         }
     }

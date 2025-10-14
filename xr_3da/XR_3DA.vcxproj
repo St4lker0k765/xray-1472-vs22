@@ -341,6 +341,7 @@
     <ClInclude Include="device.h" />
     <ClInclude Include="Effector.h" />
     <ClInclude Include="EffectorFall.h" />
+    <ClInclude Include="EffectorPP.h" />
     <ClInclude Include="Engine.h" />
     <ClInclude Include="EngineAPI.h" />
     <ClInclude Include="envelope.h" />
@@ -365,7 +366,6 @@
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="FShadowForm.h" />
     <ClInclude Include="FShotMarkVisual.h" />
-    <ClInclude Include="FTimer.h" />
     <ClInclude Include="FVF.h" />
     <ClInclude Include="FVisual.h" />
     <ClInclude Include="GameFont.h" />
@@ -373,6 +373,7 @@
     <ClInclude Include="HWCaps.h" />
     <ClInclude Include="Image.h" />
     <ClInclude Include="light.h" />
+    <ClInclude Include="LightAnimLibrary.h" />
     <ClInclude Include="motion.h" />
     <ClInclude Include="NET_Client.h" />
     <ClInclude Include="NET_Compressor.h" />
@@ -410,7 +411,6 @@
     <ClInclude Include="SkeletonX.h" />
     <ClInclude Include="Sound.h" />
     <ClInclude Include="Stats.h" />
-    <ClInclude Include="Stats_Timer.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="std_classes.h" />
     <ClInclude Include="tempobject.h" />
@@ -472,6 +472,7 @@
     <ClCompile Include="Device_wndproc.cpp" />
     <ClCompile Include="Effector.cpp" />
     <ClCompile Include="EffectorFall.cpp" />
+    <ClCompile Include="EffectorPP.cpp" />
     <ClCompile Include="Engine.cpp" />
     <ClCompile Include="EngineAPI.cpp" />
     <ClCompile Include="Envelope.cpp" />
@@ -530,6 +531,7 @@
     <ClCompile Include="HWCaps.cpp" />
     <ClCompile Include="Image.cpp" />
     <ClCompile Include="interp.cpp" />
+    <ClCompile Include="LightAnimLibrary.cpp" />
     <ClCompile Include="mailSlot.cpp" />
     <ClCompile Include="motion.cpp" />
     <ClCompile Include="NET_Client.cpp" />
@@ -572,7 +574,6 @@
       <AssemblerOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NoListing</AssemblerOutput>
     </ClCompile>
     <ClCompile Include="Stats.cpp" />
-    <ClCompile Include="Stats_Timer.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Mixed (for debug only)|Win32'">Create</PrecompiledHeader>

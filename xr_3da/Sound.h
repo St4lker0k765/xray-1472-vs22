@@ -38,7 +38,7 @@ XRSOUND_API extern float			psSoundDoppler			;
 XRSOUND_API extern float			psSoundOcclusionScale	;
 XRSOUND_API extern float			psSoundCull				;
 XRSOUND_API extern Flags32			psSoundFlags			;
-XRSOUND_API extern int				psSoundRelaxTime		;
+XRSOUND_API extern int				psSoundTargets			;
 
 // Flags
 enum {
@@ -203,6 +203,8 @@ public:
 	//@}
 
 	virtual void					update					( const Fvector& P, const Fvector& D, const Fvector& N, float dt )						= 0;
+	virtual u32						stat_render				( )																						= 0;
+	virtual u32						stat_simulate			( )																						= 0;
 
 #ifdef __BORLANDC__
 	virtual SoundEnvironment_LIB*	get_env_library			()																						= 0;

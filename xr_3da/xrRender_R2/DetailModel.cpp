@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "detailmodel.h"
+#include "xrstripify.h"
 
 CDetail::~CDetail()
 {
@@ -44,8 +45,6 @@ void CDetail::Load		(IReader* S)
 	Optimize	();
 }
 
-#include "xrstripify.h"
-
 void CDetail::Optimize	()
 {
 	xr_vector<u16>		vec_indices, vec_permute;
@@ -59,7 +58,7 @@ void CDetail::Optimize	()
 	int vt_new			= xrSimulate(vec_indices,cache);
 	if (vt_new<vt_old)	
 	{
-		Msg					("DM: %d verts, %d indices, VT: %d/%d",number_vertices,number_indices,vt_old,vt_new);
+		// Msg					("DM: %d verts, %d indices, VT: %d/%d",number_vertices,number_indices,vt_old,vt_new);
 
 		// Copy faces
 		Memory.mem_copy		(indices,&*vec_indices.begin(),vec_indices.size()*sizeof(WORD));

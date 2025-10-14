@@ -47,7 +47,7 @@ void		CShaderManager::_DeleteState	(IDirect3DStateBlock9*& state)
 	}
 
 	// Fail
-	Debug.fatal("Failed to find compiled shader or stateblock");
+	Msg	("! ERROR: Failed to find compiled shader or stateblock");
 }
 
 SPass*							CShaderManager::_CreatePass			(SPass& P)
@@ -143,7 +143,7 @@ SVS*	CShaderManager::_CreateVS		(LPCSTR name)
 		LPD3DXBUFFER				pErrorBuf	= NULL;
 		LPD3DXSHADER_CONSTANTTABLE	pConstants	= NULL;
 		HRESULT						_hr			= S_OK;
-		string64					cname;
+		string256					cname;
 		FS.update_path				(cname,	"$game_shaders$", strconcat(cname,name,".vs"));
 		LPCSTR						target		= NULL;
 
@@ -207,15 +207,28 @@ SPS*	CShaderManager::_CreatePS			(LPCSTR name)
 			return _ps;
 		}
 
+		// Open file
+		string256					cname;
+		FS.update_path				(cname,	"$game_shaders$", strconcat(cname,name,".ps"));
+		IReader*					fs			= FS.r_open(cname);
+
+		// Select target
+		LPCSTR						c_target	= "ps_2_0";
+		LPCSTR						c_entry		= "main";
+		LPSTR						text		= LPSTR(fs->pointer());
+		u32							text_size	= fs->length();
+		text[text_size-1]						= 0;
+		if (strstr(text,"main_ps_1_1"))			{ c_target = "ps_1_1"; c_entry = "main_ps_1_1";	}
+		if (strstr(text,"main_ps_1_2"))			{ c_target = "ps_1_2"; c_entry = "main_ps_1_2";	}
+		if (strstr(text,"main_ps_1_3"))			{ c_target = "ps_1_3"; c_entry = "main_ps_1_3";	}
+		if (strstr(text,"main_ps_1_4"))			{ c_target = "ps_1_4"; c_entry = "main_ps_1_4";	}
+
+		// Compile
 		LPD3DXBUFFER				pShaderBuf	= NULL;
 		LPD3DXBUFFER				pErrorBuf	= NULL;
 		LPD3DXSHADER_CONSTANTTABLE	pConstants	= NULL;
 		HRESULT						_hr			= S_OK;
-		string64					cname;
-		FS.update_path				(cname,	"$game_shaders$", strconcat(cname,name,".ps"));
-		// pixel
-		IReader*					fs			= FS.r_open(cname);
-		_hr = D3DXCompileShader		(LPCSTR(fs->pointer()),fs->length(), NULL, NULL, "main", "ps_2_0", D3DXSHADER_DEBUG | D3DXSHADER_PACKMATRIX_ROWMAJOR, &pShaderBuf, &pErrorBuf, NULL);
+		_hr = D3DXCompileShader		(text,text_size, NULL, NULL, c_entry, c_target, D3DXSHADER_DEBUG | D3DXSHADER_PACKMATRIX_ROWMAJOR | D3DXSHADER_USE_LEGACY_D3DX9_31_DLL, &pShaderBuf, &pErrorBuf, NULL);
 		FS.r_close					(fs);
 		if (SUCCEEDED(_hr))
 		{
@@ -290,6 +303,35 @@ LPCSTR	CShaderManager::DBG_GetRTName	(CRT* T)
 	for (map_RT::iterator I=m_rtargets.begin(); I!=m_rtargets.end(); I++)
 		if (I->second == T)	return I->first;
 		return 0;
+}
+//--------------------------------------------------------------------------------------------------------------
+CRTC*	CShaderManager::_CreateRTC		(LPCSTR Name, u32 size,	D3DFORMAT f)
+{
+	R_ASSERT(Name && Name[0] && size);
+
+	// ***** first pass - search already created RTC
+	LPSTR N = LPSTR(Name);
+	map_RTC::iterator I = m_rtargets_c.find	(N);
+	if (I!=m_rtargets_c.end())
+	{
+		CRTC *RT			=	I->second;
+		RT->dwReference		+=	1;
+		return		RT;
+	}
+	else
+	{
+		CRTC *RT			=	xr_new<CRTC>();
+		RT->dwReference		=	1;
+		m_rtargets_c.insert	(std::make_pair(xr_strdup(Name),RT));
+		if (Device.bReady)	RT->Create	(Name,size,f);
+		return				RT;
+	}
+}
+void	CShaderManager::_DeleteRTC		(CRTC* &RT)
+{
+	if	(0==RT)		return;
+	RT->dwReference	--;
+	RT				= 0;
 }
 //--------------------------------------------------------------------------------------------------------------
 void	CShaderManager::DBG_VerifyGeoms	()
@@ -437,7 +479,7 @@ CTexture* CShaderManager::_CreateTexture	(LPCSTR Name)
 }
 void	CShaderManager::_DeleteTexture		(CTexture* &T)
 {
-	R_ASSERT(T);
+	if (0==T)		return;
 	T->dwReference	--;
 	T=0;
 }
@@ -733,9 +775,14 @@ Shader*	CShaderManager::Create(LPCSTR s_shader, LPCSTR s_textures, LPCSTR s_cons
 	S.E[1]				= _CreateElement	(C);
 
 	// Compile element
-	C.iElement			= 0;
+	C.iElement			= 2;
 	C.bDetail			= FALSE;
 	S.E[2]				= _CreateElement	(C);
+
+	// Compile element
+	C.iElement			= 3;
+	C.bDetail			= FALSE;
+	S.E[3]				= _CreateElement	(C);
 
 	// Search equal in shaders array
 	for (u32 it=0; it<v_shaders.size(); it++)
@@ -783,9 +830,14 @@ Shader*	CShaderManager::Create_B	(CBlender* B, LPCSTR s_shader, LPCSTR s_texture
 	S.E[1]				= _CreateElement	(C);
 
 	// Compile element
-	C.iElement			= 0;
+	C.iElement			= 2;
 	C.bDetail			= FALSE;
 	S.E[2]				= _CreateElement	(C);
+
+	// Compile element
+	C.iElement			= 3;
+	C.bDetail			= FALSE;
+	S.E[3]				= _CreateElement	(C);
 
 	// Search equal in shaders array
 	for (u32 it=0; it<v_shaders.size(); it++)

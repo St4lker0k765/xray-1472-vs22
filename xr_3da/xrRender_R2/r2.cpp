@@ -3,8 +3,24 @@
 #include "..\fbasicvisual.h"
 #include "..\xr_object.h"
 #include "..\CustomHUD.h"
-
+ 
 CRender										RImplementation;
+
+// Just two static storage
+LPCSTR					r2p(LPCSTR name)
+{
+	static string128	path;
+	if (RImplementation.b_nv3x)	strconcat(path,"r2_nv3x\\",name);
+	else						strconcat(path,"r2_r3xx\\",name);
+	return				path;
+}
+LPCSTR					r2v(LPCSTR name)
+{
+	static string128	path;
+	if (RImplementation.b_nv3x)	strconcat(path,"r2_nv3x\\",name);
+	else						strconcat(path,"r2_r3xx\\",name);
+	return				path;
+}
 
 // Implementation
 IRender_ObjectSpecific*	CRender::ros_create				(CObject* parent)				{ return 0;								}
@@ -111,6 +127,7 @@ void		CRender::rmNormal			()
 //////////////////////////////////////////////////////////////////////
 CRender::CRender()
 {
+	b_nv3x	= (strstr(Core.Params,"-nv3x"))?TRUE:FALSE;
 }
 
 CRender::~CRender()
@@ -130,7 +147,7 @@ void CRender::OnDeviceCreate	()
 {
 	REQ_CREATE					();
 	Target.OnDeviceCreate		();
-	LR_Direct.Create			();
+	LR.Create					();
 
 	PSystems.OnCreate			();
 	PSystems.OnDeviceCreate		();
@@ -146,7 +163,7 @@ void CRender::OnDeviceDestroy	()
 	PSystems.OnDeviceDestroy	();
 	PSystems.OnDestroy			();
 
-	LR_Direct.Destroy			();
+	LR.Destroy					();
 	Target.OnDeviceDestroy		();
 }
 
