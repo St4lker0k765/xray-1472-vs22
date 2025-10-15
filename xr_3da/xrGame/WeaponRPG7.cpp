@@ -157,15 +157,15 @@ void CWeaponRPG7Grenade::Explode(const Fvector &pos, const Fvector &normal)
 	m_explodeTime	= EXPLODE_TIME;
 	m_flashTime		= FLASH_TIME;
 	setVisible(false);
-	list<CPGObject*>::iterator l_it;
+	xr_list<CPGObject*>::iterator l_it;
 	for(l_it = m_trailEffectsPSs.begin(); l_it != m_trailEffectsPSs.end(); l_it++) (*l_it)->Stop();
 	Sound->play_at_pos(sndExplode, 0, vPosition, false);
 	Fvector l_dir; f32 l_dst;
 	m_blasted.clear();
 	feel_touch.clear();
 	feel_touch_update(vPosition, m_blastR);
-	list<s16> l_elsemnts;
-	list<Fvector> l_bs_positions;
+	xr_list<s16> l_elsemnts;
+	xr_list<Fvector> l_bs_positions;
 	while(m_blasted.size()) {
 		CGameObject *l_pGO = *m_blasted.begin();
 		Fvector l_goPos; if(l_pGO->Visual()) l_pGO->clCenter(l_goPos); else l_goPos.set(l_pGO->Position());
@@ -277,9 +277,9 @@ BOOL CWeaponRPG7Grenade::net_Spawn(LPVOID DC)
 		
 		Fvector ax;
 		float	radius;
-		CHOOSE_MAX(	obb.m_halfsize.x,ax.set(obb.m_rotate.i) ; ax.mul(obb.m_halfsize.x); radius=min(obb.m_halfsize.y,obb.m_halfsize.z) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.z/=2.f,
-					obb.m_halfsize.y,ax.set(obb.m_rotate.j) ; ax.mul(obb.m_halfsize.y); radius=min(obb.m_halfsize.x,obb.m_halfsize.z) ;obb.m_halfsize.x/=2.f;obb.m_halfsize.z/=2.f,
-					obb.m_halfsize.z,ax.set(obb.m_rotate.k) ; ax.mul(obb.m_halfsize.z); radius=min(obb.m_halfsize.y,obb.m_halfsize.x) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.x/=2.f
+		CHOOSE_MAX(	obb.m_halfsize.x,ax.set(obb.m_rotate.i) ; ax.mul(obb.m_halfsize.x); radius=std::min(obb.m_halfsize.y,obb.m_halfsize.z) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.z/=2.f,
+					obb.m_halfsize.y,ax.set(obb.m_rotate.j) ; ax.mul(obb.m_halfsize.y); radius=std::min(obb.m_halfsize.x,obb.m_halfsize.z) ;obb.m_halfsize.x/=2.f;obb.m_halfsize.z/=2.f,
+					obb.m_halfsize.z,ax.set(obb.m_rotate.k) ; ax.mul(obb.m_halfsize.z); radius=std::min(obb.m_halfsize.y,obb.m_halfsize.x) ;obb.m_halfsize.y/=2.f;obb.m_halfsize.x/=2.f
 					)
 		//radius*=1.4142f;
 		Fsphere sphere1,sphere2;
@@ -366,7 +366,7 @@ void CWeaponRPG7Grenade::feel_touch_new(CObject* O) {
 void CWeaponRPG7Grenade::net_Destroy() {
 	if(m_pPhysicsShell) m_pPhysicsShell->Deactivate();
 	xr_delete(m_pPhysicsShell);
-	while(m_trailEffectsPSs.size()) { xr_delete(*(m_trailEffectsPSs.begin())); m_trailEffectsPSs.pop_front(); }
+	while(m_trailEffectsPSs.size()) { delete(*(m_trailEffectsPSs.begin())); m_trailEffectsPSs.pop_front(); }
 	inherited::net_Destroy();
 }
 
@@ -414,7 +414,7 @@ void CWeaponRPG7Grenade::UpdateCL() {
 		return;
 	case stExplode: 
 		if(m_explodeTime <= 0) {
-			while(m_trailEffectsPSs.size()) { xr_delete(*(m_trailEffectsPSs.begin())); m_trailEffectsPSs.pop_front(); }
+			while(m_trailEffectsPSs.size()) { delete(*(m_trailEffectsPSs.begin())); m_trailEffectsPSs.pop_front(); }
 			m_state			= stDestroying;
 			NET_Packet		P;
 			u_EventGen		(P, GE_DESTROY, ID());
@@ -441,7 +441,7 @@ void CWeaponRPG7Grenade::UpdateCL() {
 			if(m_engineTime <= 0) {
 				m_state		= stFlying;
 				// остановить двигатель
-				list<CPGObject*>::iterator l_it;
+				xr_list<CPGObject*>::iterator l_it;
 				for(l_it = m_trailEffectsPSs.begin(); l_it != m_trailEffectsPSs.end(); l_it++) (*l_it)->Stop();
 			}else{
 				// двигатель все еще работает
@@ -452,7 +452,7 @@ void CWeaponRPG7Grenade::UpdateCL() {
 				l_dir.set(0, 1.f, 0);
 				l_force = m_engine_u * Device.dwTimeDelta / 1000.f;
 				m_pPhysicsShell->applyImpulse(l_dir, l_force);
-				list<CPGObject*>::iterator l_it;
+				xr_list<CPGObject*>::iterator l_it;
 				Fvector vel;
 				m_pPhysicsShell->get_LinearVel(vel);
 				// обновить эффекты
@@ -527,7 +527,7 @@ BOOL CWeaponRPG7::net_Spawn(LPVOID DC) {
 		D->ID				=	0xffff;
 		D->ID_Parent		=	(u16)ID();
 		D->ID_Phantom		=	0xffff;
-		D->s_flags.set		(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
+		D->s_flags.assign		(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
 		D->RespawnTime		=	0;
 		// Send
 		NET_Packet			P;
@@ -562,7 +562,7 @@ void CWeaponRPG7::ReloadMagazine() {
 		D->ID				=	0xffff;
 		D->ID_Parent		=	(u16)ID();
 		D->ID_Phantom		=	0xffff;
-		D->s_flags.set		(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
+		D->s_flags.assign	(M_SPAWN_OBJECT_ACTIVE | M_SPAWN_OBJECT_LOCAL);
 		D->RespawnTime		=	0;
 		// Send
 		NET_Packet			P;

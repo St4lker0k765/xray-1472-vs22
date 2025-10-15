@@ -47,11 +47,12 @@ void CAI_ALife::vfNewGame()
 
 	ALIFE_ENTITY_P_IT			B = m_tpSpawnPoints.begin();
 	ALIFE_ENTITY_P_IT			E = m_tpSpawnPoints.end();
+	ALIFE_ENTITY_P_IT			j;
 	u16							l_wGenID = 0x8000;
 	for (ALIFE_ENTITY_P_IT I = B ; I != E; ) {
 		u32	wGroupID = (*I)->m_dwSpawnGroup;
 		float fSum = (*I)->m_ucProbability;
-		for (ALIFE_ENTITY_P_IT j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++)
+		for (j= I + 1; (j != E) && ((*j)->m_dwSpawnGroup == wGroupID); j++)
 			fSum += (*j)->m_ucProbability;
 		float fProbability = ::Random.randF(0,fSum);
 		fSum = (*I)->m_ucProbability;
@@ -80,7 +81,7 @@ void CAI_ALife::vfNewGame()
 		if (tpALifeAbstractGroup) {
 			i->ID				= m_tpServer->PerformIDgen(l_wGenID++);
 			i->m_tObjectID		= i->ID;
-			m_tObjectRegistry.insert(make_pair(i->m_tObjectID,i));
+			m_tObjectRegistry.insert(std::make_pair(i->m_tObjectID, i));
 			
 			tpALifeAbstractGroup->m_tpMembers.resize(tpALifeAbstractGroup->m_wCount);
 			OBJECT_IT			II = tpALifeAbstractGroup->m_tpMembers.begin();
@@ -104,7 +105,7 @@ void CAI_ALife::vfNewGame()
 				tp2->ID				= l_wGenID++;
 				vfCreateObject		(tp2);
 				*II					= tp2->m_tObjectID = tp2->ID;
-				m_tObjectRegistry.insert(make_pair(tp2->m_tObjectID,tp2));
+				m_tObjectRegistry.insert(std::make_pair(tp2->m_tObjectID, tp2));
 				CALifeMonsterAbstract *tp3 = dynamic_cast<CALifeMonsterAbstract*>(tp2);
 				if (tp3) 
 					vfAssignGraphPosition(tp3);
@@ -116,7 +117,7 @@ void CAI_ALife::vfNewGame()
 		else {
             vfCreateObject		(i);
 			i->m_tObjectID		= i->ID;
-			m_tObjectRegistry.insert(make_pair(i->m_tObjectID,i));
+			m_tObjectRegistry.insert(std::make_pair(i->m_tObjectID,i));
 			CALifeMonsterAbstract *tp3 = dynamic_cast<CALifeMonsterAbstract*>(i);
 			if (tp3)
 				vfAssignGraphPosition(tp3);

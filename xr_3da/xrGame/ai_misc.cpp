@@ -9,6 +9,7 @@
 #include "stdafx.h"
 #include "ai_space.h"
 #include "LevelGameDef.h"
+#include <cmath>
 
 using namespace AI;
 
@@ -204,31 +205,55 @@ IC void vfIntersectContours(PSegment &tSegment, PContour &tContour0, PContour &t
 
 void vfComputeCircle(Fvector tPosition, Fvector tPoint0, Fvector tPoint1, float &fRadius, Fvector &tCircleCentre, Fvector &tFinalPosition, float &fBeta)
 {
-	Fvector tP0, tP1;
-	float fAlpha, fSinus, fCosinus, fRx;
+    Fvector tP0, tP1;
+    float fAlpha, fSinus, fCosinus, fRx;
 
-	tP0.sub(tPosition,tPoint0);
-	tP1.sub(tPoint1,tPoint0);
-	fRx = tP0.magnitude();
-	tP0.normalize();
-	tP1.normalize();
+    tP0.sub(tPosition, tPoint0);
+    tP1.sub(tPoint1,    tPoint0);
+    fRx = tP0.magnitude();
 
-	clamp(fAlpha = tP0.dotproduct(tP1),-0.9999999f,0.9999999f);
-	fAlpha = .5f*(fBeta = acosf(fAlpha));
-	fBeta = PI - fBeta;
+    if (fRx < EPS_S || tP1.magnitude() < EPS_S) {
+        fRadius = 0.f;
+        tCircleCentre = tPoint0;
+        tFinalPosition = tPoint1;
+        fBeta = 0.f;
+        return;
+    }
 
-	tP0.mul(fRx);
-	tP1.mul(fRx);
-	
-	tFinalPosition = tP1;
-	tFinalPosition.add(tPoint0);
-	
-	tCircleCentre.add(tP0,tP1);
-	_sincos(fAlpha,fSinus,fCosinus);
-	fRadius = fRx*fSinus/fCosinus;
-	fRx = fRadius*(1.f/fSinus - 1.f);
-	tCircleCentre.mul((fRadius + fRx)/tCircleCentre.magnitude());
-	tCircleCentre.add(tPoint0);
+    tP0.normalize();
+    tP1.normalize();
+
+    fAlpha = tP0.dotproduct(tP1);
+    clamp(fAlpha, -0.9999999f, 0.9999999f);
+
+    fAlpha = 0.5f * (fBeta = std::acosf(fAlpha));
+    fBeta = PI - fBeta;
+
+    tP0.mul(fRx);
+    tP1.mul(fRx);
+
+    tFinalPosition = tP1;
+    tFinalPosition.add(tPoint0);
+
+    tCircleCentre.add(tP0, tP1);
+
+    fSinus   = std::sinf(fAlpha);
+    fCosinus = std::cosf(fAlpha);
+
+    const float cos_safe = (std::fabs(fCosinus) < 1e-6f) ? (fCosinus < 0.f ? -1e-6f : 1e-6f) : fCosinus;
+    const float sin_safe = (std::fabs(fSinus)   < 1e-6f) ? (fSinus   < 0.f ? -1e-6f : 1e-6f) : fSinus;
+
+    fRadius = fRx * fSinus / cos_safe;
+    fRx     = fRadius * (1.f / sin_safe - 1.f);
+
+    float len = tCircleCentre.magnitude();
+    if (len < 1e-6f) {
+        tCircleCentre = tPoint0;
+        return;
+    }
+
+    tCircleCentre.mul((fRadius + fRx) / len);
+    tCircleCentre.add(tPoint0);
 }
 
 void CAI_Space::vfChoosePoint(Fvector &tStartPoint, Fvector &tFinishPoint, PContour	&tCurContour, int iNodeIndex, Fvector &tTempPoint, int &iSavedIndex)
@@ -835,15 +860,20 @@ void CAI_Space::vfCreateFastRealisticPath(xr_vector<Fvector> &tpaPoints, u32 dwS
 
 	// init deviation points
 	tpaDeviations[0].set(0,0,0);
-	for ( i=1; i<(int)tpaDeviations.size(); i++) {
-		fRadius = ::Random.randF(fRadiusMin,fRadiusMax);
-		fAlpha = ::Random.randF(0.f,PI_MUL_2);
-		_sincos(fAlpha,fAlpha0,fTemp);
+	for (int i = 1; i < (int)tpaDeviations.size(); ++i)
+	{
+		float fRadius = ::Random.randF(fRadiusMin, fRadiusMax);
+		float fAlpha  = ::Random.randF(0.f, PI_MUL_2);
+
+		float s = std::sinf(fAlpha);
+		float c = std::cosf(fAlpha);
+
 		if (bUseDeviations)
-			tpaDeviations[i].set(fTemp*fRadius,0,fAlpha0*fRadius);
+			tpaDeviations[i].set(c * fRadius, 0.f, s * fRadius);
 		else
-			tpaDeviations[i].set(0,0,0);
-		tTempPoint.add(tpaPoints[i],tpaDeviations[i]);
+			tpaDeviations[i].set(0.f, 0.f, 0.f);
+
+		tTempPoint.add(tpaPoints[i], tpaDeviations[i]);
 	}
 	
 	if (!bLooped)
@@ -905,7 +935,8 @@ void CAI_Space::vfCreateFastRealisticPath(xr_vector<Fvector> &tpaPoints, u32 dwS
 						else
 							fAlpha = -acosf(tCurrentPosition.x);
 						fTemp = fAlpha - fAlpha0;
-						_sincos(fTemp,tCurrentPosition.z,tCurrentPosition.x);
+						tCurrentPosition.z = std::sinf(fTemp);
+						tCurrentPosition.x = std::cosf(fTemp);
 						tCurrentPosition.mul(fRadius);
 						tCurrentPosition.add(tCircleCentre);
 						if (tPrevPoint.distance_to_xz(tFinalPosition) < tCurrentPosition.distance_to_xz(tFinalPosition)) {
@@ -913,7 +944,8 @@ void CAI_Space::vfCreateFastRealisticPath(xr_vector<Fvector> &tpaPoints, u32 dwS
 							tCurrentPosition.sub(tCircleCentre);
 							tCurrentPosition.normalize();
 							fTemp = fAlpha + fAlpha0;
-							_sincos(fTemp,tCurrentPosition.z,tCurrentPosition.x);
+							tCurrentPosition.z = std::sinf(fTemp);
+							tCurrentPosition.x = std::cosf(fTemp);
 							tCurrentPosition.mul(fRadius);
 							tCurrentPosition.add(tCircleCentre);
 						}

@@ -201,7 +201,7 @@ public:
 	//CPHGun Gun;
 	//CPHJeep Jeep;
 	unsigned int disable_count;
-	//xr_vector<CPHElement*> elements;
+	//vector<CPHElement*> elements;
 	CPHWorld(){disable_count=0;frame_time=0.f;m_steps_num=0;m_frame_sum=0.f;
 	m_delay=0; m_previous_delay=0;m_reduce_delay=0;m_update_delay_count=0;}
 	~CPHWorld(){};
@@ -264,7 +264,7 @@ class CPHElement:  public CPhysicsElement {
 	dMass					m_mass;
 	dSpaceID				m_space;
 	dBodyID					m_body;
-	dGeomID					m_group;
+	dSpaceID				m_group;
 	CPhysicsRefObject*		m_phys_ref_object;
 ///////////////////////////////
 	xr_vector<CPHElement*>		m_attached_elements;
@@ -306,7 +306,7 @@ static Shader*			hWallmark;
 ////////////////////////////
 private:
 	void			create_Sphere				(const Fsphere&		V);
-	dGeomID			create_Box					(const Fobb&		V);
+	void			create_Box					(const Fobb&		V);
 	void			create_Cylinder				(const Fcylinder&	V);
 
 	void			calculate_it_data			(const Fvector& mc,float mass);

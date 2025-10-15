@@ -30,7 +30,7 @@ public:
 
 	f32				m_blast, m_blastR, m_fragsR, m_fragHit;
 	s32				m_frags;
-	list<CGameObject*> m_blasted;
+	xr_list<CGameObject*> m_blasted;
 
 	enum EState{
 		stInactive,
@@ -51,7 +51,7 @@ public:
 	xr_vector<LPCSTR>	m_effects;
 	char			m_trailEffectsSTR[255];
 	xr_vector<LPCSTR>	m_trailEffects;
-	list<CPGObject*>m_trailEffectsPSs;
+	xr_list<CPGObject*>m_trailEffectsPSs;
 	IRender_Light*	m_pLight;
 	Fcolor			m_lightColor;
 	Fcolor			m_curColor;

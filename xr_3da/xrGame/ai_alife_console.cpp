@@ -80,8 +80,10 @@ void CAI_ALife::vfListObjects()
 	OBJECT_PAIR_IT	I = m_tObjectRegistry.begin();
 	OBJECT_PAIR_IT	E = m_tObjectRegistry.end();
 	string64		tString;
-	Msg("%s->Listing objects :",cName());
-	for (int i=0; I != E; I++, i++) {
+	Msg("%s->Listing objects :", cName());
+	int i = 0;
+	for (i = 0; I != E; I++, i++)
+	{
 		Memory.mem_copy(tString,&((*I).second->m_tClassID),sizeof((*I).second->m_tClassID));
 		tString[sizeof((*I).second->m_tClassID)] = 0;
 		Msg("* %4d : %8s[m_tObjectID=%4d][MDL=%10s][GID=%4d][UPD=%d]",i,tString,(*I).first,(*I).second->s_name,(*I).second->m_tGraphID,(*I).second->m_tTimeID);
@@ -94,7 +96,8 @@ void CAI_ALife::vfListEvents()
 	EVENT_PAIR_IT	I = m_tEventRegistry.begin();
 	EVENT_PAIR_IT	E = m_tEventRegistry.end();
 	Msg("%s->Listing events :",cName());
-	for (int i=0; I != E; I++, i++)
+	int i = 0;
+	for (i = 0; I != E; I++, i++)
 		Msg("* %4d : [m_tObjectID=%4d][BR=%1d][GID=%4d][TIME=%d]",i,(*I).first,(*I).second->m_tBattleResult,(*I).second->m_tGraphID,(*I).second->m_tTimeID);
 	Msg("Total %d events",i);
 }
@@ -104,7 +107,8 @@ void CAI_ALife::vfListTasks()
 	TASK_PAIR_IT	I = m_tTaskRegistry.begin();
 	TASK_PAIR_IT	E = m_tTaskRegistry.end();
 	Msg("%s->Listing tasks :",cName());
-	for (int i=0; I != E; I++, i++)
+	int i = 0;
+	for (i=0; I != E; I++, i++)
 		Msg("* %4d : [m_tObjectID=%4d][CID=%1d][TT=][GID=%4d][UPD=%d]",i,(*I).first,(*I).second->m_tCustomerID,(*I).second->m_tTaskType,(*I).second->m_tGraphID,(*I).second->m_tTimeID);
 	Msg("Total %d tasks",i);
 }
@@ -116,7 +120,8 @@ void CAI_ALife::vfListTerrain()
 	for (int j=0; j<LOCATION_TYPE_COUNT; j++) {
 		GRAPH_VECTOR_IT	I = m_tpTerrain[j].begin();
 		GRAPH_VECTOR_IT	E = m_tpTerrain[j].end();
-		for (int i=0; I != E; I++, i++) {
+		int i = 0;
+		for (i=0; I != E; I++, i++) {
 			GRAPH_IT	it1 = (*I).begin();
 			GRAPH_IT	E1  = (*I).end();
 			int			j;
@@ -374,7 +379,8 @@ void CAI_ALife::vfEventInfo(_EVENT_ID &tEventID)
 		S[0] = 0;
 		OBJECT_PAIR_IT I = m_tObjectRegistry.begin();
 		OBJECT_PAIR_IT E = m_tObjectRegistry.end();
-		for (int j=0; I != E; I++) {
+		int j = 0;
+		for (j=0; I != E; I++) {
 			CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>((*I).second);
 			if (!tpALifeHuman)
 				continue;
@@ -434,7 +440,8 @@ void CAI_ALife::vfTaskInfo(_TASK_ID &tTaskID)
 	{
 		OBJECT_PAIR_IT I = m_tObjectRegistry.begin();
 		OBJECT_PAIR_IT E = m_tObjectRegistry.end();
-		for (int j=0; I != E; I++) {
+		int j = 0;
+		for (j=0; I != E; I++) {
 			CALifeHuman *tpALifeHuman = dynamic_cast<CALifeHuman *>((*I).second);
 			if (!tpALifeHuman)
 				continue;
