@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- * Open Dynamics Engine, Copyright (C) 2001-2003 Russell L. Smith.       *
+ * Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.       *
  * All rights reserved.  Email: russ@q12.org   Web: www.q12.org          *
  *                                                                       *
  * This library is free software; you can redistribute it and/or         *
@@ -35,11 +35,6 @@ for geometry objects
 #include "collision_util.h"
 #include "collision_std.h"
 #include "collision_transform.h"
-#include "collision_trimesh_internal.h"
-
-#ifdef _MSC_VER
-#pragma warning(disable:4291)  // for VC++, no complaints about "no matching operator delete found"
-#endif
 
 //****************************************************************************
 // helper functions for dCollide()ing a space with another geom
@@ -139,13 +134,6 @@ static void initColliders()
   setCollider (dRayClass,dBoxClass,&dCollideRayBox);
   setCollider (dRayClass,dCCylinderClass,&dCollideRayCCylinder);
   setCollider (dRayClass,dPlaneClass,&dCollideRayPlane);
-#ifdef dTRIMESH_ENABLED
-  setCollider (dTriMeshClass,dSphereClass,&dCollideSTL);
-  setCollider (dTriMeshClass,dBoxClass,&dCollideBTL);
-  setCollider (dTriMeshClass,dRayClass,&dCollideRTL);
-  setCollider (dTriMeshClass,dTriMeshClass,&dCollideTTL);
-  setCollider (dTriMeshClass,dCCylinderClass,&dCollideCCTL);
-#endif
   setAllColliders (dGeomTransformClass,&dCollideTransform);
 }
 
@@ -195,7 +183,7 @@ dxGeom::dxGeom (dSpaceID _space, int is_placeable)
 
   // setup body vars. invalid type of -1 must be changed by the constructor.
   type = -1;
-  gflags = GEOM_DIRTY | GEOM_AABB_BAD | GEOM_ENABLED;
+  gflags = GEOM_DIRTY | GEOM_AABB_BAD;
   if (is_placeable) gflags |= GEOM_PLACEABLE;
   data = 0;
   body = 0;
@@ -315,8 +303,8 @@ void dGeomSetBody (dxGeom *g, dxBody *b)
       dxPosR *pr = (dxPosR*) dAlloc (sizeof(dxPosR));
       g->pos = pr->pos;
       g->R = pr->R;
-      memcpy (g->pos,g->body->pos,sizeof(dVector3));
-      memcpy (g->R,g->body->R,sizeof(dMatrix3));
+      memcpy (g->pos,g->body->pos,sizeof(g->pos));
+      memcpy (g->R,g->body->R,sizeof(g->R));
       g->bodyRemove();
     }
     // dGeomMoved() should not be called if the body is being set to 0, as the
@@ -367,22 +355,6 @@ void dGeomSetRotation (dxGeom *g, const dMatrix3 R)
 }
 
 
-void dGeomSetQuaternion (dxGeom *g, const dQuaternion quat)
-{
-  dAASSERT (g && quat);
-  dUASSERT (g->gflags & GEOM_PLACEABLE,"geom must be placeable");
-  CHECK_NOT_LOCKED (g->parent_space);
-  if (g->body) {
-    // this will call dGeomMoved (g), so we don't have to
-    dBodySetQuaternion (g->body,quat);
-  }
-  else {
-    dQtoR (quat, g->R);
-    dGeomMoved (g);
-  }
-}
-
-
 const dReal * dGeomGetPosition (dxGeom *g)
 {
   dAASSERT (g);
@@ -396,23 +368,6 @@ const dReal * dGeomGetRotation (dxGeom *g)
   dAASSERT (g);
   dUASSERT (g->gflags & GEOM_PLACEABLE,"geom must be placeable");
   return g->R;
-}
-
-
-void dGeomGetQuaternion (dxGeom *g, dQuaternion quat)
-{
-  dAASSERT (g);
-  dUASSERT (g->gflags & GEOM_PLACEABLE,"geom must be placeable");
-  if (g->body) {
-    const dReal * body_quat = dBodyGetQuaternion (g->body);
-    quat[0] = body_quat[0];
-    quat[1] = body_quat[1];
-    quat[2] = body_quat[2];
-    quat[3] = body_quat[3];
-  }
-  else {
-    dRtoQ (g->R, quat);
-  }
 }
 
 
@@ -474,26 +429,6 @@ unsigned long dGeomGetCollideBits (dxGeom *g)
   dAASSERT (g);
   return g->collide_bits;
 }
-
-
-void dGeomEnable (dxGeom *g)
-{
-	dAASSERT (g);
-	g->gflags |= GEOM_ENABLED;
-}
-
-void dGeomDisable (dxGeom *g)
-{
-	dAASSERT (g);
-	g->gflags &= ~GEOM_ENABLED;
-}
-
-int dGeomIsEnabled (dxGeom *g)
-{
-	dAASSERT (g);
-	return (g->gflags & GEOM_ENABLED) != 0;
-}
-
 
 //****************************************************************************
 // C interface that lets the user make new classes. this interface is a lot

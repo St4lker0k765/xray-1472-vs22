@@ -24,7 +24,6 @@
 #define _ODE_ROTATION_H_
 
 #include <ode/common.h>
-#include <ode/compatibility.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,19 +47,16 @@ void dQSetIdentity (dQuaternion q);
 void dQFromAxisAndAngle (dQuaternion q, dReal ax, dReal ay, dReal az,
 			 dReal angle);
 
-/* Quaternion multiplication, analogous to the matrix multiplication routines. */
-/* qa = rotate by qc, then qb */
 void dQMultiply0 (dQuaternion qa, const dQuaternion qb, const dQuaternion qc);
-/* qa = rotate by qc, then by inverse of qb */
 void dQMultiply1 (dQuaternion qa, const dQuaternion qb, const dQuaternion qc);
-/* qa = rotate by inverse of qc, then by qb */
 void dQMultiply2 (dQuaternion qa, const dQuaternion qb, const dQuaternion qc);
-/* qa = rotate by inverse of qc, then by inverse of qb */
 void dQMultiply3 (dQuaternion qa, const dQuaternion qb, const dQuaternion qc);
 
-void dRfromQ (dMatrix3 R, const dQuaternion q);
-void dQfromR (dQuaternion q, const dMatrix3 R);
-void dDQfromW (dReal dq[4], const dVector3 w, const dQuaternion q);
+void dQtoR (const dQuaternion q, dMatrix3 R);
+
+void dRtoQ (const dMatrix3 R, dQuaternion q);
+
+void dWtoDQ (const dVector3 w, const dQuaternion q, dVector4 dq);
 
 
 #ifdef __cplusplus

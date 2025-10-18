@@ -18,6 +18,7 @@ struct Fcylinder;
 ///////////////////////////////////////////////////////////////////
 //#include "dRay/include/dRay.h"
 #include "ExtendedGeom.h"
+//union dInfBytes dInfinityValue = {{0,0,0x80,0x7f}};
 Shader* CPHElement::hWallmark=NULL;
 
 // #include "contacts.h"
@@ -204,9 +205,9 @@ void CPHJeep::Create1(dSpaceID space, dWorldID world){
 		dJointSetHinge2Param(Joints[i], dParamSuspensionCFM, 0.0003f);
 	}
 
-	GeomsGroup = dSimpleSpaceCreate(space);  
+	GeomsGroup = dCreateGeomGroup(space);  
 	for(i = 0; i < NofGeoms-1; ++i)
-		dSpaceAdd(GeomsGroup, Geoms[i]);
+		dGeomGroupAdd(GeomsGroup, Geoms[i]);
 
 
 
@@ -353,10 +354,10 @@ void CPHJeep::Create(dSpaceID space, dWorldID world){
 	}
 
 
-	GeomsGroup = dSimpleSpaceCreate(space);  
+	GeomsGroup = dCreateGeomGroup(space);  
 	for(i = 1; i < NofGeoms-1; ++i)
-		dSpaceAdd(GeomsGroup, Geoms[i]);
-	dSpaceAdd(GeomsGroup, Geoms[7]);
+		dGeomGroupAdd(GeomsGroup, Geoms[i]);
+	dGeomGroupAdd(GeomsGroup, Geoms[7]);
 
 
 	//dynamic data
@@ -681,7 +682,7 @@ void CPHWorld::Create(){
 	Space = dHashSpaceCreate(0);
 #ifdef ODE_SLOW_SOLVER
 #else
-	dWorldSetAutoEnableDepthSF1(phWorld, 3);
+	dWorldSetAutoEnableDepth(phWorld, 3);
 #endif
 	ContactGroup = dJointGroupCreate(0);		
 	dWorldSetGravity(phWorld, 0,-2.f*9.81f, 0);//-2.f*9.81f
@@ -786,8 +787,7 @@ void CPHWorld::Step(dReal step)
 		#ifdef ODE_SLOW_SOLVER
 		dWorldStep			(phWorld, fixed_step);
 		#else
-		dWorldSetQuickStepNumIterations(phWorld, 20);
-		dWorldQuickStep (phWorld,fixed_step);
+		dWorldStepFast (phWorld,fixed_step,20);
 		#endif
 		Device.Statistic.ph_core.End		();
 
@@ -1091,7 +1091,7 @@ void CPHElement::			create_Box	(const Fobb&		V){
 														dGeomSetBody(trans,m_body);
 														m_trans.push_back(trans);
 														/////////////////////////////////////////////////////////
-														dSpaceAdd(m_group,trans);
+														dGeomGroupAdd(m_group,trans);
 														/////////////////////////////////////////////////////////
 														dGeomTransformSetInfo(trans,1);
 														dGeomCreateUserData(geom);
@@ -1155,7 +1155,7 @@ void CPHElement::			create_Sphere	(const Fsphere&	V){
 														dGeomTransformSetGeom(trans,geom);
 														dGeomSetBody(trans,m_body);
 														m_trans.push_back(trans);
-														dSpaceAdd(m_group,trans);
+														dGeomGroupAdd(m_group,trans);
 														dGeomTransformSetInfo(trans,1);		
 														dGeomCreateUserData(geom);
 														//dGeomGetUserData(geom)->material=GMLib.GetMaterialIdx("box_default");
@@ -1217,7 +1217,7 @@ void CPHElement::create_Cylinder(const Fcylinder& V)
 				dGeomSetBody(trans,m_body);
 				m_trans.push_back(trans);
 				/////////////////////////////////////////////////////////
-				dSpaceAdd(m_group,trans);
+				dGeomGroupAdd(m_group,trans);
 				/////////////////////////////////////////////////////////
 				dGeomTransformSetInfo(trans,1);
 				dGeomCreateUserData(geom);
@@ -1272,8 +1272,8 @@ dBodyDisable(m_body);
 dBodySetMass(m_body,&m_mass);
 
 if(m_spheras_data.size()+m_boxes_data.size()>1)
-//m_group=dSimpleSpaceCreate(space);
-m_group=dSimpleSpaceCreate(0);
+//m_group=dCreateGeomGroup(space);
+m_group=dCreateGeomGroup(0);
 
 Fvector mc=get_mc_data();
 //m_start=mc;
@@ -2281,12 +2281,12 @@ void CPHElement::DynamicAttach(CPHElement* E)
 	//E->fixed_position.set(RfRf);
 	for(i=E->m_trans.begin();i!=E->m_trans.end();i++){
 	//	if(!m_group) {
-	//		m_group=dSimpleSpaceCreate(0);
+	//		m_group=dCreateGeomGroup(0);
 	//		dSpaceRemove (ph_world->GetSpace(), m_trans[0]);
-	//		dSpaceAdd(m_group,m_trans[0]);
+	//		dGeomGroupAdd(m_group,m_trans[0]);
 	//	}
 	//	dSpaceRemove (ph_world->GetSpace(), *i);
-	//	dSpaceAdd(m_group,*i);
+	//	dGeomGroupAdd(m_group,*i);
 		dGeomID geom=dGeomTransformGetGeom(*i);
 		const dReal* pos=dGeomGetPosition(geom);
 		const dReal* rot=dGeomGetRotation(geom);

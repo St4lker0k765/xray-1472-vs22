@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- * Open Dynamics Engine, Copyright (C) 2001-2003 Russell L. Smith.       *
+ * Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.       *
  * All rights reserved.  Email: russ@q12.org   Web: www.q12.org          *
  *                                                                       *
  * This library is free software; you can redistribute it and/or         *
@@ -70,13 +70,7 @@ struct dxPosR {
 enum {
   GEOM_DIRTY	= 1,	// geom is 'dirty', i.e. position unknown
   GEOM_AABB_BAD	= 2,	// geom's AABB is not valid
-  GEOM_PLACEABLE = 4,	// geom is placeable
-  GEOM_ENABLED = 8,		// geom is enabled
-
-  // Ray specific
-  RAY_FIRSTCONTACT = 0x10000,
-  RAY_BACKFACECULL = 0x20000,
-  RAY_CLOSEST_HIT  = 0x40000
+  GEOM_PLACEABLE = 4	// geom is placeable
 };
 
 
@@ -183,11 +177,10 @@ struct dxSpace : public dxGeom {
   int getCleanup();
   int query (dxGeom *geom);
   int getNumGeoms();
-  virtual dxGeom *getGeom (int i);
+  dxGeom *getGeom (int i);
 
   virtual void add (dxGeom *);
   virtual void remove (dxGeom *);
-  virtual void dirty (dxGeom *);
 
   virtual void cleanGeoms()=0;
   // turn all dirty geoms into clean geoms by computing their AABBs and any

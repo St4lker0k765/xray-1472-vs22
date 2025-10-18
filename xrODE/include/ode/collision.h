@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- * Open Dynamics Engine, Copyright (C) 2001-2003 Russell L. Smith.       *
+ * Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.       *
  * All rights reserved.  Email: russ@q12.org   Web: www.q12.org          *
  *                                                                       *
  * This library is free software; you can redistribute it and/or         *
@@ -41,10 +41,8 @@ void dGeomSetBody (dGeomID, dBodyID);
 dBodyID dGeomGetBody (dGeomID);
 void dGeomSetPosition (dGeomID, dReal x, dReal y, dReal z);
 void dGeomSetRotation (dGeomID, const dMatrix3 R);
-void dGeomSetQuaternion (dGeomID, const dQuaternion);
 const dReal * dGeomGetPosition (dGeomID);
 const dReal * dGeomGetRotation (dGeomID);
-void dGeomGetQuaternion (dGeomID, dQuaternion result);
 void dGeomGetAABB (dGeomID, dReal aabb[6]);
 int dGeomIsSpace (dGeomID);
 dSpaceID dGeomGetSpace (dGeomID);
@@ -88,8 +86,7 @@ enum {
   dFirstSpaceClass,
   dSimpleSpaceClass = dFirstSpaceClass,
   dHashSpaceClass,
-  dQuadTreeSpaceClass,
-  dLastSpaceClass = dQuadTreeSpaceClass,
+  dLastSpaceClass = dHashSpaceClass,
 
   dFirstUserClass,
   dLastUserClass = dFirstUserClass + dMaxUserClasses - 1,
@@ -124,17 +121,13 @@ void dGeomRaySet (dGeomID ray, dReal px, dReal py, dReal pz,
 		  dReal dx, dReal dy, dReal dz);
 void dGeomRayGet (dGeomID ray, dVector3 start, dVector3 dir);
 
-/*
- * Set/get ray flags that influence ray collision detection.
- * These flags are currently only noticed by the trimesh collider, because
- * they can make a major differences there.
- */
-void dGeomRaySetParams (dGeomID g, int FirstContact, int BackfaceCull);
-void dGeomRayGetParams (dGeomID g, int *FirstContact, int *BackfaceCull);
-void dGeomRaySetClosestHit (dGeomID g, int closestHit);
-int dGeomRayGetClosestHit (dGeomID g);
-
-#include "collision_trimesh.h"
+/* for backward compatibility */
+dGeomID dCreateGeomGroup (dSpaceID space);
+void dGeomGroupAdd (dGeomID group, dGeomID x);
+void dGeomGroupRemove (dGeomID group, dGeomID x);
+int dGeomGroupGetNumGeoms (dGeomID group);
+dGeomID dGeomGroupGetGeom (dGeomID group, int i);
+int dGeomGroupQuery (dGeomID group, dGeomID x);
 
 dGeomID dCreateGeomTransform (dSpaceID space);
 void dGeomTransformSetGeom (dGeomID g, dGeomID obj);

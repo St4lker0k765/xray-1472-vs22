@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- * Open Dynamics Engine, Copyright (C) 2001-2003 Russell L. Smith.       *
+ * Open Dynamics Engine, Copyright (C) 2001,2002 Russell L. Smith.       *
  * All rights reserved.  Email: russ@q12.org   Web: www.q12.org          *
  *                                                                       *
  * This library is free software; you can redistribute it and/or         *
@@ -36,12 +36,9 @@ typedef void dNearCallback (void *data, dGeomID o1, dGeomID o2);
 
 dSpaceID dSimpleSpaceCreate (dSpaceID space);
 dSpaceID dHashSpaceCreate (dSpaceID space);
-dSpaceID dQuadTreeSpaceCreate (dSpaceID space, dVector3 Center, dVector3 Extents, int Depth);
-
 void dSpaceDestroy (dSpaceID);
 
 void dHashSpaceSetLevels (dSpaceID space, int minlevel, int maxlevel);
-void dHashSpaceGetLevels (dSpaceID space, int *minlevel, int *maxlevel);
 
 void dSpaceSetCleanup (dSpaceID space, int mode);
 int dSpaceGetCleanup (dSpaceID space);
@@ -49,7 +46,6 @@ int dSpaceGetCleanup (dSpaceID space);
 void dSpaceAdd (dSpaceID, dGeomID);
 void dSpaceRemove (dSpaceID, dGeomID);
 int dSpaceQuery (dSpaceID, dGeomID);
-void dSpaceClean (dSpaceID);
 int dSpaceGetNumGeoms (dSpaceID);
 dGeomID dSpaceGetGeom (dSpaceID, int i);
 

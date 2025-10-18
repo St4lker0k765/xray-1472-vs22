@@ -106,19 +106,19 @@ double dTimerTicksPerSecond()
 
 static inline void getClockCount (unsigned long cc[2])
 {
-  asm volatile (
-	"rdtsc\n"
-	"movl %%eax,(%%esi)\n"
-	"movl %%edx,4(%%esi)\n"
+  asm volatile ("
+	rdtsc
+	movl %%eax,(%%esi)
+	movl %%edx,4(%%esi)"
 	: : "S" (cc) : "%eax","%edx","cc","memory");
 }
 
 
 static inline void serialize()
 {
-  asm volatile (
-	"mov $0,%%eax\n"
-	"cpuid\n"
+  asm volatile ("
+	mov $0,%%eax
+	cpuid"
 	: : : "%eax","%ebx","%ecx","%edx","cc","memory");
 }
 
@@ -342,8 +342,7 @@ static void fprintDoubleWithPrefix (FILE *f, double a, char *fmt)
 
 void dTimerReport (FILE *fout, int average)
 {
-  int i;
-  size_t maxl;
+  int i,maxl;
   double ccunit = 1.0/dTimerTicksPerSecond();
   fprintf (fout,"\nTimer Report (");
   fprintDoubleWithPrefix (fout,ccunit,"%.2f ");
@@ -353,7 +352,7 @@ void dTimerReport (FILE *fout, int average)
   // get maximum description length
   maxl = 0;
   for (i=0; i<num; i++) {
-    size_t l = strlen (event[i].description);
+    int l = strlen (event[i].description);
     if (l > maxl) maxl = l;
   }
 

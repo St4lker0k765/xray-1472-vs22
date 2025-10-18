@@ -20,7 +20,7 @@
  *									 *
  *************************************************************************/
 
-/* C++ interface for new collision API */
+// C++ interface for new collision API
 
 
 #ifndef _ODE_ODECPP_COLLISION_H_
@@ -57,9 +57,6 @@ public:
   int getClass() const
     { return dGeomGetClass (_id); }
 
-  dSpaceID getSpace() const
-    { return dGeomGetSpace (_id); }
-
   void setData (void *data)
     { dGeomSetData (_id,data); }
   void *getData() const
@@ -79,11 +76,6 @@ public:
     { dGeomSetRotation (_id,R); }
   const dReal * getRotation() const
     { return dGeomGetRotation (_id); }
-    
-  void setQuaternion (const dQuaternion quat)
-    { dGeomSetQuaternion (_id,quat); }
-  void getQuaternion (dQuaternion quat) const
-    { dGeomGetQuaternion (_id,quat); }
 
   void getAABB (dReal aabb[6]) const
     { dGeomGetAABB (_id, aabb); }
@@ -175,17 +167,6 @@ public:
 };
 
 
-class dQuadTreeSpace : public dSpace {
-  // intentionally undefined, don't use these
-  dQuadTreeSpace (dQuadTreeSpace &);
-  void operator= (dQuadTreeSpace &);
-
-public:
-  dQuadTreeSpace (dSpaceID space, dVector3 center, dVector3 extents, int depth)
-    { _id = (dGeomID) dQuadTreeSpaceCreate (space,center,extents,depth); }
-};
-
-
 class dSphere : public dGeom {
   // intentionally undefined, don't use these
   dSphere (dSphere &);
@@ -274,42 +255,6 @@ public:
 };
 
 
-class dRay : public dGeom {
-  // intentionally undefined, don't use these
-  dRay (dRay &);
-  void operator= (dRay &);
-
-public:
-  dRay() { }
-  dRay (dSpaceID space, dReal length)
-    { _id = dCreateRay (space,length); }
-
-  void create (dSpaceID space, dReal length) {
-    if (_id) dGeomDestroy (_id);
-    _id = dCreateRay (space,length);
-  }
-
-  void setLength (dReal length)
-    { dGeomRaySetLength (_id, length); }
-  dReal getLength()
-    { return dGeomRayGetLength (_id); }
-
-  void set (dReal px, dReal py, dReal pz, dReal dx, dReal dy, dReal dz)
-    { dGeomRaySet (_id, px, py, pz, dx, dy, dz); }
-  void get (dVector3 start, dVector3 dir)
-    { dGeomRayGet (_id, start, dir); }
-
-  void setParams (int firstContact, int backfaceCull)
-    { dGeomRaySetParams (_id, firstContact, backfaceCull); }
-  void getParams (int *firstContact, int *backfaceCull)
-    { dGeomRayGetParams (_id, firstContact, backfaceCull); }
-  void setClosestHit (int closestHit)
-    { dGeomRaySetClosestHit (_id, closestHit); }
-  int getClosestHit()
-    { return dGeomRayGetClosestHit (_id); }
-};
-
-
 class dGeomTransform : public dGeom {
   // intentionally undefined, don't use these
   dGeomTransform (dGeomTransform &);
@@ -332,7 +277,7 @@ public:
 
   void setCleanup (int mode)
     { dGeomTransformSetCleanup (_id,mode); }
-  int getCleanup ()
+  int getCleanup (dGeomID g)
     { return dGeomTransformGetCleanup (_id); }
 
   void setInfo (int mode)

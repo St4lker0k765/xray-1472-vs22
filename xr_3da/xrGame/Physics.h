@@ -40,7 +40,7 @@ public:
 ///////////////////////////////////////////////////////////////////////////////////
 
 class CPHJeep {
-	dSpaceID GeomsGroup;
+	dGeomID GeomsGroup;
 	static const	u32 NofGeoms=8;
 	static const	u32 NofBodies=5;
 	static const	u32 NofJoints=4;
@@ -201,7 +201,7 @@ public:
 	//CPHGun Gun;
 	//CPHJeep Jeep;
 	unsigned int disable_count;
-	//vector<CPHElement*> elements;
+	//xr_vector<CPHElement*> elements;
 	CPHWorld(){disable_count=0;frame_time=0.f;m_steps_num=0;m_frame_sum=0.f;
 	m_delay=0; m_previous_delay=0;m_reduce_delay=0;m_update_delay_count=0;}
 	~CPHWorld(){};
@@ -211,7 +211,7 @@ public:
 	void Create();
 	xr_list <CPHObject*> ::iterator AddObject(CPHObject* object){
 		m_objects.push_back(object);
-		//list <CPHObject*> ::iterator i= m_objects.end();
+		//xr_list <CPHObject*> ::iterator i= m_objects.end();
 		return --(m_objects.end());
 	};
 	void RemoveObject(xr_list<CPHObject*> :: iterator i){
@@ -264,7 +264,7 @@ class CPHElement:  public CPhysicsElement {
 	dMass					m_mass;
 	dSpaceID				m_space;
 	dBodyID					m_body;
-	dSpaceID				m_group;
+	dGeomID					m_group;
 	CPhysicsRefObject*		m_phys_ref_object;
 ///////////////////////////////
 	xr_vector<CPHElement*>		m_attached_elements;
