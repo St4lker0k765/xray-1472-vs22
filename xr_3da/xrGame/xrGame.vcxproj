@@ -231,7 +231,7 @@
       <ModuleDependenciesFile>$(SolutionDir)$(Configuration)\intermediate\$(ProjectName)\</ModuleDependenciesFile>
       <XMLDocumentationFileName>$(SolutionDir)$(Configuration)\intermediate\$(ProjectName)\</XMLDocumentationFileName>
       <SourceDependenciesFile>$(SolutionDir)$(Configuration)\intermediate\$(ProjectName)\</SourceDependenciesFile>
-      <AdditionalIncludeDirectories>scripting\;$(SolutionDir)\SDK\dxSDK\Include;$(SolutionDir)\xrCore;$(SolutionDir)\xrLUA_JIT\src;$(SolutionDir)\SDK\luabind\luabind\luabind;$(SolutionDir)\SDK\luabind\luabind;$(SolutionDir)\SDK\boost_1_30_0;$(SolutionDir)\SDK\Xiph\Include;$(SolutionDir)\ODE\include;$(SolutionDir)\SDK\loki;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>scripting\;$(SolutionDir)\SDK\dxSDK\Include;$(SolutionDir)\xrCore;$(SolutionDir)\xrLUA_JIT\src;$(SolutionDir)\SDK\luabind\luabind\luabind;$(SolutionDir)\SDK\luabind\luabind;$(SolutionDir)\SDK\boost_1_30_0;$(SolutionDir)\SDK\Xiph\Include;$(SolutionDir)\xrODE\include;$(SolutionDir)\SDK\loki;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386  %(AdditionalOptions)</AdditionalOptions>
