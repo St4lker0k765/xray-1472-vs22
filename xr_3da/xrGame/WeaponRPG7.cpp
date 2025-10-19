@@ -679,7 +679,7 @@ void CWeaponRPG7::Fire2Start () {
 void CWeaponRPG7::Fire2End () {
 	inherited::Fire2End();
 	OnZoomOut();
-	fZoomFactor = DEFAULT_FOV;
+	fZoomFactor = g_fov;
 }
 
 bool CWeaponRPG7::Action(s32 cmd, u32 flags) {

@@ -17,7 +17,7 @@
 class CHUDManager;
 class ENGINE_API CPGObject;
 
-#define DEFAULT_FOV 90.f
+extern float g_fov;
 
 const int maxGroups				= 32;
 class CSquad

@@ -905,7 +905,7 @@ void CActor::Update	(u32 DT)
 		pCamBobbing->SetState					(mstate_real);
 		//cam_Update								(dt,Weapons->getZoomFactor());
 		CWeapon *l_pW = dynamic_cast<CWeapon*>(m_inventory.m_activeSlot < 0xffffff ? m_inventory.m_slots[m_inventory.m_activeSlot].m_pIItem : NULL);
-		cam_Update(dt,l_pW?l_pW->GetZoomFactor():DEFAULT_FOV);
+		cam_Update(dt,l_pW?l_pW->GetZoomFactor():g_fov);
 	} else {
 		if (pCamBobbing)						{Level().Cameras.RemoveEffector(cefBobbing); pCamBobbing=0;}
 	}

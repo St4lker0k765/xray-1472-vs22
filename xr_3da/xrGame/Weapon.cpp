@@ -60,7 +60,7 @@ CWeapon::CWeapon(LPCSTR name)
 	
 	eHandDependence		= hdNone;
 
-	fZoomFactor			= DEFAULT_FOV;
+	fZoomFactor			= g_fov;
 
 	m_pAmmo				= NULL;
 

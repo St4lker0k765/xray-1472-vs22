@@ -263,7 +263,7 @@ void CWeaponBinoculars::Fire2Start () {
 void CWeaponBinoculars::Fire2End () {
 	inherited::Fire2End();
 	OnZoomOut();
-	fZoomFactor = DEFAULT_FOV;
+	fZoomFactor = g_fov;
 }
 
 const char* CWeaponBinoculars::Name() {

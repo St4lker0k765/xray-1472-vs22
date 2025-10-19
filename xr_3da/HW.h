@@ -20,6 +20,9 @@ public:
 
 	D3DDEVTYPE				DevT;
 
+	UINT					DevAdapter;
+	D3DPRESENT_PARAMETERS	DevPP;
+
 	CHW()
 	{
 		pD3D		= NULL;
@@ -30,13 +33,18 @@ public:
 
 	void					CreateD3D				();
 	void					DestroyD3D				();
-	u32						CreateDevice			(HWND hw,u32 &dwWidth,u32 &dwHeight);
+	void					CreateDevice			(HWND hw);
 	void					DestroyDevice			();
 
+	void					Reset					(HWND hw);
+
+	void					selectResolution		(u32& dwWidth, u32& dwHeight, BOOL bWindowed);
 	D3DFORMAT				selectDepthStencil		(D3DFORMAT);
 	u32						selectPresentInterval	();
 	u32						selectGPU				();
 	u32						selectRefresh			(u32 dwWidth, u32 dwHeight, D3DFORMAT fmt);
+
+	void					updateWindowProps		(HWND hw);
 
 #ifdef DEBUG
 	void	Validate(void)	{	VERIFY(pDevice); VERIFY(pD3D); };

@@ -47,7 +47,7 @@ CInput::CInput						( BOOL bExclusive, int deviceForInit)
 	// MOUSE
 	if (deviceForInit & mouse_device_key)
 		CHK_DX(CreateInputDevice(
-		&pMouse,		GUID_SysMouse,		&c_dfDIMouse,
+		&pMouse,		GUID_SysMouse,		&c_dfDIMouse2,
 		((bExclusive)?DISCL_EXCLUSIVE:DISCL_NONEXCLUSIVE) | DISCL_FOREGROUND | DISCL_NOWINKEY,
 		MOUSEBUFFERSIZE ));
 

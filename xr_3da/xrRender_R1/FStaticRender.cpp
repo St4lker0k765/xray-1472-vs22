@@ -541,7 +541,7 @@ void	CRender::Render		()
 		Fmatrix Pold				= Device.mProject;
 		Fmatrix FTold				= Device.mFullTransform;
 		Device.mProject.build_projection(
-			deg2rad(psHUD_FOV*Device.fFOV*Device.fASPECT), 
+			deg2rad(psHUD_FOV*Device.fFOV), 
 			Device.fASPECT, VIEWPORT_NEAR, 
 			pCreator->Environment.Current.Far);
 		Device.mFullTransform.mul	(Device.mProject, Device.mView);

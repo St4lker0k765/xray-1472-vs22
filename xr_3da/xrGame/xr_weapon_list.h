@@ -43,7 +43,7 @@ public:
 	void					Zoom					(BOOL bZoom);
 	void					Reload					();
 	BOOL					isZoomed				()	{ return m_bZoomed; }
-	float					getZoomFactor			()	{ CWeapon* W = ActiveWeapon(); if (W/*&&isZoomed()*/) return W->GetZoomFactor();  else return DEFAULT_FOV; }
+	float					getZoomFactor			()	{ CWeapon* W = ActiveWeapon(); if (W/*&&isZoomed()*/) return W->GetZoomFactor();  else return g_fov; }
 	int						getAmmoElapsed			()	{ CWeapon* W = ActiveWeapon(); if (W) return W->GetAmmoElapsed(); else return 0; }
 	int						getAmmoCurrent			()	{ CWeapon* W = ActiveWeapon(); if (W) return W->GetAmmoCurrent(); else return 0; }
 	int						getAmmoLimit			()	{ CWeapon* W = ActiveWeapon(); if (W) return W->GetAmmoLimit();	  else return 0; }

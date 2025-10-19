@@ -28,6 +28,7 @@
     
 ENGINE_API extern u32		psAlwaysRun;
 ENGINE_API extern float		psHUD_FOV;
+float g_fov = 67.5f;
 extern int	 				psPhysicsFPS;
 extern float				psSqueezeVelocity;
 
@@ -616,6 +617,7 @@ BOOL APIENTRY DllMain( HANDLE hModule,
 		CMD3(CCC_Mask,				"hud_info",				&psHUD_Flags,	HUD_INFO);
 		CMD3(CCC_Mask,				"hud_draw",				&psHUD_Flags,	HUD_DRAW);
 		CMD2(CCC_Float,				"hud_fov",				&psHUD_FOV);
+		CMD4(CCC_Float,				"fov",					&g_fov,			5.0f,	180.0f);
 
 		// Demo
 		CMD1(CCC_DemoRecord,		"demo_record"			);

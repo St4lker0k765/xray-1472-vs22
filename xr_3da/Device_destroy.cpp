@@ -28,11 +28,16 @@ void CRenderDevice::Destroy	(void) {
 
 void CRenderDevice::Reset		(LPCSTR shName, BOOL bKeepTextures)
 {
-	u32 tm_start		= TimerAsync();
-	Memory.mem_compact	();
-	_Destroy			(bKeepTextures);
-	_Create				(shName);
-	Memory.mem_compact	();
-	u32 tm_end			= TimerAsync();
-	Msg					("*** RESET [%d ms]",tm_end-tm_start);
+	ShowCursor				(TRUE);
+	u32 tm_start			= TimerAsync();
+	Memory.mem_compact		();
+	HW.Reset				(m_hWnd);
+	dwWidth					= HW.DevPP.BackBufferWidth;
+	dwHeight				= HW.DevPP.BackBufferHeight;
+	fWidth_2				= float(dwWidth/2);
+	fHeight_2				= float(dwHeight/2);
+	PreCache				(10);
+	u32 tm_end				= TimerAsync();
+	Msg						("*** RESET [%d ms]",tm_end-tm_start);
+	ShowCursor				(FALSE);
 }

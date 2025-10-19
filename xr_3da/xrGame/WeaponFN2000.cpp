@@ -30,7 +30,7 @@ void CWeaponFN2000::Fire2Start () {
 void CWeaponFN2000::Fire2End () {
 	inherited::Fire2End();
 	OnZoomOut();
-	fZoomFactor = DEFAULT_FOV;
+	fZoomFactor = g_fov;
 }
 
 bool CWeaponFN2000::Action(s32 cmd, u32 flags) {

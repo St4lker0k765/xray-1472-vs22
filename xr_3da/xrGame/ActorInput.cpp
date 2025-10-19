@@ -144,7 +144,7 @@ void CActor::OnMouseMove(int dx, int dy)
 	if (Remote())	return;
 
 	CCameraBase* C	= cameras	[cam_active];
-	float scale		= (C->f_fov/DEFAULT_FOV)*psMouseSens * psMouseSensScale/50.f;
+	float scale		= (C->f_fov/g_fov)*psMouseSens * psMouseSensScale/50.f;
 	if (dx){
 		float d = float(dx)*scale;
 		cam_Active()->Move((d<0)?kLEFT:kRIGHT, _abs(d));

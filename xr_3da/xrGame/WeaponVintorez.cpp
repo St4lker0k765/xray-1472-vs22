@@ -26,7 +26,7 @@ void CWeaponVintorez::Fire2Start () {
 void CWeaponVintorez::Fire2End () {
 	inherited::Fire2End();
 	OnZoomOut();
-	fZoomFactor = DEFAULT_FOV;
+	fZoomFactor = g_fov;
 }
 
 bool CWeaponVintorez::Action(s32 cmd, u32 flags) {

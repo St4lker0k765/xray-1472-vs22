@@ -23,7 +23,7 @@ void CWeaponSVD::Fire2Start () {
 void CWeaponSVD::Fire2End () {
 	inherited::Fire2End();
 	OnZoomOut();
-	fZoomFactor = DEFAULT_FOV;
+	fZoomFactor = g_fov;
 }
 
 bool CWeaponSVD::Action(s32 cmd, u32 flags) {

@@ -35,7 +35,7 @@ enum {
 	mtPhysics			= (1ul<<17ul)
 // 20-32 bit - defined in Editor
 };
-ENGINE_API extern	u32			psCurrentMode		;
+ENGINE_API extern	u32			psCurrentVidMode[]	;
 ENGINE_API extern	u32			psCurrentBPP		;
 ENGINE_API extern	Flags32		psDeviceFlags		;
 
