@@ -72,9 +72,9 @@ public:
 		LPCSTR					name;			// low-case name
 		u32						vfs;			// 0xffffffff - standart file
 		u32						ptr;			// pointer inside vfs
-		u32						size_real;		// 
-		u32						size_compressed;// if (size_real==size_compressed) - uncompressed
-        u32						modif;			// for editor
+		u32		size;			// for REAL file - its file size, for COMPRESSED inside VFS - compressed size, for PLAIN inside VFS - file size
+        u32		modif;			// for editor
+		BOOL	bCompressed;
 	};
 	struct	file_pred
 	{	
@@ -83,8 +83,7 @@ public:
 	};
 	struct	archive
 	{
-		shared_str				path;
-		void					*hSrcFile, *hSrcMap;
+		IReader*	vfs;
 	};
 	DEFINE_MAP_PRED				(LPCSTR,FS_Path*,PathMap,PathPairIt,pred_str);
 	PathMap						pathes;
@@ -113,9 +112,9 @@ private:
     archives_vec				archives;
 	BOOL						bNoRecurse;
 
-	void						Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size_real, u32 size_compressed, u32 modif);
+	void						Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size, BOOL bCompressed, u32 modif);
 	void						ProcessArchive	(LPCSTR path);
-	void						ProcessOne		(LPCSTR path, void* F);
+	void						ProcessOne		(LPCSTR path, LPVOID F);
 	bool						Recurse			(LPCSTR path);
 
     void						SetEventNotification	();

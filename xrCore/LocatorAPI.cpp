@@ -101,16 +101,16 @@ CLocatorAPI::~CLocatorAPI()
 {
 }
 
-void CLocatorAPI::Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size_real, u32 size_compressed, u32 modif)
+void CLocatorAPI::Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size, BOOL bCompressed, u32 modif)
 {
 	// Register file
 	file				desc;
 	desc.name			= xr_strlwr(xr_strdup(name));
 	desc.vfs			= vfs;
 	desc.ptr			= ptr;
-	desc.size_real		= size_real;
-	desc.size_compressed= size_compressed;
-    desc.modif			= modif & (~u32(0x3));
+	desc.size			= size;
+    desc.modif			= modif;
+	desc.bCompressed	= bCompressed;
 
 	// if file already exist - update info
 	files_it	I		= files.find(desc);
@@ -138,8 +138,8 @@ void CLocatorAPI::Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size_real, u32 s
 			desc.name			= xr_strdup(path);
 			desc.vfs			= 0xffffffff;
 			desc.ptr			= 0;
-			desc.size_real		= 0;
-			desc.size_compressed= 0;
+			desc.size			= 0;
+			desc.bCompressed	= FALSE;
             desc.modif			= u32(-1);
             std::pair<files_it,bool> I = files.insert(desc); 
             R_ASSERT(I.second);
@@ -149,91 +149,40 @@ void CLocatorAPI::Register		(LPCSTR name, u32 vfs, u32 ptr, u32 size_real, u32 s
 	}
 }
 
-IReader* open_chunk(void* ptr, u32 ID)	
+void CLocatorAPI::ProcessArchive(const char* path)
 {
-	BOOL			res;
-	u32				dwType, dwSize;
-	DWORD			read_byte;
-	u32 pt			= SetFilePointer(ptr,0,0,FILE_BEGIN); VERIFY(pt!=INVALID_SET_FILE_POINTER);
-	while (true){
-		res			= ReadFile	(ptr,&dwType,4,&read_byte,0); VERIFY(res&&(read_byte==4));
-		res			= ReadFile	(ptr,&dwSize,4,&read_byte,0); VERIFY(res&&(read_byte==4));
-		if ((dwType&(~CFS_CompressMark)) == ID) {
-			u8* src_data	= xr_alloc<u8>(dwSize);
-			res				= ReadFile	(ptr,src_data,dwSize,&read_byte,0); VERIFY(res&&(read_byte==dwSize));
-			if (dwType&CFS_CompressMark) {
-				BYTE*			dest;
-				unsigned		dest_sz;
-				_decompressLZ	(&dest,&dest_sz,src_data,dwSize);
-				xr_free			(src_data);
-				return xr_new<CTempReader>(dest,dest_sz);
-			} else {
-				return xr_new<CTempReader>(src_data,dwSize);
-			}
-			break;
-		}else{ 
-			pt		= SetFilePointer(ptr,dwSize,0,FILE_CURRENT); 
-			if (pt==INVALID_SET_FILE_POINTER) return 0;
-		}
-	}
-	return 0;
-};
-
-void CLocatorAPI::ProcessArchive(const char* _path)
-{
-	// find existing archive
-	shared_str path		= _path;
-	for (archives_it it=archives.begin(); it!=archives.end(); ++it)
-		if (it->path==path)	return;
-
-	// open archive
-	archives.push_back	(archive());
-	archive& A		= archives.back();
-	A.path			= path;
-	// Open the file
-	A.hSrcFile = CreateFile			(*path, GENERIC_READ, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, 0, 0);
-	R_ASSERT						(A.hSrcFile!=INVALID_HANDLE_VALUE);
-	A.hSrcMap = CreateFileMapping	(A.hSrcFile, 0, PAGE_READONLY, 0, 0, 0);
-	R_ASSERT						(A.hSrcMap!=INVALID_HANDLE_VALUE);
+	// Open archive
+	archive				A;
+	A.vfs				= xr_new<CVirtualFileReader> (path);
+	archives.push_back	(A);
 
 	// Create base path
-	string_path			base;
-	strcpy				(base,*path);
-	if (strext(base))	*strext(base)	= 0;
+	string256			base;
+	strcpy				(base,path);
+	*strext(base)		= 0;
 	strcat				(base,"\\");
 
 	// Read headers
-	IReader* hdr		= open_chunk(A.hSrcFile,1); R_ASSERT(hdr);
-//	IReader*	hdr		= A.vfs->open_chunk(1);
+	IReader*	hdr		= A.vfs->open_chunk(1);
 	while (!hdr->eof())
 	{
-		string_path		name,full;
+		string512		name,full;
 		hdr->r_stringZ	(name);
 		strconcat		(full,base,name);
 
 		size_t vfs		= archives.size()-1;
+		BOOL  bPacked	= (hdr->r_u32())?FALSE:TRUE;
 		u32 ptr			= hdr->r_u32();
-		u32 size_real	= hdr->r_u32();
-		u32 size_compr	= hdr->r_u32();
-		Register		(full,(u32)vfs,ptr,size_real,size_compr,0);
+		u32 size		= hdr->r_u32();
+		Register		(full,(u32)vfs,ptr,size,bPacked,0);
 	}
 	hdr->close			();
 
 	// Seek to zero for safety
-//	A.vfs->seek			(0);
-/*
-	for(RStringVecIt it=fv.begin();it!=fv.end();++it){
-		IReader* ird = FS.r_open(**it);
-		IWriter* iwr = FS.w_open("$s_dir$",**it);
-
-		iwr->w(ird->pointer(),ird->length());
-		FS.w_close(iwr);
-		FS.r_close(ird);
-	}
-*/
+	A.vfs->seek			(0);
 }
 
-void CLocatorAPI::ProcessOne	(const char* path, void* _F)
+void CLocatorAPI::ProcessOne	(const char* path, LPVOID _F)
 {
 	_finddata_t& F	= *((_finddata_t*)_F);
 
@@ -249,11 +198,11 @@ void CLocatorAPI::ProcessOne	(const char* path, void* _F)
 		if (0==xr_strcmp(F.name,"."))	return;
 		if (0==xr_strcmp(F.name,"..")) return;
 		strcat		(N,"\\");
-		Register	(N,0xffffffff,0,F.size,F.size,(u32)F.time_write);
+		Register	(N,0xffffffff,0,F.size,0,(u32)F.time_write);
 		Recurse		(N);
 	} else {
 		if (strext(N) && 0==strncmp(strext(N),".xp",3))		ProcessArchive	(N);
-		else												Register		(N,0xffffffff,0,F.size,F.size,(u32)F.time_write);
+		else												Register		(N,0xffffffff,0,F.size,0,(u32)F.time_write);
 	}
 }
 
@@ -407,8 +356,7 @@ void CLocatorAPI::_destroy		()
 	pathes.clear	();
 	for				(archives_it a_it=archives.begin(); a_it!=archives.end(); a_it++)
     {
-		CloseHandle	(a_it->hSrcMap);
-		CloseHandle	(a_it->hSrcFile);
+		xr_delete	(a_it->vfs);
     }
     archives.clear	();
 }
@@ -580,7 +528,7 @@ int CLocatorAPI::file_list(FS_QueryMap& dest, LPCSTR path, u32 flags, LPCSTR mas
 			// insert file entry
 			if (flags&FS_ClampExt)fn= EFS.ChangeFileExt(fn,"");
 			u32 fl = (entry.vfs!=0xffffffff?FS_QueryItem::flVFS:0);
-			dest.insert(mk_pair(fn.c_str(),FS_QueryItem(entry.size_real,entry.modif,fl)));
+			dest.insert(mk_pair(fn.c_str(),FS_QueryItem(entry.size,entry.modif,fl)));
 		} else {
 			// folder
 			if ((flags&FS_ListFolders) == 0)	continue;
@@ -588,7 +536,7 @@ int CLocatorAPI::file_list(FS_QueryMap& dest, LPCSTR path, u32 flags, LPCSTR mas
 
 			if ((flags&FS_RootOnly)&&(strstr(entry_begin,"\\")!=end_symbol))	continue;	// folder in folder
 			u32 fl = FS_QueryItem::flSubDir|(entry.vfs?FS_QueryItem::flVFS:0);
-			dest.insert(mk_pair(entry_begin,FS_QueryItem(entry.size_real,entry.modif,fl)));
+			dest.insert(mk_pair(entry_begin,FS_QueryItem(entry.size,entry.modif,fl)));
 		}
 	}
 	return dest.size();
@@ -613,7 +561,7 @@ bool CLocatorAPI::file_find(FS_QueryItem& dest, LPCSTR path, LPCSTR name, bool c
     const file& entry 	= *I;
     std::string fn		= (clamp_ext)?EFS.ChangeFileExt(entry.name+base_len,""):std::string(entry.name+base_len);
     u32 fl 				= (entry.vfs!=0xffffffff?FS_QueryItem::flVFS:0);
-    dest.set			(entry.size_real,entry.modif,fl);
+    dest.set			(entry.size,entry.modif,fl);
     return true;
 }
 
@@ -641,85 +589,23 @@ IReader* CLocatorAPI::r_open	(LPCSTR path, LPCSTR _fname)
 	// OK, analyse
 	if (0xffffffff == desc.vfs)
 	{
-		// Normal file, 100% full path - check cache
-		// Release don't need this at all
-#ifdef	DEBUG
-		if (m_Flags.is(flCacheFiles)){
-			string_path	fname_copy;
-			if (pathes.size()>1)
-			{
-				LPCSTR		path_base		= get_path	("$server_root$")->m_Path;
-				u32			len_base		= xr_strlen	(path_base);
-				LPCSTR		path_file		= fname;
-				u32			len_file		= xr_strlen	(path_file);
-				if (len_file>len_base)		
-				{
-					if (0==memcmp(path_base,fname,len_base))	{
-						BOOL		bCopy	= FALSE;
-
-						string_path	fname_in_cache	;
-						update_path	(fname_in_cache,"$cache$",path_file+len_base);
-						files_it	fit	= file_find_it(fname_in_cache);
-						if (fit!=files.end())	
-						{
-							// use
-							file&	fc	= *fit;
-							if ((fc.size_real == desc.size_real)&&(fc.modif==desc.modif))	{
-								// use
-							} else {
-								// copy & use
-								Msg			("copy: db[%X],cache[%X] - '%s', ",desc.modif,fc.modif,fname);
-								bCopy		= TRUE;
-							}
-						} else {
-							// copy & use
-							bCopy	= TRUE;
-						}
-
-						// copy if need
-						if (bCopy)			
-						{
-							IReader*	_src;
-							if (desc.size_real<256*1024)	_src = xr_new<CFileReader>			(fname);
-							else							_src = xr_new<CVirtualFileReader>	(fname);
-							IWriter*	_dst	= xr_new<CFileWriter>			(fname_in_cache);
-							_dst->w				(_src->pointer(),_src->length());
-							xr_delete			(_dst);
-							xr_delete			(_src);
-							set_file_age		(fname_in_cache,desc.modif);
-						}
-
-						// Use
-						source_name	= &fname_copy[0];
-						strcpy		(fname_copy,fname);
-						strcpy		(fname,fname_in_cache);
-					}
-				}
-			}
-		}
-#endif
-		if (desc.size_real<256*1024)	R = xr_new<CFileReader>			(fname);
+		// Normal file
+		if (desc.size<256*1024)	R = xr_new<CFileReader>			(fname);
 		else							R = xr_new<CVirtualFileReader>	(fname);
 	} else {
 		// Archived one
-		archive& A						= archives[desc.vfs];
-		u32 start						= (desc.ptr/dwAllocGranularity)*dwAllocGranularity;
-		u32 end							= (desc.ptr+desc.size_compressed)/dwAllocGranularity;
-		if ((desc.ptr+desc.size_compressed)%dwAllocGranularity)	end+=1;
-		end								*= dwAllocGranularity;
-		u32 sz							= (end-start);
-		u8* ptr							= (u8*)MapViewOfFile(A.hSrcMap, FILE_MAP_READ, 0, start, sz);
-		u32 ptr_offs					= desc.ptr-start;
-		if (desc.size_real != desc.size_compressed)	{
+		LPVOID	ptr	= LPVOID(LPBYTE(archives[desc.vfs].vfs->pointer()) + desc.ptr);
+		if (desc.bCompressed)	
+		{
 			// Compressed
-			u8*			dest			= xr_alloc<u8>(desc.size_real);
-			rtc_decompress				(dest,desc.size_real,ptr+ptr_offs,desc.size_compressed);
-			R = xr_new<CTempReader>		(dest,desc.size_real);
-			UnmapViewOfFile				(ptr);
+			BYTE*		dest;
+			unsigned	size;
+
+			_decompressLZ				(&dest,&size,ptr,desc.size);
+			R = xr_new<CTempReader>		(dest,size);
 		} else {
-//			R_ASSERT2(data,cFileName);
 			// Plain (VFS)
-			R = xr_new<CPackReader>		(ptr,ptr+ptr_offs,desc.size_real);
+			R = xr_new<IReader>		(ptr,desc.size);
 		}
 	}
 
@@ -911,7 +797,7 @@ void CLocatorAPI::file_rename(LPCSTR src, LPCSTR dest, bool bOwerwrite)
 int	CLocatorAPI::file_length(LPCSTR src)
 {
 	files_it	I		= file_find_it(src);
-	return (I!=files.end())?I->size_real:-1;
+	return (I!=files.end())?I->size:-1;
 }
 
 bool CLocatorAPI::path_exist(LPCSTR path)
