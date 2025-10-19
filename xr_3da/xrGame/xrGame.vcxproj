@@ -224,7 +224,7 @@
       <BrowseInformation />
       <WarningLevel>Level4</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat />
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CallingConvention>StdCall</CallingConvention>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <ModuleOutputFile>$(SolutionDir)$(Configuration)\intermediate\$(ProjectName)\</ModuleOutputFile>
@@ -239,9 +239,10 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)$(TargetName).pdb</ProgramDatabaseFile>
       <GenerateMapFile>false</GenerateMapFile>
-      <MapFileName>
-      </MapFileName>
+      <MapFileName>$(OutDir)$(TargetName).map</MapFileName>
+      <SubSystem>NotSet</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <ImportLibrary>
@@ -676,7 +677,6 @@
     <ClInclude Include="MosquitoBald.h" />
     <ClInclude Include="MovementControl.h" />
     <ClInclude Include="NET_Queue.h" />
-    <ClInclude Include="NET_utils.h" />
     <ClInclude Include="ode_include.h" />
     <ClInclude Include="ode_redefine.h" />
     <ClInclude Include="PHCharacter.h" />

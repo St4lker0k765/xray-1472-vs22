@@ -1247,9 +1247,6 @@
     <ClInclude Include="NET_Queue.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="NET_utils.h">
-      <Filter>Network</Filter>
-    </ClInclude>
     <ClInclude Include="PropertiesListTypes.h">
       <Filter>Network</Filter>
     </ClInclude>

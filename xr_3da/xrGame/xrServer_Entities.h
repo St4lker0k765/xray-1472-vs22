@@ -2,7 +2,7 @@
 #define xrServer_EntitiesH
 
 #include "xrMessages.h"
-#include "net_utils.h"
+#include "../net_utils.h"
 #ifdef _EDITOR
 	#include "PropertiesListHelper.h"
 #endif
