@@ -153,6 +153,9 @@ BOOL	CSoundRender_Core::get_occlusion(Fvector& P, float R, Fvector* occ)
 	range = dir.magnitude	();
 	dir.div					(range);
 
+	if (!geom_MODEL)
+		return FALSE;
+
 	// 1. Check cached polygon
 	float _u,_v,_range;
 	if (CDB::TestRayTri(base,dir,occ,_u,_v,_range,true))

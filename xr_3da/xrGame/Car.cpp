@@ -202,8 +202,8 @@ void	CCar::Load					( LPCSTR section )
 	steeringRate					=pSettings->r_float(section,"steering_rate");
 	steeringLimit					=pSettings->r_float(section,"steering_limit");
 	m_jeep.MassShift				=pSettings->r_float(section,"mass_shift");
-	car_spring_factor				=pSettings->r_float(section,"car_wheels_spring_factor");;
-	car_damping_factor				=pSettings->r_float(section,"car_wheels_damping_factor");
+	car_spring_factor				=pSettings->line_exist(section, "car_wheels_spring_factor") ? pSettings->r_float(section,"car_wheels_spring_factor") : 1.f;
+	car_damping_factor				=pSettings->line_exist(section, "car_wheels_damping_factor") ? pSettings->r_float(section,"car_wheels_damping_factor") : 1.f;
 	snd_engine.create				(TRUE,"car\\car1");
 
 

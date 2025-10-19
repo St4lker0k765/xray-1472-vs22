@@ -189,7 +189,7 @@ void CGameFont::Add(float _x, float _y, char *s, u32 _c, float _size)
 	strcpy((char *) &(strings[strings.size()-1].string),s);
 }
 
-void __cdecl CGameFont::Out(float _x, float _y, char *fmt,...)
+void __cdecl CGameFont::Out(float _x, float _y, LPCSTR fmt,...)
 {
 	String rs;
 	rs.x=_x;
@@ -200,11 +200,9 @@ void __cdecl CGameFont::Out(float _x, float _y, char *fmt,...)
 
 	va_list p;
 	va_start(p,fmt);
-	vsprintf(rs.string,fmt,p);
-	VERIFY(strlen(rs.string)<127);
-	va_end(p);
-
-	strings.push_back(rs);
+	int vs_sz	= _vsnprintf(rs.string,sizeof(rs.string)-1,fmt,p); rs.string[sizeof(rs.string)-1]=0;
+	va_end		(p);
+	if (vs_sz)	strings.push_back(rs);
 }
 
 void __cdecl CGameFont::OutNext(char *fmt,...)

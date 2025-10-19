@@ -70,7 +70,7 @@ public:
 	void					OutSet			(float x, float y)	{fCurrentX=x; fCurrentY=y;}
 	void __cdecl            OutNext			(char *fmt, ...);
 	void __cdecl            OutPrev			(char *fmt, ...);
-	void __cdecl 			Out				(float _x, float _y, char *fmt, ...);
+	void __cdecl 			Out				(float _x, float _y, LPCSTR fmt, ...);
 	void					OutSkip			(float val=1.f);
 
 	virtual void			OnRender		();
