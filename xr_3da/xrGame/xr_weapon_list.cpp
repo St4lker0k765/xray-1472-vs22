@@ -133,16 +133,13 @@ void CWeaponList::weapon_die		()
 
 BOOL CWeaponList::ActivateWeaponNext(BOOL ignore)
 {
-	if (m_Weapons.size()>1){
-		int wpn_count=m_Weapons.size();
-		int Q = 0;
-		int cur_wpn;
-		for (Q=0, cur_wpn = m_iActiveWeapon+1;cur_wpn<=wpn_count; cur_wpn++, Q++){
-			if (cur_wpn>=wpn_count)cur_wpn=0;
-			if (ignore||m_Weapons[cur_wpn]->IsValid()) break;
-			if (Q>=wpn_count) return false;
+	if (m_Weapons.size() > 1) {
+		const int n = static_cast<int>(m_Weapons.size());
+		for (int i = 1; i <= n; ++i) {
+			int cur = (m_iActiveWeapon + i) % n;
+			if (ignore || m_Weapons[cur]->IsValid())
+				return WeaponChange(cur);
 		}
-		return WeaponChange(cur_wpn);	
 	}
 	return false;
 }

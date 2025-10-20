@@ -206,12 +206,12 @@ dMassSetBox(&m,1,1000000.f,1000000.f,1000000.f);
 dMassAdjust(&m,m_mass);
 dBodySetMass(m_body,&m);
 
-m_geom_group = dSimpleSpaceCreate(ph_world->GetSpace());
-
-dSpaceAdd(static_cast<dSpaceID>(m_geom_group), m_wheel);
-dSpaceAdd(static_cast<dSpaceID>(m_geom_group), m_cap_transform);
-dSpaceAdd(static_cast<dSpaceID>(m_geom_group), m_shell_transform);
-dSpaceAdd(static_cast<dSpaceID>(m_geom_group), m_hat_transform);
+m_geom_group=dCreateGeomGroup(ph_world->GetSpace());
+//dGeomGroupAdd(m_geom_group,m_wheel_transform);
+dGeomGroupAdd(m_geom_group,m_wheel);
+dGeomGroupAdd(m_geom_group,m_cap_transform);
+dGeomGroupAdd(m_geom_group,m_shell_transform);
+dGeomGroupAdd(m_geom_group,m_hat_transform);
 //dGeomGroupAdd(chRGeomGroup,chRCylinder);
 m_body_interpolation.SetBody(m_body);
 }
@@ -274,7 +274,7 @@ void CPHSimpleCharacter::Destroy(){
 		m_hat_transform=NULL;
 	}
 	if(m_geom_group){
-		dSpaceDestroy(m_geom_group);
+		dGeomDestroy(m_geom_group);
 		m_geom_group=NULL;
 	}
 
@@ -1124,12 +1124,12 @@ dJointSetHinge2Param(m_wheel_joint, dParamSuspensionERP, h*k_p / (h*k_p + k_d));
 dJointSetHinge2Param(m_wheel_joint, dParamSuspensionCFM, 1.f / (h*k_p + k_d));
 
 
-m_geom_group= dSimpleSpaceCreate(ph_world->GetSpace());
+m_geom_group=dCreateGeomGroup(ph_world->GetSpace());
 
 
-dSpaceAdd(m_geom_group,m_wheel);
-dSpaceAdd(m_geom_group,m_cap_transform);
-dSpaceAdd(m_geom_group,m_shell_transform);
+dGeomGroupAdd(m_geom_group,m_wheel);
+dGeomGroupAdd(m_geom_group,m_cap_transform);
+dGeomGroupAdd(m_geom_group,m_shell_transform);
 //dGeomGroupAdd(chRGeomGroup,chRCylinder);
 
 
@@ -1186,7 +1186,7 @@ void CPHWheeledCharacter::Destroy(){
 		m_cap_transform=NULL;
 	}
 	if(m_geom_group){
-		dSpaceDestroy(m_geom_group);
+		dGeomDestroy(m_geom_group);
 		m_geom_group=NULL;
 	}
 

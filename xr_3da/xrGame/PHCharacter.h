@@ -28,7 +28,7 @@ dGeomID m_wheel;
 dGeomID	m_cap;
 dGeomID m_hat;
 dGeomID m_hat_transform;
-dSpaceID m_geom_group;
+dGeomID m_geom_group;
 dGeomID m_wheel_transform;
 dGeomID m_shell_transform;
 dGeomID m_cap_transform;
