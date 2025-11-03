@@ -15,6 +15,26 @@ extern		pso_MemFill		xrMemFill_x86;
 extern		pso_MemFill32	xrMemFill32_MMX;
 extern		pso_MemFill32	xrMemFill32_x86;
 
+void* __cdecl operator new(size_t size)
+{
+	return Memory.mem_alloc(size ? size : 1); 
+}
+
+void __cdecl operator delete(void* p)
+{
+	xr_free(p);
+}
+
+void* __cdecl operator new[](size_t size)
+{
+	return Memory.mem_alloc(size ? size : 1);
+}
+
+void __cdecl operator delete[](void* p)
+{
+	xr_free(p);
+}
+
 xrMemory::xrMemory()
 {
 #ifdef DEBUG
