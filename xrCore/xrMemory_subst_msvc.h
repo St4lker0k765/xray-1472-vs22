@@ -133,16 +133,16 @@ IC	void	xr_delete(T*& ptr)
 {
 	if (ptr)
 	{
-		if constexpr (xr_special_free<T>::value)
+		if (xr_special_free<T>::value)
 		{
-			void* real_ptr = dynamic_cast<void*>(const_cast<T*>(ptr));
+			void* real_ptr = static_cast<void*>(ptr);
 			ptr->~T();
 			Memory.mem_free(real_ptr);
 		}
 		else
 		{
 			ptr->~T();
-			Memory.mem_free(const_cast<void*>(reinterpret_cast<const void*>(ptr)));
+			Memory.mem_free(static_cast<void*>(ptr));
 		}
 		ptr = NULL;
 	}
@@ -152,16 +152,16 @@ IC	void	xr_delete(T* const& ptr)
 {
 	if (ptr)
 	{
-		if constexpr (xr_special_free<T>::value)
+		if (xr_special_free<T>::value)
 		{
-			void* real_ptr = dynamic_cast<void*>(const_cast<T*>(ptr));
+			void* real_ptr = static_cast<void*>(const_cast<T*>(ptr));
 			ptr->~T();
 			Memory.mem_free(real_ptr);
 		}
 		else
 		{
 			ptr->~T();
-			Memory.mem_free(const_cast<void*>(reinterpret_cast<const void*>(ptr)));
+			Memory.mem_free(const_cast<void*>(static_cast<const void*>(ptr)));
 		}
 		const_cast<T*&>(ptr) = NULL;
 	}
